@@ -3,7 +3,7 @@
    - 포트폴리오: 밝은 아이보리. 컬러·서체는 tokens.css 를 따름 */
 
 :root {
-  --night: #010514;          /* 표지 배경: 불 이미지 배경과 같은 짙은 남색 */
+  --night: #010514;          /* 표지 배경: 짙은 남색 (WebGL 배경과 같은 색) */
   --night-text: #F3EDE4;
   --night-muted: rgba(243, 237, 228, .62);
   --muted: #675D53;
@@ -143,20 +143,6 @@ a { color: inherit; }
   transition: opacity 1200ms ease;
 }
 .is-3d .intro-stage canvas { opacity: 1; }
-
-/* 대체 화면(WebGL 실패·로딩 전): 같은 불 이미지를 스크롤에 따라 겹쳐 전환 */
-.stage-img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: 50% 100%;
-  transition: opacity var(--transition) ease;
-}
-.stage-img.s2 { opacity: var(--w2, 0); }
-.stage-img.s3 { opacity: var(--w3, 0); }
-.is-3d .stage-img { opacity: 0; }
 
 /* 대체 화면용 마지막 전환: 불 위치에서 빛이 번져 화면을 채움 → 아이보리 */
 .intro-fill {

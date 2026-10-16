@@ -9,7 +9,6 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/site.css">
-<link rel="preload" as="image" href="assets/fire/fire-1-small.webp">
 <link rel="preload" as="fetch" href="assets/models/ember_to_great_flame.glb" crossorigin>
 <script type="importmap">
 {
@@ -33,14 +32,10 @@
 </header>
 
 <!-- 표지: 스크롤에 따라 작은 불꽃 → 커지는 불 → 번지는 불 → 밝은 포트폴리오.
-     불 이미지는 장식 레이어이고 모든 문구는 HTML 텍스트입니다. -->
+     3D 불씨와 점 배경은 장식 레이어이고 모든 문구는 HTML 텍스트입니다. -->
 <section class="intro" id="cover" aria-labelledby="cover-title">
   <div class="intro-sticky">
     <div class="intro-stage" aria-hidden="true">
-      <!-- 대체 화면(WebGL 실패·로딩 전): 같은 이미지를 CSS로 전환 -->
-      <img class="stage-img s1" src="assets/fire/fire-1-small.webp" alt="">
-      <img class="stage-img s2" src="assets/fire/fire-2-grow.webp" alt="">
-      <img class="stage-img s3" src="assets/fire/fire-3-spread.webp" alt="">
       <canvas id="ember-canvas"></canvas>
     </div>
     <div class="intro-fill" aria-hidden="true"></div>
@@ -89,7 +84,7 @@
 
 <footer class="site-footer">불씨 디자인 키트 v0.1 기반 · 표지 시안</footer>
 
-<!-- 스크롤 진행 → CSS 변수. WebGL이 실패해도 문구·이미지 전환·빛 전환은 동작 -->
+<!-- 스크롤 진행 → CSS 변수. WebGL이 실패해도 문구·빛 전환은 동작 -->
 <script>
 (function () {
   var root = document.documentElement;
@@ -115,8 +110,6 @@
     S.solid = S.reduced ? 0 : smooth(0.9, 0.985, p);
     var st = track.style;
     st.setProperty('--p', p.toFixed(4));
-    st.setProperty('--w2', toGrow.toFixed(4));
-    st.setProperty('--w3', toSpread.toFixed(4));
     st.setProperty('--fill', S.fill.toFixed(4));
     st.setProperty('--solid', S.solid.toFixed(4));
     st.setProperty('--t1', (1 - smooth(0.16, 0.26, p)).toFixed(4));
@@ -150,25 +143,23 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 
 /* ============================================================
-   불씨 표지 — 사용자 제공 불 이미지 3장(작은 불꽃 → 커지는 불 → 번지는 불)
-   - 아래에서부터 타오르듯 바뀌는 전환(앞 장면의 불은 남아 있다가 사라짐)
-   - 아지랑이처럼 일렁이는 열기 왜곡, 불꽃의 미세한 깜빡임, 떠오르는 불티
-   - 포인터: 미세한 시차, 가까이 가면 불꽃이 그쪽으로 기울고, 누르면 한 번 크게 일렁임
-   - 실패 시 같은 이미지의 CSS 전환(대체 화면)이 그대로 보임
+   불씨 표지 — 어두운 남색 위 3D 불씨 + 3D 점 배경
+   - 점 배경: 불씨 밑동을 지나는 비스듬한 면에 점을 고르게 깔고, 느리게 물결침
+   - 불씨 열기가 점을 따뜻하게 물들이며 스크롤에 따라 번져 나감(작은 불꽃 → 커지는 불 → 번지는 불)
+   - 포인터: 가까운 점이 솟아오르고 밝아짐, 누르면 그 자리에서 물결이 퍼짐
+   - 점은 GL_POINTS로 그려 화면 전체가 아닌 점 픽셀만 계산
    ============================================================ */
 
-THREE.ColorManagement.enabled = false;   // 이미지 색을 그대로 출력
+THREE.ColorManagement.enabled = false;   // 셰이더 색을 그대로 출력
 
 const root = document.documentElement;
 const track = document.getElementById('cover');
 const sticky = track.querySelector('.intro-sticky');
 const canvas = document.getElementById('ember-canvas');
 const S = window.emberScroll;
-const IMG_W = 1672, IMG_H = 941;
-const BASE = { x: 0.5, y: 0.08 };   // 이미지 안 불 밑동 위치(아래에서부터 비율)
-const SOURCES = ['assets/fire/fire-1-small.webp', 'assets/fire/fire-2-grow.webp', 'assets/fire/fire-3-spread.webp'];
+const BASE_Y = 0.1;   // 불 밑동 위치(화면 아래에서부터 비율)
 
-// 3D 불씨 모델(직접 불러옴): 준비되면 사진 속 가운데 불꽃을 지우고 모델이 대신함
+// 3D 불씨 모델(직접 불러옴)
 const MODEL_URL = 'assets/models/ember_to_great_flame.glb';
 const modelState = { ready: false, hide: 0 };
 
@@ -181,36 +172,17 @@ async function init() {
     renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });   // 3D 불꽃 가장자리 계단 현상 보정
   } catch (e) { return; }
   renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
-  renderer.autoClear = false;   // 배경 장면 → 3D 불씨 순서로 겹쳐 그림
+  renderer.autoClear = false;   // 배경 → 점 → 3D 불씨 순서로 겹쳐 그림
   canvas.addEventListener('webglcontextlost', (e) => { e.preventDefault(); root.classList.remove('is-3d'); stop(); });
 
-  let textures;
-  try {
-    const loader = new THREE.TextureLoader();
-    textures = await Promise.all(SOURCES.map((src) => loader.loadAsync(src)));
-  } catch (e) { return; }   // 이미지를 못 불러오면 CSS 대체 화면 유지
-  textures.forEach((t) => {
-    t.colorSpace = THREE.NoColorSpace;
-    t.minFilter = THREE.LinearFilter;
-    t.generateMipmaps = false;
-    t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping;
-  });
-
   const U = {
-    uT1: { value: textures[0] }, uT2: { value: textures[1] }, uT3: { value: textures[2] },
-    uRes: { value: new THREE.Vector2(1, 1) }, uImg: { value: new THREE.Vector2(IMG_W, IMG_H) },
-    uAnchor: { value: new THREE.Vector2() }, uScale: { value: 1 },
+    uRes: { value: new THREE.Vector2(1, 1) }, uAnchor: { value: new THREE.Vector2() },
     uTime: { value: 0 }, uStage: { value: 0 }, uFill: { value: 0 },
-    uAttn: { value: 0 }, uPuff: { value: 0 }, uWind: { value: 0 }, uHide1: { value: 0 },
+    uAttn: { value: 0 }, uPuff: { value: 0 }, uWind: { value: 0 },
     uGlow: { value: new THREE.Vector3(0, 0, 1) }, uGlowA: { value: 0 }
   };
 
-  const FRAG = /* glsl */`
-    uniform sampler2D uT1, uT2, uT3;
-    uniform vec2 uRes, uImg, uAnchor;
-    uniform float uScale, uTime, uStage, uFill, uAttn, uPuff, uWind, uHide1, uGlowA;
-    uniform vec3 uGlow;   // 3D 불꽃 뒤 온기: 중심 x, y(px), 반지름(px)
-
+  const NOISE = /* glsl */`
     float hash(vec2 p){ p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
     float noise(vec2 p){
       vec2 i = floor(p), f = fract(p);
@@ -221,56 +193,35 @@ async function init() {
       float v = 0.0, a = 0.5;
       for (int i = 0; i < 4; i++) { v += a * noise(p); p = p * 2.03 + 17.1; a *= 0.5; }
       return v;
-    }
+    }`;
 
-    // 두 장면 사이: 아래쪽(밑동)부터 바뀌고, 앞 장면의 불은 잠시 남음
-    vec3 blendStage(vec3 a, vec3 b, float s, vec2 uv){
-      float n = fbm(uv * vec2(5.0, 3.0) + vec2(0.0, -uTime * 0.25)) * 0.65 + (1.0 - uv.y) * 0.35;
-      float th = s * 1.35 - 0.2;
-      float m = smoothstep(th + 0.08, th - 0.08, 1.0 - n);
-      vec3 c = mix(a, b, m);
-      return max(c, a * (1.0 - s));
-    }
+  // 마지막 전환: 종이가 타들어 가는 경계 (배경과 점이 같은 값을 씀)
+  const BURN = /* glsl */`
+    vec2 burnQ(vec2 frag){ return (frag - (uAnchor + vec2(0.0, uRes.y * 0.25))) / uRes.y; }   // 불 위치에서 시작
+    float burnEdge(vec2 q){                                   // 0보다 크면 이미 타서 열린 곳
+      float d = length(q * vec2(0.9, 1.0));
+      float b = fbm(q * 3.2 + vec2(0.0, uTime * 0.04)) * 0.6
+              + fbm(q * 9.0 - vec2(uTime * 0.08, 0.0)) * 0.12
+              + clamp(d / 1.15, 0.0, 1.0) * 0.4;
+      return uFill * 1.4 - 0.22 - b;
+    }`;
 
-    // 3D 불씨가 주인공일 때: 사진 속 불꽃은 배경 분위기로 낮추고 숯불 바닥은 그대로 둠
-    float flameZone(vec2 uv){ return smoothstep(${BASE.y} + 0.03, ${BASE.y} + 0.085, uv.y) * uHide1; }
-    vec3 img1(vec2 uv){
-      return mix(texture2D(uT1, uv).rgb, vec3(0.004, 0.02, 0.078), flameZone(uv));   // 작은 불꽃 자리는 3D 불씨가 대신함
-    }
-    // 가운데(3D 불씨 자리)는 사진 불꽃을 지우고, 양옆 불길만 배경으로 은은하게 남김
-    float center(vec2 uv){ return 1.0 - smoothstep(0.1, 0.27, abs(uv.x - 0.5)); }
-    vec3 img2(vec2 uv){ return texture2D(uT2, uv).rgb * mix(1.0, mix(0.4, 0.0, center(uv)), flameZone(uv)); }
-    vec3 img3(vec2 uv){ return texture2D(uT3, uv).rgb * mix(1.0, mix(0.5, 0.06, center(uv)), flameZone(uv)); }
-
-    // 아직 등장하지 않았거나 다 지나간 장면은 읽지 않음 (GPU 절약)
-    vec3 scene(vec2 uv){
-      if (uStage <= 0.001) return img1(uv);
-      if (uStage >= 1.999) return img3(uv);
-      if (uStage < 1.0) return blendStage(img1(uv), img2(uv), uStage, uv);
-      if (uStage == 1.0) return img2(uv);
-      return blendStage(img2(uv), img3(uv), uStage - 1.0, uv);
-    }
+  const FRAG = /* glsl */`
+    uniform vec2 uRes, uAnchor;
+    uniform float uTime, uStage, uFill, uAttn, uPuff, uGlowA;
+    uniform vec3 uGlow;   // 3D 불꽃 뒤 온기: 중심 x, y(px), 반지름(px)
+    ${NOISE}
+    ${BURN}
 
     void main(){
       vec2 frag = gl_FragCoord.xy;
-      // 화면 → 이미지 좌표 (불 밑동을 기준으로 맞추고 화면을 덮도록 확대)
-      vec2 uv = ((frag - uAnchor) / uScale + uImg * vec2(${BASE.x}, ${BASE.y})) / uImg;
+      vec3 col = vec3(0.004, 0.02, 0.078);   // #010514
 
-      // 열기 왜곡: 밝은 곳(불)에서만, 위로 흐르며 일렁임
-      float lum = dot(scene(uv - vec2(0.0, 0.015)), vec3(0.3, 0.55, 0.15));
-      float hot = smoothstep(0.04, 0.4, lum);
-      float above = clamp((uv.y - ${BASE.y}) * 3.0, 0.0, 1.0);
-      vec2 n = vec2(noise(uv * vec2(16.0, 8.0) + vec2(0.0, -uTime * 2.4)),
-                    noise(uv * vec2(16.0, 8.0) + vec2(4.1, -uTime * 2.4))) - 0.5;
-      float sway = (noise(vec2(uv.y * 3.0 - uTime * 0.7, uTime * 0.25)) - 0.5);
-      vec2 disp = n * vec2(0.0045, 0.003) * (1.0 + uPuff * 1.5);
-      disp.x += sway * 0.008 * above;
-      disp.x -= uWind * above * above * 0.03;
-      vec3 col = scene(uv + disp * hot);
-
-      // 깜빡임: 전체 + 불꽃 안쪽 일렁임
-      float flick = 1.0 + 0.05 * (noise(vec2(uTime * 3.0, 0.0)) - 0.5) + 0.12 * (noise(uv * 6.0 - vec2(0.0, uTime * 1.5)) - 0.5) * hot;
-      col *= flick * (1.0 + 0.12 * uAttn + 0.35 * uPuff);
+      // 바닥에 깔리는 불빛: 장면이 진행될수록 넓고 밝게
+      float gr = clamp(uStage, 0.0, 1.0), sp = clamp(uStage - 1.0, 0.0, 1.0);
+      vec2 g = (frag - uAnchor) / (uRes.y * vec2(0.5 + 0.25 * gr + 0.9 * sp, 0.24 + 0.1 * gr + 0.22 * sp));
+      float flick = 1.0 + 0.1 * (noise(vec2(uTime * 3.0, 0.0)) - 0.5);
+      col += vec3(0.5, 0.15, 0.04) * exp(-dot(g, g) * 1.4) * (0.14 + 0.08 * gr + 0.08 * sp) * flick * (1.0 + 0.3 * uAttn + 0.6 * uPuff);
 
       // 3D 불꽃 뒤의 은은한 온기
       vec2 gd = (frag - uGlow.xy) / uGlow.z;
@@ -278,12 +229,8 @@ async function init() {
 
       // 마지막: 종이가 타들어 가듯 화면이 열리며 아이보리 포트폴리오가 드러남
       if (uFill > 0.001) {
-        vec2 q = (frag - (uAnchor + vec2(0.0, uRes.y * 0.25))) / uRes.y;   // 불 위치에서 시작
-        float d = length(q * vec2(0.9, 1.0));
-        float b = fbm(q * 3.2 + vec2(0.0, uTime * 0.04)) * 0.6
-                + fbm(q * 9.0 - vec2(uTime * 0.08, 0.0)) * 0.12
-                + clamp(d / 1.15, 0.0, 1.0) * 0.4;
-        float e = uFill * 1.4 - 0.22 - b;                   // 0보다 크면 이미 타서 열린 곳
+        vec2 q = burnQ(frag);
+        float e = burnEdge(q);
         vec3 paper = vec3(0.965, 0.949, 0.922);              // #F6F2EB
         float scorch = smoothstep(-0.08, 0.0, e) * (1.0 - step(0.0, e));
         col = mix(col, col * 0.2 + vec3(0.07, 0.03, 0.012), scorch);   // 타기 직전 그을림
@@ -379,6 +326,118 @@ async function init() {
     sparks.frustumCulled = false;
     sparks.renderOrder = 1;
     scene.add(sparks);
+  }
+
+  /* ---------- 3D 점 배경 ----------
+     불씨 밑동을 지나 뒤로 비스듬히 올라가는 면에 점을 고르게 깔고, 3D 불씨와 같은 카메라로 그림.
+     점의 움직임은 모두 정점 셰이더에서 계산 → 매 프레임 CPU 갱신 없음 */
+  const FIELD = { tilt: THREE.MathUtils.degToRad(36), step: 0.26, near: -3, far: 34 };
+  const RIPPLES = 3;
+  const DOT = {
+    uTime: U.uTime, uStage: U.uStage, uFill: U.uFill, uRes: U.uRes, uAnchor: U.uAnchor, uPuff: U.uPuff,
+    uPx: { value: 1 }, uIgnite: { value: 0 },
+    uPtr: { value: new THREE.Vector2(0, 99) }, uPtrA: { value: 0 },
+    uRip: { value: Array.from({ length: RIPPLES }, () => new THREE.Vector3(0, 0, -99)) }
+  };
+  const dotScene = new THREE.Scene();
+  const field = new THREE.Group();
+  field.rotation.x = FIELD.tilt;
+  dotScene.add(field);
+  {
+    // 화면 밖으로 나가는 점은 만들지 않음: 멀어질수록 넓어지는 사다리꼴 (가로세로비 2.4까지)
+    const pos = [], seed = [];
+    const cosT = Math.cos(FIELD.tilt), tanH = Math.tan(THREE.MathUtils.degToRad(16));
+    for (let s = FIELD.near; s <= FIELD.far; s += FIELD.step) {
+      const half = tanH * 2.4 * (20 + s * cosT) + 1.5;
+      const n = Math.floor(half / FIELD.step);
+      for (let i = -n; i <= n; i++) { pos.push(i * FIELD.step, 0, -s); seed.push(Math.random()); }
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    g.setAttribute('aSeed', new THREE.Float32BufferAttribute(seed, 1));
+    const dots = new THREE.Points(g, new THREE.ShaderMaterial({
+      uniforms: DOT, transparent: true, depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending,
+      vertexShader: /* glsl */`
+        uniform float uTime, uStage, uFill, uPuff, uPx, uIgnite, uPtrA;
+        uniform vec2 uRes, uAnchor, uPtr;
+        uniform vec3 uRip[${RIPPLES}];
+        attribute float aSeed;
+        varying vec3 vCol;
+        ${NOISE}
+        ${BURN}
+        void main(){
+          vec3 p = position;
+          float gr = clamp(uStage, 0.0, 1.0), sp = clamp(uStage - 1.0, 0.0, 1.0);
+          float r = length(p.xz);
+
+          // 느리게 숨 쉬는 물결: 불이 커질수록 크게
+          float lift = (noise(p.xz * 0.22 + vec2(uTime * 0.05, -uTime * 0.12)) - 0.5) * (0.5 + 0.35 * gr + 0.5 * sp);
+
+          // 불씨 열기: 밑동에서부터 점을 물들이며 번짐
+          float R = 2.4 + 4.0 * gr + 16.0 * sp;
+          float heat = smoothstep(R, R * 0.25, r) * uIgnite;
+          float flick = 0.6 + 0.8 * noise(vec2(aSeed * 40.0, uTime * (1.6 + aSeed * 2.0)));
+          lift += sin(r * 1.5 - uTime * 2.2) * 0.08 * heat;
+
+          // 포인터: 가까운 점이 솟아오름
+          vec2 pd = p.xz - uPtr;
+          float bump = exp(-dot(pd, pd) / 6.0) * uPtrA;
+          lift += bump * 1.3;
+
+          // 누른 자리에서 퍼지는 물결
+          float ring = 0.0;
+          for (int i = 0; i < ${RIPPLES}; i++) {
+            float tt = uTime - uRip[i].z;
+            if (tt > 0.0 && tt < 2.6) {
+              float d = length(p.xz - uRip[i].xy) - tt * 7.0;
+              ring += exp(-d * d * 1.2) * (1.0 - tt / 2.6);
+            }
+          }
+          lift += ring * 0.7;
+
+          p.y += lift;   // 면의 수직 방향 = 화면 쪽으로 솟음
+          vec4 mv = modelViewMatrix * vec4(p, 1.0);
+          gl_Position = projectionMatrix * mv;
+
+          float far = smoothstep(10.0, 30.0, -position.z);   // 멀리(화면 위쪽, 문구 뒤)는 흐리게
+          vec3 cool = vec3(0.42, 0.5, 0.72) * 0.36;
+          vec3 ivory = vec3(1.0, 0.88, 0.7);
+          vec3 warm = mix(vec3(1.0, 0.36, 0.08), vec3(1.25, 0.85, 0.45), heat * flick * 0.8);
+          vec3 col = cool * (1.0 + clamp(lift, 0.0, 1.0)) + ivory * (bump * 0.75 + ring * 0.55)
+                   + warm * heat * flick * (0.85 + 0.4 * uPuff);
+          col *= 1.0 - far * 0.7;
+
+          // 타들어 간 자리의 점은 사라짐
+          if (uFill > 0.001) {
+            vec2 frag = (gl_Position.xy / gl_Position.w * 0.5 + 0.5) * uRes;
+            col *= 1.0 - smoothstep(-0.02, 0.004, burnEdge(burnQ(frag)));
+          }
+          vCol = col;
+          float size = (2.6 + 1.8 * bump + 1.2 * heat + ring) * 20.0 / -mv.z;
+          gl_PointSize = dot(col, vec3(1.0)) > 0.004 ? max(size, 1.4) * uPx : 0.0;   // 보이지 않는 점은 그리지 않음
+        }`,
+      fragmentShader: /* glsl */`
+        varying vec3 vCol;
+        void main(){
+          float a = smoothstep(0.5, 0.18, length(gl_PointCoord - 0.5));
+          gl_FragColor = vec4(vCol, a);
+        }`
+    }));
+    dots.frustumCulled = false;
+    field.add(dots);
+  }
+  let ripIdx = 0;
+  const addRipple = (x, z) => { DOT.uRip.value[ripIdx].set(x, z, st.t); ripIdx = (ripIdx + 1) % RIPPLES; };
+
+  // 화면의 한 점(px) → 점 배경 면 위의 좌표(x, z). 면을 벗어나면 null
+  const ray = new THREE.Raycaster(), fieldPlane = new THREE.Plane(), hitV = new THREE.Vector3(), ndcV = new THREE.Vector2();
+  function fieldPoint(x, y) {
+    ndcV.set(x / st.w * 2 - 1, 1 - y / st.h * 2);
+    ray.setFromCamera(ndcV, modelCam);
+    fieldPlane.setFromNormalAndCoplanarPoint(new THREE.Vector3(0, 1, 0).applyQuaternion(field.quaternion), field.position);
+    if (!ray.ray.intersectPlane(fieldPlane, hitV)) return null;
+    field.worldToLocal(hitV);
+    return hitV;
   }
 
 
@@ -477,7 +536,7 @@ async function init() {
     });
     MU.uTotalH.value = total || 7.5;
     if (parts.length) { modelState.ready = true; root.classList.add('model-ready'); }
-  }).catch(() => { /* 불러오지 못하면 사진 속 불꽃이 그대로 보임 */ });
+  }).catch(() => { /* 불러오지 못하면 점 배경과 불티만 보임 */ });
 
   // 3D 불씨 배치·피어남·인터랙션 (매 프레임)
   function updateModel(dt, k) {
@@ -491,13 +550,11 @@ async function init() {
     // 피어난 만큼의 높이(비율): 화면에서 불꽃이 차지하는 크기 판단용
     mdl.frac = reduced ? 1 : Math.max(0.2, smooth(0.0, 0.6, p));
 
-    // 카메라 앞에 놓고, 모델 밑동이 숯불 위치(st.ax, st.ay)에 오도록 배치
-    const dist = 20, tanH = Math.tan(THREE.MathUtils.degToRad(modelCam.fov / 2));
+    // 모델 밑동을 불 위치(st.ax, st.ay)에 둠
     const wide = st.w > 900;
-    const targetH = (wide ? 0.8 : 0.66) * (1 + 0.06 * S.stage) * 2 * dist * tanH;   // 다 피었을 때 화면 높이의 약 80%
+    const targetH = (wide ? 0.8 : 0.66) * (1 + 0.06 * S.stage) * 2 * DIST * TAN_H;   // 다 피었을 때 화면 높이의 약 80%
     const sc = targetH / MU.uTotalH.value;
-    const ndcX = (st.ax / st.w) * 2 - 1, ndcY = (st.ay / st.h) * 2 - 1 + 0.012;
-    modelRoot.position.set(ndcX * dist * tanH * modelCam.aspect, ndcY * dist * tanH, -dist);
+    modelRoot.position.copy(anchorW);
     modelRoot.scale.setScalar(sc);
 
     // 회전: 천천히 저절로 돌고, 끌면 돌아가며 관성으로 이어짐
@@ -520,7 +577,7 @@ async function init() {
 
     // 화면 좌표: 불꽃 영역 (판정·온기 위치)
     mdl.cx = st.ax; mdl.baseY = st.h - st.ay;
-    mdl.hPx = (targetH / (2 * dist * tanH)) * st.h * mdl.frac;
+    mdl.hPx = (targetH / (2 * DIST * TAN_H)) * st.h * mdl.frac;
     U.uGlow.value.set(st.ax * st.ratio, (st.ay + mdl.hPx * 0.4) * st.ratio, Math.max(60, mdl.hPx * 0.7) * st.ratio);
     U.uGlowA.value = 0.22 * modelState.hide * MU.uFade.value;
   }
@@ -534,9 +591,11 @@ async function init() {
 
   /* ---------- 상태 ---------- */
   const st = { t: 3.0, w: 1, h: 1, ratio: 1, px: -9999, py: -9999, ptrX: 0, ptrIn: false,
-               par: 0, wind: 0, attn: 0, puff: 0, k: 1, ax: 0, ay: 0 };
+               par: 0, wind: 0, attn: 0, puff: 0, ax: 0, ay: 0, ignite: 0 };
+  const DIST = 20, TAN_H = Math.tan(THREE.MathUtils.degToRad(modelCam.fov / 2));
+  const anchorW = new THREE.Vector3();   // 불 밑동의 3D 위치 (카메라 앞 DIST)
 
-  // 이미지 원본이 1672px이라 그 이상으로 그려도 화질 이득이 없음 → 해상도 상한
+  // 점·불꽃은 해상도를 높여도 이득이 작음 → 해상도 상한
   let quality = 1;
   function layout() {
     st.w = sticky.clientWidth; st.h = sticky.clientHeight;
@@ -546,6 +605,7 @@ async function init() {
     U.uRes.value.set(st.w * st.ratio, st.h * st.ratio);
     SP.uUnit.value = st.h * st.ratio;
     SP.uPx.value = st.ratio;
+    DOT.uPx.value = st.ratio;
     SP.uAspect.value = st.w / st.h;
     modelCam.aspect = st.w / st.h;
     modelCam.updateProjectionMatrix();
@@ -555,17 +615,21 @@ async function init() {
     const k = (rate) => 1 - Math.exp(-rate * dt);
     const reduced = S.reduced, stage = S.stage;
 
-    // 화면을 덮는 배율(+ 장면이 진행되며 아주 조금 다가감), 밑동은 화면 아래쪽 가운데
-    const cover = Math.max(st.w / IMG_W, st.h / IMG_H);
-    st.k = cover * (1 + 0.04 * stage);
+    // 밑동은 화면 아래쪽 가운데 (포인터 반대쪽으로 아주 조금 움직이는 시차)
     st.ax = st.w * 0.5 + st.par * 10;
-    st.ay = IMG_H * BASE.y * cover;            // 화면 아래에서부터
-    U.uScale.value = st.k * st.ratio;
+    st.ay = st.h * BASE_Y;                     // 화면 아래에서부터
     U.uAnchor.value.set(st.ax * st.ratio, st.ay * st.ratio);
     U.uStage.value = stage;
     U.uFill.value = S.fill;
     modelState.hide += ((modelState.ready ? 1 : 0) - modelState.hide) * (dt ? k(2.5) : 1);
-    U.uHide1.value = modelState.hide;
+    anchorW.set(((st.ax / st.w) * 2 - 1) * DIST * TAN_H * modelCam.aspect, ((st.ay / st.h) * 2 - 1 + 0.012) * DIST * TAN_H, -DIST);
+
+    // 점 배경: 밑동에 붙여 두고, 시차만큼 아주 조금 돌림. 열린 직후 불씨 열기가 번짐
+    field.position.copy(anchorW);
+    field.rotation.y = st.par * 0.05;
+    field.updateMatrixWorld();
+    st.ignite = reduced ? 1 : Math.min(1, st.ignite + dt / 1.6);
+    DOT.uIgnite.value = st.ignite;
     SP.uCount.value = (36 + 84 * Math.min(stage, 1) + 100 * Math.max(stage - 1, 0)) * quality;
 
     // 포인터
@@ -575,6 +639,11 @@ async function init() {
     st.wind += (windT - st.wind) * k(2);
     st.par += ((st.ptrIn && !reduced ? -st.ptrX : 0) - st.par) * k(2);
     st.puff *= Math.exp(-2.0 * dt);
+
+    // 포인터 아래의 점이 솟아오름 (위치는 살짝 늦게 따라감)
+    const fp = st.ptrIn && !reduced && !mdl.dragging ? fieldPoint(st.px, st.py) : null;
+    if (fp) DOT.uPtr.value.lerp(ndcV.set(fp.x, fp.z), DOT.uPtrA.value < 0.02 ? 1 : k(10));
+    DOT.uPtrA.value += ((fp ? 1 - Math.min(1, S.fill * 3) : 0) - DOT.uPtrA.value) * k(fp ? 4 : 2);
 
     U.uWind.value = st.wind;
     U.uAttn.value = st.attn;
@@ -591,7 +660,7 @@ async function init() {
     return x > st.ax - half && x < st.ax + half && y < baseY + 20 && y > baseY - height;
   }
 
-  /* ---------- 입력: 3D 불씨를 끌어 돌리고, 누르면 빛이 지나가며 불티가 튐 ---------- */
+  /* ---------- 입력: 3D 불씨를 끌어 돌리고, 누르면 빛이 지나가며 불티가 튐. 배경을 누르면 점에 물결 ---------- */
   const hitAt = (x, y) => (parts.length ? onModel(x, y) : nearFire(x, y, S.stage));
   window.addEventListener('pointermove', (ev) => {
     const rect = sticky.getBoundingClientRect();
@@ -615,7 +684,11 @@ async function init() {
   sticky.addEventListener('pointerdown', (ev) => {
     if (S.reduced || ev.button !== 0 || ev.target.closest('a, button') || S.fill > 0.3) return;
     const rect = sticky.getBoundingClientRect();
-    if (!hitAt(ev.clientX - rect.left, ev.clientY - rect.top)) return;
+    if (!hitAt(ev.clientX - rect.left, ev.clientY - rect.top)) {   // 불씨 밖: 누른 자리의 점에서 물결이 퍼짐
+      const fp = fieldPoint(ev.clientX - rect.left, ev.clientY - rect.top);
+      if (fp) addRipple(fp.x, fp.z);
+      return;
+    }
     mdl.dragging = !!parts.length;
     mdl.downX = mdl.lastX = ev.clientX; mdl.downY = mdl.lastY = ev.clientY; mdl.downT = performance.now();
     mdl.vel = 0;
@@ -636,6 +709,7 @@ async function init() {
   function pressFire(ev, rect) {
     st.puff = 1;
     mdl.pulse = st.t;
+    addRipple(0, 0);   // 밑동에서 점 배경으로 물결이 퍼짐
     const x = ev.clientX - rect.left, y = ev.clientY - rect.top;
     SP.uBurstPos.value.set((x - st.ax) / st.h, ((st.h - y) - st.ay) / st.h);
     SP.uBurstT.value = st.t;
@@ -648,6 +722,7 @@ async function init() {
     if (S.solid < 0.999) {   // 화면이 아이보리로 덮이면 그리지 않음
       renderer.clear();
       renderer.render(scene, camera);
+      renderer.render(dotScene, modelCam);
       if (parts.length && MU.uFade.value > 0.002) renderer.render(modelScene, modelCam);
     }
     root.classList.add('is-3d');

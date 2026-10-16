@@ -66,7 +66,7 @@
 
     <div class="intro-ui">
       <span class="scroll-cue" aria-hidden="true"><span class="bar"></span>SCROLL</span>
-      <p class="intro-hint" aria-hidden="true">불꽃 가까이 마우스를 움직이거나 눌러 보세요</p>
+      <p class="intro-hint" aria-hidden="true">불씨를 끌어 돌리거나 눌러 보세요</p>
       <a class="skip-intro" href="#intro-me">포트폴리오 바로 보기</a>
     </div>
   </div>
@@ -130,7 +130,7 @@
     st.setProperty('--t3', smooth(0.88, 0.98, p).toFixed(4));
     root.classList.toggle('is-light', S.solid > 0.5 || r.bottom < 80);
     // 모델이 다 사라진 뒤에는 숨겨서 임베드가 렌더링을 멈추게 함 (GPU 절약)
-    track.classList.toggle('model-off', toGrow > 0.75);
+    track.classList.toggle('model-off', S.fill > 0.6);
   }
   function queue() { if (!queued) { queued = true; requestAnimationFrame(update); } }
 
@@ -248,20 +248,23 @@ async function init() {
       return max(c, a * (1.0 - s));
     }
 
-    // 이미지 1: 3D 모델이 준비되면 숯불만 남기고 그 위 불꽃은 지움
+    // 3D 불씨가 주인공일 때: 사진 속 불꽃은 배경 분위기로 낮추고 숯불 바닥은 그대로 둠
+    float flameZone(vec2 uv){ return smoothstep(${BASE.y} + 0.03, ${BASE.y} + 0.085, uv.y) * uHide1; }
     vec3 img1(vec2 uv){
-      vec3 c = texture2D(uT1, uv).rgb;
-      float above = smoothstep(${BASE.y} + 0.03, ${BASE.y} + 0.085, uv.y);
-      return mix(c, vec3(0.004, 0.02, 0.078), above * uHide1);
+      return mix(texture2D(uT1, uv).rgb, vec3(0.004, 0.02, 0.078), flameZone(uv));   // 작은 불꽃 자리는 3D 불씨가 대신함
     }
+    // 가운데(3D 불씨 자리)는 사진 불꽃을 지우고, 양옆 불길만 배경으로 은은하게 남김
+    float center(vec2 uv){ return 1.0 - smoothstep(0.1, 0.27, abs(uv.x - 0.5)); }
+    vec3 img2(vec2 uv){ return texture2D(uT2, uv).rgb * mix(1.0, mix(0.4, 0.0, center(uv)), flameZone(uv)); }
+    vec3 img3(vec2 uv){ return texture2D(uT3, uv).rgb * mix(1.0, mix(0.5, 0.06, center(uv)), flameZone(uv)); }
 
     // 아직 등장하지 않았거나 다 지나간 장면은 읽지 않음 (GPU 절약)
     vec3 scene(vec2 uv){
       if (uStage <= 0.001) return img1(uv);
-      if (uStage >= 1.999) return texture2D(uT3, uv).rgb;
-      if (uStage < 1.0) return blendStage(img1(uv), texture2D(uT2, uv).rgb, uStage, uv);
-      if (uStage == 1.0) return texture2D(uT2, uv).rgb;
-      return blendStage(texture2D(uT2, uv).rgb, texture2D(uT3, uv).rgb, uStage - 1.0, uv);
+      if (uStage >= 1.999) return img3(uv);
+      if (uStage < 1.0) return blendStage(img1(uv), img2(uv), uStage, uv);
+      if (uStage == 1.0) return img2(uv);
+      return blendStage(img2(uv), img3(uv), uStage - 1.0, uv);
     }
 
     void main(){

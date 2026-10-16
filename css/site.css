@@ -158,16 +158,17 @@ a { color: inherit; }
 .stage-img.s3 { opacity: var(--w3, 0); }
 .is-3d .stage-img { opacity: 0; }
 
-/* 첫 장면의 3D 불씨 모델: 숯불 위에 세우고, 스크롤하면 커지며 사라짐 */
+/* 표지의 주인공: 3D 불씨 모델. 숯불 위에 세우고, 스크롤할수록 큰 불꽃으로 커짐.
+   끌어 돌리기·누르기는 표지 내내 동작, 마지막에 타들어 가는 전환과 함께 사라짐 */
 .ember-model {
   position: absolute;
   left: 50%;
   /* 이미지 속 숯불 높이(이미지 높이의 8%)에 모델 밑동을 맞춤 */
-  bottom: calc(max(4.5vw, 8vh) - 3.6vh);
-  height: 46vh;
+  bottom: calc(max(4.5vw, 8vh) - 4.2vh);
+  height: 56vh;
   aspect-ratio: 729 / 686;
-  transform: translateX(-50%) scale(calc(1 + var(--w2, 0) * 0.5));
-  transform-origin: 50% 88%;
+  transform: translateX(-50%) scale(calc(1 + var(--w2, 0) * 0.45 + var(--w3, 0) * 0.25));
+  transform-origin: 50% 90%;
   opacity: 0;
   pointer-events: none;
   mix-blend-mode: screen;   /* 모델 빛 번짐의 회색 바탕을 어두운 배경에 녹임 */
@@ -177,7 +178,7 @@ a { color: inherit; }
   transition: opacity 900ms ease;
 }
 .ember-model model-embed { display: block; width: 100%; height: 100%; }
-.model-ready .ember-model { opacity: calc(1 - var(--w2, 0) * 1.4); pointer-events: auto; }
+.model-ready .ember-model { opacity: calc(1 - var(--fill, 0) * 1.8); pointer-events: auto; }
 .model-off .ember-model { display: none; }
 
 /* 대체 화면용 마지막 전환: 불 위치에서 빛이 번져 화면을 채움 → 아이보리 */

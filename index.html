@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>김시언 · 기획 포트폴리오</title>
+<meta name="description" content="호기심으로 가능성을 발견하고 긍정적인 소통으로 함께 시작할 힘을 만드는 기획자, 김시언의 포트폴리오.">
+<!-- Pretendard (SIL OFL 1.1). 배포 전 라이선스·호스팅 방식 확인 -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/site.css">
+<link rel="preload" as="image" href="assets/fire/fire-1-small.webp">
+<!-- 3D 불씨 모델 임베드 (thrine.app, 외부 스크립트) -->
+<script type="module" src="https://thrine.app/embed/v1.js"></script>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.min.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#intro-me">포트폴리오 본문으로 건너뛰기</a>
+
+<header class="site-header">
+  <a class="brand" href="#cover"><img src="assets/vector/ember-mark.svg" alt="">김시언</a>
+  <nav class="nav" aria-label="주요 메뉴">
+    <a href="#intro-me">소개</a>
+    <a href="#projects">프로젝트</a>
+    <a href="#contact">연락처</a>
+  </nav>
+</header>
+
+<!-- 표지: 스크롤에 따라 작은 불꽃 → 커지는 불 → 번지는 불 → 밝은 포트폴리오.
+     불 이미지는 장식 레이어이고 모든 문구는 HTML 텍스트입니다. -->
+<section class="intro" id="cover" aria-labelledby="cover-title">
+  <div class="intro-sticky">
+    <div class="intro-stage" aria-hidden="true">
+      <!-- 대체 화면(WebGL 실패·로딩 전): 같은 이미지를 CSS로 전환 -->
+      <img class="stage-img s1" src="assets/fire/fire-1-small.webp" alt="">
+      <img class="stage-img s2" src="assets/fire/fire-2-grow.webp" alt="">
+      <img class="stage-img s3" src="assets/fire/fire-3-spread.webp" alt="">
+      <canvas id="ember-canvas"></canvas>
+      <!-- 첫 장면의 불씨: 3D 모델. 준비되기 전·실패 시에는 이미지 불꽃이 그대로 보임.
+           restrict="scroll": 휠로 모델이 확대되지 않게 해 표지 스크롤과 충돌 방지 -->
+      <div class="ember-model">
+        <model-embed project="e_7f695ff290a4c954aeaa" restrict="scroll" alt=""></model-embed>
+      </div>
+    </div>
+    <div class="intro-fill" aria-hidden="true"></div>
+
+    <div class="intro-copy">
+      <p class="eyebrow">PLANNING / MARKETING / CONTENT</p>
+      <!-- 표지 문구: 후보안(사용자 미확정) -->
+      <h1 id="cover-title">
+        <span class="line l1">작은 호기심을,</span>
+        <span class="line l2">사람에게 닿는 기획으로.</span>
+      </h1>
+      <div class="intro-end" aria-hidden="true">
+        <p class="label">PORTFOLIO</p>
+        <p class="name">김시언 · 기획 · 마케팅 · 콘텐츠</p>
+      </div>
+    </div>
+
+    <div class="intro-ui">
+      <span class="scroll-cue" aria-hidden="true"><span class="bar"></span>SCROLL</span>
+      <p class="intro-hint" aria-hidden="true">불꽃 가까이 마우스를 움직이거나 눌러 보세요</p>
+      <a class="skip-intro" href="#intro-me">포트폴리오 바로 보기</a>
+    </div>
+  </div>
+</section>
+
+<!-- 포트폴리오 (밝은 영역): 사용자 자료를 받기 전 입력 자리 -->
+<main class="portfolio">
+  <section class="section" id="intro-me" aria-labelledby="intro-title">
+    <p class="section-label">01 · ABOUT</p>
+    <h2 id="intro-title">자기소개</h2>
+    <div class="placeholder"><div><strong>입력 자리</strong>사용자가 직접 제작한 자기소개 디자인이 들어갈 자리입니다.</div></div>
+  </section>
+
+  <section class="section" id="projects" aria-labelledby="projects-title">
+    <p class="section-label">02 · PROJECTS</p>
+    <h2 id="projects-title">프로젝트</h2>
+    <div class="placeholder"><div><strong>입력 자리</strong>프로젝트 이미지와 정리 자료를 받은 뒤 목차를 구성합니다.</div></div>
+  </section>
+
+  <section class="section" id="contact" aria-labelledby="contact-title">
+    <p class="section-label">03 · CONTACT</p>
+    <h2 id="contact-title">연락처</h2>
+    <div class="placeholder"><div><strong>입력 자리</strong>연락처는 사용자가 제공한 정보로만 채웁니다.</div></div>
+  </section>
+</main>
+
+<footer class="site-footer">불씨 디자인 키트 v0.1 기반 · 표지 시안</footer>
+
+<!-- 스크롤 진행 → CSS 변수. WebGL이 실패해도 문구·이미지 전환·빛 전환은 동작 -->
+<script>
+(function () {
+  var root = document.documentElement;
+  var track = document.getElementById('cover');
+  var mq = matchMedia('(prefers-reduced-motion: reduce)');
+  var S = window.emberScroll = { p: 0, stage: 0, fill: 0, solid: 0, reduced: mq.matches };
+  var queued = false;
+
+  function clamp(v, a, b) { return Math.min(b, Math.max(a, v)); }
+  function smooth(a, b, x) { var t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); }
+
+  function update() {
+    queued = false;
+    S.reduced = mq.matches;
+    var r = track.getBoundingClientRect();
+    var total = Math.max(1, track.offsetHeight - window.innerHeight);
+    var p = S.reduced ? 0 : clamp(-r.top / total, 0, 1);
+    // 장면: 작은 불꽃(0) → 커지는 불(1) → 번지는 불(2) → 빛이 화면을 채움
+    var toGrow = smooth(0.14, 0.4, p), toSpread = smooth(0.46, 0.7, p);
+    S.p = p;
+    S.stage = toGrow + toSpread;
+    S.fill  = S.reduced ? 0 : smooth(0.72, 0.95, p);
+    S.solid = S.reduced ? 0 : smooth(0.9, 0.985, p);
+    var st = track.style;
+    st.setProperty('--p', p.toFixed(4));
+    st.setProperty('--w2', toGrow.toFixed(4));
+    st.setProperty('--w3', toSpread.toFixed(4));
+    st.setProperty('--fill', S.fill.toFixed(4));
+    st.setProperty('--solid', S.solid.toFixed(4));
+    st.setProperty('--t1', (1 - smooth(0.16, 0.26, p)).toFixed(4));
+    st.setProperty('--t2', (smooth(0.28, 0.38, p) * (1 - smooth(0.6, 0.68, p))).toFixed(4));
+    st.setProperty('--t3', smooth(0.88, 0.98, p).toFixed(4));
+    root.classList.toggle('is-light', S.solid > 0.5 || r.bottom < 80);
+    // 모델이 다 사라진 뒤에는 숨겨서 임베드가 렌더링을 멈추게 함 (GPU 절약)
+    track.classList.toggle('model-off', toGrow > 0.75);
+  }
+  function queue() { if (!queued) { queued = true; requestAnimationFrame(update); } }
+
+  window.addEventListener('scroll', queue, { passive: true });
+  window.addEventListener('resize', queue);
+  mq.addEventListener('change', queue);
+  update();
+
+  // ?scene=0.45 : 표지의 특정 진행 지점으로 열기 (발표 자료 캡처·공유용)
+  var scene = /[?&]scene=([0-9.]+)/.exec(location.search);
+  if (scene) {
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    window.addEventListener('load', function () {
+      root.style.scrollBehavior = 'auto';
+      window.scrollTo(0, Math.max(1, track.offsetHeight - window.innerHeight) * clamp(parseFloat(scene[1]), 0, 1));
+      update();
+    });
+  }
+})();
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+
+/* ============================================================
+   불씨 표지 — 사용자 제공 불 이미지 3장(작은 불꽃 → 커지는 불 → 번지는 불)
+   - 아래에서부터 타오르듯 바뀌는 전환(앞 장면의 불은 남아 있다가 사라짐)
+   - 아지랑이처럼 일렁이는 열기 왜곡, 불꽃의 미세한 깜빡임, 떠오르는 불티
+   - 포인터: 미세한 시차, 가까이 가면 불꽃이 그쪽으로 기울고, 누르면 한 번 크게 일렁임
+   - 실패 시 같은 이미지의 CSS 전환(대체 화면)이 그대로 보임
+   ============================================================ */
+
+THREE.ColorManagement.enabled = false;   // 이미지 색을 그대로 출력
+
+const root = document.documentElement;
+const track = document.getElementById('cover');
+const sticky = track.querySelector('.intro-sticky');
+const canvas = document.getElementById('ember-canvas');
+const S = window.emberScroll;
+const IMG_W = 1672, IMG_H = 941;
+const BASE = { x: 0.5, y: 0.08 };   // 이미지 안 불 밑동 위치(아래에서부터 비율)
+const SOURCES = ['assets/fire/fire-1-small.webp', 'assets/fire/fire-2-grow.webp', 'assets/fire/fire-3-spread.webp'];
+
+// 3D 불씨 모델: 준비되면 이미지 1의 불꽃을 지우고 모델로 대신함
+const model = document.querySelector('.ember-model model-embed');
+const modelState = { ready: false, hide: 0 };
+if (model) {
+  // ready 이벤트는 첫 화면이 그려지기 전에 오므로, 로딩 표시가 사라질 때(실제로 그려짐)까지 기다림
+  const setReady = (v) => { modelState.ready = v; root.classList.toggle('model-ready', v); };
+  const waitDrawn = () => {
+    if (!model.stage) return;
+    if (model.loader == null) setReady(true);
+    else setTimeout(waitDrawn, 150);
+  };
+  model.addEventListener('model-embed:ready', waitDrawn);
+  model.addEventListener('model-embed:error', () => setReady(false));
+  model.addEventListener('model-embed:contextlost', () => setReady(false));
+  waitDrawn();
+}
+
+init();
+
+async function init() {
+  if (!hasWebGL()) return;
+  let renderer;
+  try {
+    renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
+  } catch (e) { return; }
+  renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
+  canvas.addEventListener('webglcontextlost', (e) => { e.preventDefault(); root.classList.remove('is-3d'); stop(); });
+
+  let textures;
+  try {
+    const loader = new THREE.TextureLoader();
+    textures = await Promise.all(SOURCES.map((src) => loader.loadAsync(src)));
+  } catch (e) { return; }   // 이미지를 못 불러오면 CSS 대체 화면 유지
+  textures.forEach((t) => {
+    t.colorSpace = THREE.NoColorSpace;
+    t.minFilter = THREE.LinearFilter;
+    t.generateMipmaps = false;
+    t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping;
+  });
+
+  const U = {
+    uT1: { value: textures[0] }, uT2: { value: textures[1] }, uT3: { value: textures[2] },
+    uRes: { value: new THREE.Vector2(1, 1) }, uImg: { value: new THREE.Vector2(IMG_W, IMG_H) },
+    uAnchor: { value: new THREE.Vector2() }, uScale: { value: 1 },
+    uTime: { value: 0 }, uStage: { value: 0 }, uFill: { value: 0 },
+    uAttn: { value: 0 }, uPuff: { value: 0 }, uWind: { value: 0 }, uHide1: { value: 0 }
+  };
+
+  const FRAG = /* glsl */`
+    uniform sampler2D uT1, uT2, uT3;
+    uniform vec2 uRes, uImg, uAnchor;
+    uniform float uScale, uTime, uStage, uFill, uAttn, uPuff, uWind, uHide1;
+
+    float hash(vec2 p){ p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
+    float noise(vec2 p){
+      vec2 i = floor(p), f = fract(p);
+      vec2 u = f * f * (3.0 - 2.0 * f);
+      return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), u.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x), u.y);
+    }
+    float fbm(vec2 p){
+      float v = 0.0, a = 0.5;
+      for (int i = 0; i < 4; i++) { v += a * noise(p); p = p * 2.03 + 17.1; a *= 0.5; }
+      return v;
+    }
+
+    // 두 장면 사이: 아래쪽(밑동)부터 바뀌고, 앞 장면의 불은 잠시 남음
+    vec3 blendStage(vec3 a, vec3 b, float s, vec2 uv){
+      float n = fbm(uv * vec2(5.0, 3.0) + vec2(0.0, -uTime * 0.25)) * 0.65 + (1.0 - uv.y) * 0.35;
+      float th = s * 1.35 - 0.2;
+      float m = smoothstep(th + 0.08, th - 0.08, 1.0 - n);
+      vec3 c = mix(a, b, m);
+      return max(c, a * (1.0 - s));
+    }
+
+    // 이미지 1: 3D 모델이 준비되면 숯불만 남기고 그 위 불꽃은 지움
+    vec3 img1(vec2 uv){
+      vec3 c = texture2D(uT1, uv).rgb;
+      float above = smoothstep(${BASE.y} + 0.03, ${BASE.y} + 0.085, uv.y);
+      return mix(c, vec3(0.004, 0.02, 0.078), above * uHide1);
+    }
+
+    // 아직 등장하지 않았거나 다 지나간 장면은 읽지 않음 (GPU 절약)
+    vec3 scene(vec2 uv){
+      if (uStage <= 0.001) return img1(uv);
+      if (uStage >= 1.999) return texture2D(uT3, uv).rgb;
+      if (uStage < 1.0) return blendStage(img1(uv), texture2D(uT2, uv).rgb, uStage, uv);
+      if (uStage == 1.0) return texture2D(uT2, uv).rgb;
+      return blendStage(texture2D(uT2, uv).rgb, texture2D(uT3, uv).rgb, uStage - 1.0, uv);
+    }
+
+    void main(){
+      vec2 frag = gl_FragCoord.xy;
+      // 화면 → 이미지 좌표 (불 밑동을 기준으로 맞추고 화면을 덮도록 확대)
+      vec2 uv = ((frag - uAnchor) / uScale + uImg * vec2(${BASE.x}, ${BASE.y})) / uImg;
+
+      // 열기 왜곡: 밝은 곳(불)에서만, 위로 흐르며 일렁임
+      float lum = dot(scene(uv - vec2(0.0, 0.015)), vec3(0.3, 0.55, 0.15));
+      float hot = smoothstep(0.04, 0.4, lum);
+      float above = clamp((uv.y - ${BASE.y}) * 3.0, 0.0, 1.0);
+      vec2 n = vec2(noise(uv * vec2(16.0, 8.0) + vec2(0.0, -uTime * 2.4)),
+                    noise(uv * vec2(16.0, 8.0) + vec2(4.1, -uTime * 2.4))) - 0.5;
+      float sway = (noise(vec2(uv.y * 3.0 - uTime * 0.7, uTime * 0.25)) - 0.5);
+      vec2 disp = n * vec2(0.0045, 0.003) * (1.0 + uPuff * 1.5);
+      disp.x += sway * 0.008 * above;
+      disp.x -= uWind * above * above * 0.03;
+      vec3 col = scene(uv + disp * hot);
+
+      // 깜빡임: 전체 + 불꽃 안쪽 일렁임
+      float flick = 1.0 + 0.05 * (noise(vec2(uTime * 3.0, 0.0)) - 0.5) + 0.12 * (noise(uv * 6.0 - vec2(0.0, uTime * 1.5)) - 0.5) * hot;
+      col *= flick * (1.0 + 0.12 * uAttn + 0.35 * uPuff);
+
+      // 마지막: 종이가 타들어 가듯 화면이 열리며 아이보리 포트폴리오가 드러남
+      if (uFill > 0.001) {
+        vec2 q = (frag - (uAnchor + vec2(0.0, uRes.y * 0.25))) / uRes.y;   // 불 위치에서 시작
+        float d = length(q * vec2(0.9, 1.0));
+        float b = fbm(q * 3.2 + vec2(0.0, uTime * 0.04)) * 0.6
+                + fbm(q * 9.0 - vec2(uTime * 0.08, 0.0)) * 0.12
+                + clamp(d / 1.15, 0.0, 1.0) * 0.4;
+        float e = uFill * 1.4 - 0.22 - b;                   // 0보다 크면 이미 타서 열린 곳
+        vec3 paper = vec3(0.965, 0.949, 0.922);              // #F6F2EB
+        float scorch = smoothstep(-0.08, 0.0, e) * (1.0 - step(0.0, e));
+        col = mix(col, col * 0.2 + vec3(0.07, 0.03, 0.012), scorch);   // 타기 직전 그을림
+        col = mix(col, paper, smoothstep(0.004, 0.022, e));
+        float rim = exp(-pow(e / 0.011, 2.0));                          // 불씨 테두리
+        float flick = 0.7 + 0.6 * noise(q * 46.0 + vec2(0.0, uTime * 3.0));
+        vec3 ember = mix(vec3(1.25, 0.38, 0.06), vec3(1.6, 1.1, 0.55), smoothstep(-0.008, 0.01, e));
+        col += ember * rim * flick;
+      }
+      col += (hash(frag + fract(uTime)) - 0.5) / 255.0;
+      gl_FragColor = vec4(max(col, 0.0), 1.0);
+    }
+  `;
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+  scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({
+    uniforms: U, depthTest: false, depthWrite: false,
+    vertexShader: `void main(){ gl_Position = vec4(position.xy, 0.0, 1.0); }`,
+    fragmentShader: FRAG
+  })));
+
+  /* ---------- 불티: 점(GL_POINTS)으로 그려 화면 전체가 아닌 불티 픽셀만 계산 ----------
+     위치는 시간으로 정점 셰이더에서 계산 → 매 프레임 CPU 갱신 없음 */
+  const SPARKS = 220, BURST = 48;
+  const SP = {
+    uTime: U.uTime, uStage: U.uStage, uFill: U.uFill, uWind: U.uWind, uRes: U.uRes, uAnchor: U.uAnchor,
+    uUnit: { value: 1 }, uPx: { value: 1 }, uCount: { value: 60 },
+    uBurstT: { value: -10 }, uBurstPos: { value: new THREE.Vector2() }, uAspect: { value: 1.6 }
+  };
+  {
+    const n = SPARKS + BURST;
+    const pos = new Float32Array(n * 3), seed = new Float32Array(n * 4), idx = new Float32Array(n), burst = new Float32Array(n);
+    for (let i = 0; i < n; i++) {
+      for (let j = 0; j < 4; j++) seed[i * 4 + j] = Math.random();
+      idx[i] = i;
+      burst[i] = i >= SPARKS ? 1 : 0;
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    g.setAttribute('aSeed', new THREE.BufferAttribute(seed, 4));
+    g.setAttribute('aIdx', new THREE.BufferAttribute(idx, 1));
+    g.setAttribute('aBurst', new THREE.BufferAttribute(burst, 1));
+    const sparks = new THREE.Points(g, new THREE.ShaderMaterial({
+      uniforms: SP, transparent: true, depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending,
+      vertexShader: /* glsl */`
+        uniform float uTime, uStage, uFill, uWind, uUnit, uPx, uCount, uBurstT, uAspect;
+        uniform vec2 uRes, uAnchor, uBurstPos;
+        attribute vec4 aSeed; attribute float aIdx; attribute float aBurst;
+        varying float vHeat; varying float vA;
+        void main(){
+          float h1 = aSeed.x, h2 = aSeed.y, h3 = aSeed.z, h4 = aSeed.w;
+          float gr = clamp(uStage, 0.0, 1.0), sp = clamp(uStage - 1.0, 0.0, 1.0);
+          vec2 pos; float life; float alive;
+          if (aBurst < 0.5) {
+            // 계속 피어오르는 불티: 장면이 커질수록 많이, 넓게, 높이
+            alive = step(aIdx, uCount);
+            life = fract(uTime * (0.07 + 0.09 * h2 + 0.04 * gr) + h1);
+            float width = mix(0.03, 0.09, gr) + sp * 0.42 * uAspect;
+            float x0 = (h3 - 0.5) * 2.0 * width;
+            float y0 = mix(0.06, 0.16, gr) * h4;
+            float rise = life * (0.32 + 0.34 * h2 + 0.22 * gr + 0.18 * sp);
+            float drift = sin(uTime * (0.6 + h1) + h3 * 20.0) * 0.03 * life + sin(life * 9.0 + h4 * 6.0) * 0.012 * life;
+            pos = vec2(x0 + drift + uWind * life * 0.1, y0 + rise);
+          } else {
+            // 누르면 튀는 불티: 위쪽 부채꼴로 튀었다가 살짝 떨어짐
+            float dur = 0.7 + 0.7 * h2;
+            float tt = uTime - uBurstT;
+            life = tt / dur;
+            alive = step(0.0, life) * step(life, 1.0);
+            float ang = mix(0.3, 2.84, h3);
+            float v = 0.12 + 0.32 * h1;
+            pos = uBurstPos + vec2(cos(ang), sin(ang)) * v * tt + vec2(0.0, -0.16 * tt * tt);
+          }
+          float fade = smoothstep(0.0, 0.06, life) * (1.0 - smoothstep(0.5, 1.0, life));
+          vA = fade * alive * (1.0 - smoothstep(0.3, 0.62, uFill));   // 타들어 가는 초반까지 날리다, 밝은 바탕이 넓어지기 전에 사라짐
+          vHeat = 1.0 - life;
+          vec2 px = uAnchor + pos * uUnit;
+          gl_Position = vec4(px / uRes * 2.0 - 1.0, 0.0, 1.0);
+          float size = (2.2 + 3.2 * h4) * (1.0 - 0.4 * life) * uPx * mix(1.0, 1.3, aBurst);
+          gl_PointSize = vA > 0.002 ? size * 4.0 : 0.0;   // 보이지 않는 불티는 그리지 않음
+        }`,
+      fragmentShader: /* glsl */`
+        varying float vHeat; varying float vA;
+        void main(){
+          vec2 d = gl_PointCoord - 0.5;
+          float core = exp(-(d.x * d.x * 110.0 + d.y * d.y * 14.0));   // 위아래로 늘어진 불티
+          float glow = exp(-dot(d, d) * 22.0) * 0.22;                     // 은은한 빛 번짐
+          vec3 col = mix(vec3(0.95, 0.26, 0.05), vec3(1.5, 1.0, 0.6), vHeat * vHeat);
+          gl_FragColor = vec4(col, min(1.0, core + glow) * vA);
+        }`
+    }));
+    sparks.frustumCulled = false;
+    sparks.renderOrder = 1;
+    scene.add(sparks);
+  }
+
+  /* ---------- 상태 ---------- */
+  const st = { t: 3.0, w: 1, h: 1, ratio: 1, px: -9999, py: -9999, ptrX: 0, ptrIn: false,
+               par: 0, wind: 0, attn: 0, puff: 0, k: 1, ax: 0, ay: 0 };
+
+  // 이미지 원본이 1672px이라 그 이상으로 그려도 화질 이득이 없음 → 해상도 상한
+  let quality = 1;
+  function layout() {
+    st.w = sticky.clientWidth; st.h = sticky.clientHeight;
+    st.ratio = Math.min(window.devicePixelRatio || 1, 1.25) * quality;
+    renderer.setPixelRatio(st.ratio);
+    renderer.setSize(st.w, st.h, false);
+    U.uRes.value.set(st.w * st.ratio, st.h * st.ratio);
+    SP.uUnit.value = st.h * st.ratio;
+    SP.uPx.value = st.ratio;
+    SP.uAspect.value = st.w / st.h;
+  }
+
+  function update(dt) {
+    const k = (rate) => 1 - Math.exp(-rate * dt);
+    const reduced = S.reduced, stage = S.stage;
+
+    // 화면을 덮는 배율(+ 장면이 진행되며 아주 조금 다가감), 밑동은 화면 아래쪽 가운데
+    const cover = Math.max(st.w / IMG_W, st.h / IMG_H);
+    st.k = cover * (1 + 0.04 * stage);
+    st.ax = st.w * 0.5 + st.par * 10;
+    st.ay = IMG_H * BASE.y * cover;            // 화면 아래에서부터
+    U.uScale.value = st.k * st.ratio;
+    U.uAnchor.value.set(st.ax * st.ratio, st.ay * st.ratio);
+    U.uStage.value = stage;
+    U.uFill.value = S.fill;
+    modelState.hide += ((modelState.ready ? 1 : 0) - modelState.hide) * (dt ? k(2.5) : 1);
+    U.uHide1.value = modelState.hide;
+    SP.uCount.value = (36 + 84 * Math.min(stage, 1) + 100 * Math.max(stage - 1, 0)) * quality;
+
+    // 포인터
+    const near = nearFire(st.px, st.py, stage);
+    st.attn += ((near && !reduced ? 1 : 0) - st.attn) * k(3);
+    const windT = near && !reduced ? clamp((st.px - st.ax) / (st.w * 0.15), -1, 1) * 0.35 : 0;
+    st.wind += (windT - st.wind) * k(2);
+    st.par += ((st.ptrIn && !reduced ? -st.ptrX : 0) - st.par) * k(2);
+    st.puff *= Math.exp(-2.0 * dt);
+
+    U.uWind.value = st.wind;
+    U.uAttn.value = st.attn;
+    U.uPuff.value = st.puff;
+    U.uTime.value = st.t;
+  }
+
+  // 불 근처인지: 밑동 위쪽, 장면이 커질수록 넓게
+  function nearFire(x, y, stage) {
+    const baseY = st.h - st.ay;
+    const height = st.h * (0.42 + 0.12 * Math.min(stage, 1));
+    const half = st.w * (0.08 + 0.05 * Math.min(stage, 1) + 0.3 * Math.max(stage - 1, 0));
+    return x > st.ax - half && x < st.ax + half && y < baseY + 20 && y > baseY - height;
+  }
+
+  /* ---------- 입력 ---------- */
+  window.addEventListener('pointermove', (ev) => {
+    const rect = sticky.getBoundingClientRect();
+    const x = ev.clientX - rect.left, y = ev.clientY - rect.top;
+    st.ptrIn = y >= 0 && y <= rect.height;
+    st.px = x; st.py = y;
+    st.ptrX = clamp(x / rect.width * 2 - 1, -1, 1);
+    if (!S.reduced && ev.target.closest && !ev.target.closest('a, button')) {
+      sticky.style.cursor = nearFire(x, y, S.stage) && S.fill < 0.3 ? 'pointer' : '';
+    }
+  }, { passive: true });
+  sticky.addEventListener('pointerleave', () => { st.ptrIn = false; st.px = st.py = -9999; });
+
+  sticky.addEventListener('pointerdown', (ev) => {
+    if (S.reduced || ev.button !== 0 || ev.target.closest('a, button') || S.fill > 0.3) return;
+    const rect = sticky.getBoundingClientRect();
+    if (!nearFire(ev.clientX - rect.left, ev.clientY - rect.top, S.stage)) return;
+    st.puff = 1;
+    // 누른 자리에서 불티가 튐 (밑동 기준, 화면 높이 단위)
+    const x = ev.clientX - rect.left, y = ev.clientY - rect.top;
+    SP.uBurstPos.value.set((x - st.ax) / st.h, ((st.h - y) - st.ay) / st.h);
+    SP.uBurstT.value = st.t;
+    root.classList.add('has-played');
+  });
+
+  /* ---------- 루프 ---------- */
+  let raf = 0, last = 0, visible = true;
+  const draw = () => {
+    if (S.solid < 0.999) renderer.render(scene, camera);   // 화면이 아이보리로 덮이면 그리지 않음
+    root.classList.add('is-3d');
+  };
+  const frame = (now) => {
+    raf = requestAnimationFrame(frame);
+    const dt = Math.min((now - (last || now)) / 1000, 0.05);
+    last = now;
+    st.t += dt;
+    adapt(dt);
+    update(dt);
+    draw();
+  };
+  // 느린 기기: 프레임이 계속 늦으면 해상도와 불티 수를 단계적으로 줄임
+  let slow = 0;
+  const adapt = (dt) => {
+    if (dt > 0.2) return;                         // 탭 전환 등으로 생긴 큰 공백은 무시
+    slow = dt > 0.024 ? slow + 1 : Math.max(0, slow - 2);
+    if (slow > 90 && quality > 0.6) { quality = Math.round((quality - 0.2) * 10) / 10; slow = 0; layout(); }
+  };
+  const start = () => { if (!raf && !S.reduced && visible) { last = 0; raf = requestAnimationFrame(frame); } };
+  function stop() { cancelAnimationFrame(raf); raf = 0; }
+  const renderStill = () => { update(0); draw(); };
+
+  const reduceMQ = matchMedia('(prefers-reduced-motion: reduce)');
+  const applyMotionPref = () => {
+    S.reduced = reduceMQ.matches;
+    if (S.reduced) { stop(); st.puff = 0; renderStill(); }
+    else start();
+  };
+  reduceMQ.addEventListener('change', applyMotionPref);
+
+  new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; visible ? start() : stop(); }).observe(track);
+  window.addEventListener('resize', () => { layout(); if (S.reduced) renderStill(); });
+
+  layout();
+  renderStill();
+  applyMotionPref();
+}
+
+/* ---------- 도우미 ---------- */
+function hasWebGL() {
+  try { const c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); }
+  catch (e) { return false; }
+}
+function clamp(v, a, b) { return Math.min(b, Math.max(a, v)); }
+</script>
+</body>
+</html>

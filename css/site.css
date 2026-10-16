@@ -1,0 +1,404 @@
+/* 불씨 포트폴리오 — 사이트 공통 + 표지
+   - 표지: 어두운 화면의 작은 불씨 → 스크롤하며 불이 번짐 → 빛이 화면을 채움
+   - 포트폴리오: 밝은 아이보리. 컬러·서체는 tokens.css 를 따름 */
+
+:root {
+  --night: #010514;          /* 표지 배경: 불 이미지 배경과 같은 짙은 남색 */
+  --night-text: #F3EDE4;
+  --night-muted: rgba(243, 237, 228, .62);
+  --muted: #675D53;
+  --line: rgba(56, 51, 46, .16);
+  --gutter: 64px;
+  --max: 1280px;
+  --hover: 180ms;
+  --transition: 650ms;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 17px;
+  line-height: 1.7;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; }
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+.skip {
+  position: absolute;
+  left: 16px;
+  top: -64px;
+  z-index: 100;
+  padding: 10px 16px;
+  background: var(--bg);
+  color: var(--text);
+  text-decoration: none;
+  border-radius: 999px;
+  font-size: 14px;
+}
+.skip:focus { top: 16px; }
+
+/* ---------- 헤더: 표지에서는 밝은 글자, 포트폴리오에서는 어두운 글자 ---------- */
+.site-header {
+  --h-fg: var(--night-text);
+  --h-muted: var(--night-muted);
+  --h-bg: rgba(11, 14, 22, 0);
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px var(--gutter);
+  color: var(--h-fg);
+  background: linear-gradient(to bottom, var(--h-bg), transparent);
+  pointer-events: none;
+  transition: color var(--transition) ease;
+}
+.is-light .site-header {
+  --h-fg: var(--text);
+  --h-muted: var(--muted);
+  --h-bg: rgba(246, 242, 235, .92);
+}
+.site-header a { pointer-events: auto; }
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: .02em;
+  text-decoration: none;
+}
+.brand img { width: 18px; height: 18px; }
+
+.nav { display: flex; gap: 32px; }
+.nav a {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 14px;
+  letter-spacing: .04em;
+  text-decoration: none;
+  color: var(--h-muted);
+  transition: color var(--hover) ease;
+}
+.nav a::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 10px;
+  height: 1px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--hover) ease;
+}
+.nav a:hover { color: var(--h-fg); }
+.nav a:hover::after { transform: scaleX(1); }
+
+/* ---------- 표지: 스크롤 길이만큼 화면을 고정해 장면을 진행 ---------- */
+.intro {
+  position: relative;
+  height: 380vh;
+  background: var(--night);
+}
+
+.intro-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  min-height: 600px;
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--night);
+  color: var(--night-text);
+  touch-action: pan-y;
+}
+
+.intro-stage { position: absolute; inset: 0; z-index: 0; }
+
+.intro-stage canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  opacity: 0;
+  transition: opacity 1200ms ease;
+}
+.is-3d .intro-stage canvas { opacity: 1; }
+
+/* 대체 화면(WebGL 실패·로딩 전): 같은 불 이미지를 스크롤에 따라 겹쳐 전환 */
+.stage-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 100%;
+  transition: opacity var(--transition) ease;
+}
+.stage-img.s2 { opacity: var(--w2, 0); }
+.stage-img.s3 { opacity: var(--w3, 0); }
+.is-3d .stage-img { opacity: 0; }
+
+/* 첫 장면의 3D 불씨 모델: 숯불 위에 세우고, 스크롤하면 커지며 사라짐 */
+.ember-model {
+  position: absolute;
+  left: 50%;
+  /* 이미지 속 숯불 높이(이미지 높이의 8%)에 모델 밑동을 맞춤 */
+  bottom: calc(max(4.5vw, 8vh) - 3.6vh);
+  height: 46vh;
+  aspect-ratio: 729 / 686;
+  transform: translateX(-50%) scale(calc(1 + var(--w2, 0) * 0.5));
+  transform-origin: 50% 88%;
+  opacity: 0;
+  pointer-events: none;
+  mix-blend-mode: screen;   /* 모델 빛 번짐의 회색 바탕을 어두운 배경에 녹임 */
+  filter: brightness(.82) contrast(1.25) saturate(1.1);   /* 회색 빛 번짐은 누르고 불빛은 유지 */
+  -webkit-mask-image: radial-gradient(closest-side at 50% 58%, #000 38%, transparent 92%);
+  mask-image: radial-gradient(closest-side at 50% 58%, #000 38%, transparent 92%);
+  transition: opacity 900ms ease;
+}
+.ember-model model-embed { display: block; width: 100%; height: 100%; }
+.model-ready .ember-model { opacity: calc(1 - var(--w2, 0) * 1.4); pointer-events: auto; }
+.model-off .ember-model { display: none; }
+
+/* 대체 화면용 마지막 전환: 불 위치에서 빛이 번져 화면을 채움 → 아이보리 */
+.intro-fill {
+  position: absolute;
+  left: 50%;
+  top: 72%;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 2;
+  width: 160vmax;
+  height: 160vmax;
+  background: radial-gradient(circle, #FFF1DF 0%, #F6F2EB 42%, rgba(246, 242, 235, 0) 70%);
+  opacity: min(1, calc(var(--fill, 0) * var(--fill, 0) * 1.8));
+  transform: translate(-50%, -50%) scale(calc(var(--fill, 0) * 2.2));
+}
+/* WebGL이 동작하면 타들어 가는 전환을 셰이더가 그리므로 빛 번짐 레이어는 숨김 */
+.is-3d .intro-fill { display: none; }
+
+.intro-sticky::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background: var(--bg);
+  opacity: var(--solid, 0);
+  pointer-events: none;
+}
+
+/* 텍스트 레이어 (HTML) */
+.intro-copy {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.eyebrow {
+  position: absolute;
+  left: var(--gutter);
+  top: 22vh;
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: .22em;
+  color: var(--night-muted);
+  opacity: var(--t1, 1);
+}
+
+.intro h1 {
+  margin: 0;
+  font-size: clamp(36px, 4.2vw, 60px);
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: -.025em;
+}
+.intro h1 .line {
+  position: absolute;
+  left: var(--gutter);
+  max-width: 560px;
+  will-change: opacity, transform;
+}
+.intro h1 .l1 {
+  top: calc(22vh + 40px);
+  opacity: var(--t1, 1);
+  transform: translateY(calc((1 - var(--t1, 1)) * -16px));
+}
+.intro h1 .l2 {
+  top: calc(22vh + 40px);
+  opacity: var(--t2, 1);
+  transform: translateY(calc((1 - var(--t2, 1)) * 16px));
+}
+
+.intro-end {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(100% - 2 * var(--gutter), 720px);
+  text-align: center;
+  color: var(--text);
+  opacity: var(--t3, 0);
+  transform: translate(-50%, calc(-50% + (1 - var(--t3, 0)) * 20px));
+}
+.intro-end .label {
+  margin: 0 0 16px;
+  font-size: 12px;
+  letter-spacing: .22em;
+  color: var(--muted);
+}
+.intro-end .name {
+  margin: 0;
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: 500;
+  letter-spacing: -.01em;
+}
+
+.intro-ui {
+  position: absolute;
+  inset: auto var(--gutter) 36px var(--gutter);
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  opacity: calc(1 - var(--fill, 0) * 1.5);
+}
+
+.scroll-cue {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 44px;
+  font-size: 12px;
+  letter-spacing: .22em;
+  color: var(--night-muted);
+}
+.scroll-cue .bar {
+  position: relative;
+  width: 72px;
+  height: 1px;
+  background: rgba(243, 237, 228, .2);
+}
+.scroll-cue .bar::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 100%;
+  background: #E9A066;
+  transform: scaleX(var(--p, 0));
+  transform-origin: left;
+}
+
+.skip-intro {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 20px;
+  border: 1px solid rgba(243, 237, 228, .28);
+  border-radius: 999px;
+  font-size: 14px;
+  text-decoration: none;
+  color: var(--night-text);
+  transition: border-color var(--hover) ease, background-color var(--hover) ease;
+}
+.skip-intro:hover { border-color: #E9A066; background: rgba(243, 237, 228, .06); }
+
+.intro-hint {
+  margin: 0 auto 0 0;
+  padding-left: 32px;
+  font-size: 13px;
+  color: var(--night-muted);
+  opacity: calc(var(--t1, 1) * .9);
+}
+.has-played .intro-hint { opacity: 0; transition: opacity var(--transition) ease; }
+
+/* ---------- 포트폴리오 (밝은 영역) ---------- */
+.portfolio { background: var(--bg); }
+
+.section {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 144px var(--gutter);
+}
+.section + .section { padding-top: 0; }
+
+.section-label {
+  margin: 0 0 16px;
+  font-size: 12px;
+  letter-spacing: .2em;
+  color: var(--muted);
+}
+.section h2 {
+  margin: 0 0 40px;
+  font-size: 32px;
+  font-weight: 500;
+  letter-spacing: -.01em;
+}
+
+.placeholder {
+  display: grid;
+  place-items: center;
+  min-height: 320px;
+  padding: 40px;
+  border: 1px dashed var(--surface);
+  border-radius: var(--radius);
+  text-align: center;
+  color: var(--muted);
+  font-size: 15px;
+}
+.placeholder strong {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.site-footer {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 40px var(--gutter) 64px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* ---------- 좁은 창 ---------- */
+@media (max-width: 900px) {
+  :root { --gutter: 24px; }
+  .nav { gap: 20px; }
+  .eyebrow { top: 16vh; }
+  .intro h1 .l1 { top: calc(16vh + 36px); }
+  .intro h1 .l2 { top: calc(16vh + 36px); }
+  .intro-hint { display: none; }
+}
+
+/* ---------- 모션 축소: 장면 진행 없이 한 화면, 모든 문구 표시 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .intro { height: auto; }
+  .intro-sticky { position: relative; }
+  .eyebrow, .intro h1 .l1 { opacity: 1; transform: none; }
+  .intro h1 .l2 { opacity: 1; transform: none; top: calc(22vh + 120px); }
+  .intro-fill, .intro-sticky::after, .intro-end, .intro-hint { display: none; }
+  .intro-ui { opacity: 1; }
+}

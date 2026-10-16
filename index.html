@@ -144,6 +144,8 @@ import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 
 /* ============================================================
    불씨 표지 — 어두운 남색 위 3D 불씨 + 3D 점 배경
+   - 불씨: 3D 모델을 낮은 해상도로 그린 뒤 단계적으로 흐려 빛 덩어리로만 보이게 함
+     (윤곽·꽃잎 모양은 사라지고, 일렁이는 불의 형체만 남음)
    - 점 배경: 불씨 밑동을 지나는 비스듬한 면에 점을 고르게 깔고, 느리게 물결침
    - 불씨 열기가 점을 따뜻하게 물들이며 스크롤에 따라 번져 나감(작은 불꽃 → 커지는 불 → 번지는 불)
    - 포인터: 가까운 점이 솟아오르고 밝아짐, 누르면 그 자리에서 물결이 퍼짐
@@ -179,7 +181,9 @@ async function init() {
     uRes: { value: new THREE.Vector2(1, 1) }, uAnchor: { value: new THREE.Vector2() },
     uTime: { value: 0 }, uStage: { value: 0 }, uFill: { value: 0 },
     uAttn: { value: 0 }, uPuff: { value: 0 }, uWind: { value: 0 },
-    uGlow: { value: new THREE.Vector3(0, 0, 1) }, uGlowA: { value: 0 }
+    uGlow: { value: new THREE.Vector3(0, 0, 1) }, uGlowA: { value: 0 },
+    uF0: { value: null }, uF1: { value: null }, uF2: { value: null }, uF3: { value: null },   // 흐린 불씨: 1/4 · 1/8 · 1/16 · 1/32 해상도
+    uFT1: { value: new THREE.Vector2() }, uFlameOn: { value: 0 }, uSoft: { value: 0 }
   };
 
   const NOISE = /* glsl */`
@@ -208,8 +212,10 @@ async function init() {
 
   const FRAG = /* glsl */`
     uniform vec2 uRes, uAnchor;
-    uniform float uTime, uStage, uFill, uAttn, uPuff, uGlowA;
+    uniform float uTime, uStage, uFill, uAttn, uPuff, uGlowA, uFlameOn, uSoft;
     uniform vec3 uGlow;   // 3D 불꽃 뒤 온기: 중심 x, y(px), 반지름(px)
+    uniform sampler2D uF0, uF1, uF2, uF3;
+    uniform vec2 uFT1;
     ${NOISE}
     ${BURN}
 
@@ -222,6 +228,31 @@ async function init() {
       vec2 g = (frag - uAnchor) / (uRes.y * vec2(0.5 + 0.25 * gr + 0.9 * sp, 0.24 + 0.1 * gr + 0.22 * sp));
       float flick = 1.0 + 0.1 * (noise(vec2(uTime * 3.0, 0.0)) - 0.5);
       col += vec3(0.5, 0.15, 0.04) * exp(-dot(g, g) * 1.4) * (0.14 + 0.08 * gr + 0.08 * sp) * flick * (1.0 + 0.3 * uAttn + 0.6 * uPuff);
+
+      // 불씨: 흐린 빛 덩어리를 열기로 일렁이게 하고, 밝기에 따라 불 색을 입힘 (흰빛 속 → 주황 → 붉은 가장자리)
+      vec2 uv = frag / uRes;
+      vec3 c3 = uFlameOn > 0.5 ? texture2D(uF3, uv).rgb : vec3(0.0);   // 가장 흐린 단계로 불 근처인지 먼저 확인
+      if (dot(c3, vec3(1.0)) > 0.002) {
+        vec2 w = vec2(noise(uv * vec2(9.0, 5.0) + vec2(0.0, -uTime * 1.3)),
+                      noise(uv * vec2(9.0, 5.0) + vec2(5.2, -uTime * 1.3))) - 0.5;
+        vec2 uvd = uv + w * vec2(0.014, 0.01);
+        vec3 c1 = (texture2D(uF1, uvd + uFT1 * vec2(0.5, 0.5)) + texture2D(uF1, uvd - uFT1 * vec2(0.5, 0.5))
+                 + texture2D(uF1, uvd + uFT1 * vec2(0.5, -0.5)) + texture2D(uF1, uvd - uFT1 * vec2(0.5, -0.5))).rgb * 0.25;
+        vec2 t0 = uFT1 * 0.5;   // 1/4 해상도 한 칸
+        vec3 c0 = (texture2D(uF0, uvd + t0 * vec2(0.75, 0.75)) + texture2D(uF0, uvd - t0 * vec2(0.75, 0.75))
+                 + texture2D(uF0, uvd + t0 * vec2(0.75, -0.75)) + texture2D(uF0, uvd - t0 * vec2(0.75, -0.75))).rgb * 0.25;
+        vec3 c2 = texture2D(uF2, uv + w * 0.008).rgb;
+        // 불이 작을 땐 덜, 커질수록 더 흐리게 → 어떤 크기에서도 윤곽은 없고 형체만 보임
+        vec3 c = mix(mix(c0, c1, 0.35 + 0.65 * smoothstep(0.0, 0.5, uSoft)), c2, smoothstep(0.5, 1.0, uSoft) * 0.8);
+        float core = dot(c, vec3(0.333)) * mix(1.6, 1.0, uSoft);
+        float halo = dot(c3, vec3(0.333));
+        core *= 0.55 + 0.9 * fbm(vec2(uv.x * uRes.x / uRes.y * 6.0, uv.y * 3.5) - vec2(0.0, uTime * 0.9));   // 안쪽에서 일렁이는 혀
+        float e = 1.0 - exp(-core * 0.85);   // 밝은 곳도 하얗게 뭉개지지 않도록 부드럽게 눌러 줌
+        vec3 hue = mix(vec3(0.62, 0.1, 0.02), vec3(1.0, 0.42, 0.1), smoothstep(0.08, 0.45, e));
+        hue = mix(hue, vec3(1.0, 0.68, 0.32), smoothstep(0.45, 0.8, e));
+        hue = mix(hue, vec3(1.0, 0.87, 0.66), smoothstep(0.82, 0.97, e));
+        col += hue * e + vec3(0.7, 0.2, 0.05) * (1.0 - exp(-halo * 0.6)) * 0.45;
+      }
 
       // 3D 불꽃 뒤의 은은한 온기
       vec2 gd = (frag - uGlow.xy) / uGlow.z;
@@ -445,7 +476,7 @@ async function init() {
      다섯 부분이 스크롤에 맞춰 밑동부터 차례로 피어남:
      불씨 핵 → 점화 소용돌이 → 안쪽 불꽃 → 바깥 불꽃 덮개 → 불티 */
   const PARTS = {
-    Ember_Origin_Core:        { from: -1,   to: 0,    gain: 1.0,  seed: 0.11 },   // 처음부터 (열릴 때 점화)
+    Ember_Origin_Core:        { from: -1,   to: 0,    gain: 2.6,  seed: 0.11 },   // 처음부터 (열릴 때 점화). 흐려도 보이도록 밝게
     Ignition_Spiral_Tendrils: { from: 0.06, to: 0.26, gain: 0.62, seed: 0.37 },
     Inner_Blaze_Core:         { from: 0.18, to: 0.4,  gain: 0.5,  seed: 0.59 },
     Outer_Roaring_Canopy:     { from: 0.32, to: 0.56, gain: 0.32, seed: 0.73 },
@@ -488,9 +519,9 @@ async function init() {
     void main(){
       float yN = clamp((vL.y - uH0) / max(uH1 - uH0, 0.001), 0.0, 1.0);
       float front = uReveal * 1.3 - 0.15;                         // 피어나는 경계 (아래 → 위)
-      float vis = 1.0 - smoothstep(front - 0.12, front, yN);
+      float rag = noise3(vec3(vL.x * 0.9, vL.z * 0.9, uTime * 0.6 + uSeed * 5.0)) - 0.5;   // 경계를 들쭉날쭉하게
+      float vis = 1.0 - smoothstep(front - 0.3, front + 0.05, yN + rag * 0.35);
       if (vis <= 0.001) discard;
-      float edge = exp(-pow((yN - (front - 0.06)) / 0.05, 2.0)) * (1.0 - smoothstep(0.85, 1.0, uReveal));
       float fr = 1.0 - abs(dot(normalize(vN), normalize(vV)));     // 가장자리일수록 밝게
       float h = clamp(vL.y / uTotalH, 0.0, 1.0);
       float n1 = noise3(vec3(vL.x * 1.4, vL.y * 1.1 - uTime * 1.6, vL.z * 1.4 + uSeed * 7.0));
@@ -498,9 +529,9 @@ async function init() {
       float lick = smoothstep(0.2, 0.8, n1 * 0.7 + n2 * 0.3 + 0.35 - h * 0.35);   // 위로 갈수록 혀처럼 갈라짐
       vec3 col = mix(vec3(1.0, 0.86, 0.55), vec3(1.0, 0.45, 0.1), smoothstep(0.06, 0.45, h));
       col = mix(col, vec3(0.62, 0.1, 0.02), smoothstep(0.5, 1.0, h));
-      float I = (0.16 + 0.85 * pow(fr, 1.6)) * (0.55 + 0.9 * n2) * lick * uGain * (1.0 + uAttnM * 0.25);
+      float I = (0.45 + 0.55 * pow(fr, 1.6)) * mix(1.0, 0.4, yN) * (0.3 + 0.7 * smoothstep(0.0, 0.2, yN)) * (0.55 + 0.9 * n2) * lick * uGain * (1.0 + uAttnM * 0.25);
       I += uPulseA * exp(-pow((vL.y - uPulseH) * 1.2, 2.0)) * 0.55;   // 누르면 아래에서 위로 지나가는 빛
-      vec3 c = col * I * vis + vec3(1.0, 0.72, 0.38) * edge * 1.1;
+      vec3 c = col * I * vis;
       gl_FragColor = vec4(c * uFade, 1.0);
     }`;
 
@@ -509,6 +540,38 @@ async function init() {
   const modelRoot = new THREE.Group();
   modelScene.add(modelRoot);
   const parts = [];
+
+  // 흐린 불씨: 모델을 1/4 해상도로 그리고 1/8 → 1/16 → 1/32로 줄여 가며 흐림 (작은 화면에서만 계산해 가벼움)
+  const flameRT = [4, 8, 16, 32].map(() => new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, depthBuffer: false }));
+  const DOWN = { uTex: { value: null }, uHalf: { value: new THREE.Vector2() } };
+  const downScene = new THREE.Scene();
+  downScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({
+    uniforms: DOWN, depthTest: false, depthWrite: false, blending: THREE.NoBlending,
+    vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`,
+    fragmentShader: /* glsl */`
+      uniform sampler2D uTex; uniform vec2 uHalf; varying vec2 vUv;
+      void main(){   // 가운데 + 네 모서리를 섞어 줄이기 (부드럽게 흐려짐)
+        vec4 c = texture2D(uTex, vUv) * 4.0
+               + texture2D(uTex, vUv - uHalf) + texture2D(uTex, vUv + uHalf)
+               + texture2D(uTex, vUv + vec2(uHalf.x, -uHalf.y)) + texture2D(uTex, vUv - vec2(uHalf.x, -uHalf.y));
+        gl_FragColor = c / 8.0;
+      }`
+  })));
+  [U.uF0.value, U.uF1.value, U.uF2.value, U.uF3.value] = flameRT.map((rt) => rt.texture);
+  function renderFlame() {
+    renderer.setRenderTarget(flameRT[0]);
+    renderer.clear();
+    renderer.render(modelScene, modelCam);
+    for (let i = 1; i < flameRT.length; i++) {
+      const src = flameRT[i - 1];
+      DOWN.uTex.value = src.texture;
+      DOWN.uHalf.value.set(1 / src.width, 1 / src.height);
+      renderer.setRenderTarget(flameRT[i]);
+      renderer.render(downScene, camera);
+    }
+    renderer.setRenderTarget(null);
+  }
+
   const mdl = { auto: 0, rotY: 0.35, rotX: 0, vel: 0, dragging: false, downX: 0, downY: 0, downT: 0, lastX: 0, lastY: 0,
                 pulse: -1, ignite: 0, frac: 0.2, cx: 0, baseY: 0, hPx: 1 };
 
@@ -547,8 +610,12 @@ async function init() {
       const { from, to } = part.cfg;
       part.own.uReveal.value = reduced ? 1 : (from < 0 ? mdl.ignite : smooth(from, to, p));
     }
+    // 불씨 핵: 작을 땐 밝게(흐려도 보이도록), 불이 커지면 밑동이 뭉쳐 보이지 않게 낮춤
+    const core = parts.find((pt) => pt.cfg.from < 0);
     // 피어난 만큼의 높이(비율): 화면에서 불꽃이 차지하는 크기 판단용
     mdl.frac = reduced ? 1 : Math.max(0.2, smooth(0.0, 0.6, p));
+    U.uSoft.value = (mdl.frac - 0.2) / 0.8;   // 0(작은 불씨) → 1(다 핀 불)
+    if (core) core.own.uGain.value = core.cfg.gain * (1 - 0.6 * U.uSoft.value);
 
     // 모델 밑동을 불 위치(st.ax, st.ay)에 둠
     const wide = st.w > 900;
@@ -609,6 +676,9 @@ async function init() {
     SP.uAspect.value = st.w / st.h;
     modelCam.aspect = st.w / st.h;
     modelCam.updateProjectionMatrix();
+    const W = st.w * st.ratio, H = st.h * st.ratio;
+    [4, 8, 16, 32].forEach((d, i) => flameRT[i].setSize(Math.max(1, Math.round(W / d)), Math.max(1, Math.round(H / d))));
+    U.uFT1.value.set(1 / flameRT[1].width, 1 / flameRT[1].height);
   }
 
   function update(dt) {
@@ -720,10 +790,12 @@ async function init() {
   let raf = 0, last = 0, visible = true;
   const draw = () => {
     if (S.solid < 0.999) {   // 화면이 아이보리로 덮이면 그리지 않음
+      const flame = parts.length && MU.uFade.value > 0.002;
+      U.uFlameOn.value = flame ? 1 : 0;
+      if (flame) renderFlame();
       renderer.clear();
-      renderer.render(scene, camera);
+      renderer.render(scene, camera);   // 배경 + 흐린 불씨 + 타들어 가는 전환
       renderer.render(dotScene, modelCam);
-      if (parts.length && MU.uFade.value > 0.002) renderer.render(modelScene, modelCam);
     }
     root.classList.add('is-3d');
   };

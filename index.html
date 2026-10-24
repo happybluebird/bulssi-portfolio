@@ -7,6 +7,7 @@
 <meta name="description" content="호기심으로 가능성을 발견하고 긍정적인 소통으로 함께 시작할 힘을 만드는 기획자, 김시언의 포트폴리오.">
 <!-- Pretendard (SIL OFL 1.1). 배포 전 라이선스·호스팅 방식 확인 -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="icon" href="assets/vector/ember-mark.svg" type="image/svg+xml">
 <link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/site.css">
 <link rel="preload" as="fetch" href="assets/models/ember_to_great_flame.glb" crossorigin>
@@ -58,28 +59,44 @@
   </div>
 </section>
 
-<!-- 포트폴리오 (밝은 영역): 사용자 자료를 받기 전 입력 자리 -->
+<!-- 포트폴리오 (밝은 영역). 문구·프로젝트는 content/*.js 에서 채움 (js/portfolio.js) -->
 <main class="portfolio">
+  <!-- 자기소개: 왼쪽 관찰·작업 이미지 순환, 오른쪽 이름·직무·소개문·버튼 고정 -->
   <section class="section" id="intro-me" aria-labelledby="intro-title">
     <p class="section-label">01 · ABOUT</p>
-    <h2 id="intro-title">자기소개</h2>
-    <div class="placeholder"><div><strong>입력 자리</strong>사용자가 직접 제작한 자기소개 디자인이 들어갈 자리입니다.</div></div>
+    <h2 id="intro-title" class="sr-only">자기소개</h2>
+    <div class="about" data-about>
+      <div class="about-media" data-about-media></div>
+      <div class="about-copy" data-about-copy></div>
+    </div>
   </section>
 
-  <section class="section" id="projects" aria-labelledby="projects-title">
+  <!-- 프로젝트 목차: 대표 이미지 2열, 한 프로젝트가 여러 분야에 들어갈 수 있음 -->
+  <section class="section" id="projects" aria-labelledby="projects-title" data-projects-section>
     <p class="section-label">02 · PROJECTS</p>
     <h2 id="projects-title">프로젝트</h2>
-    <div class="placeholder"><div><strong>입력 자리</strong>프로젝트 이미지와 정리 자료를 받은 뒤 목차를 구성합니다.</div></div>
+    <div class="toc-bar">
+      <div class="filters" role="group" aria-label="분야로 보기" data-filters></div>
+      <p class="toc-count" aria-live="polite" data-count></p>
+    </div>
+    <ul class="project-grid" data-projects></ul>
+    <noscript><p class="toc-count">프로젝트 목록은 JavaScript를 켜면 보입니다.</p></noscript>
   </section>
 
   <section class="section" id="contact" aria-labelledby="contact-title">
     <p class="section-label">03 · CONTACT</p>
     <h2 id="contact-title">연락처</h2>
-    <div class="placeholder"><div><strong>입력 자리</strong>연락처는 사용자가 제공한 정보로만 채웁니다.</div></div>
+    <div data-contact>
+      <div class="placeholder"><div><strong>입력 자리</strong>연락처는 사용자가 제공한 정보로만 채웁니다.</div></div>
+    </div>
   </section>
 </main>
 
 <footer class="site-footer">불씨 디자인 키트 v0.1 기반 · 표지 시안</footer>
+
+<script src="content/site-content.js"></script>
+<script src="content/projects.js"></script>
+<script src="js/portfolio.js"></script>
 
 <!-- 스크롤 진행 → CSS 변수. WebGL이 실패해도 문구·빛 전환은 동작 -->
 <script>

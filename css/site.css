@@ -158,7 +158,7 @@ a { color: inherit; }
   opacity: min(1, calc(var(--fill, 0) * var(--fill, 0) * 1.8));
   transform: translate(-50%, -50%) scale(calc(var(--fill, 0) * 2.2));
 }
-/* WebGL이 동작하면 타들어 가는 전환을 셰이더가 그리므로 빛 번짐 레이어는 숨김 */
+/* WebGL이 동작하면 점이 밝아지는 전환을 셰이더가 그리므로 빛 번짐 레이어는 숨김 */
 .is-3d .intro-fill { display: none; }
 
 .intro-sticky::after {

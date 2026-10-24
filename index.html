@@ -199,15 +199,13 @@ async function init() {
       return v;
     }`;
 
-  // 마지막 전환: 종이가 타들어 가는 경계 (배경과 점이 같은 값을 씀)
-  const BURN = /* glsl */`
-    vec2 burnQ(vec2 frag){ return (frag - (uAnchor + vec2(0.0, uRes.y * 0.25))) / uRes.y; }   // 불 위치에서 시작
-    float burnEdge(vec2 q){                                   // 0보다 크면 이미 타서 열린 곳
-      float d = length(q * vec2(0.9, 1.0));
-      float b = fbm(q * 3.2 + vec2(0.0, uTime * 0.04)) * 0.6
-              + fbm(q * 9.0 - vec2(uTime * 0.08, 0.0)) * 0.12
-              + clamp(d / 1.15, 0.0, 1.0) * 0.4;
-      return uFill * 1.4 - 0.22 - b;
+  // 마지막 전환: 불씨의 온기가 점에서 점으로 번져 화면이 밝아짐 (배경과 점이 같은 값을 씀)
+  const WARM = /* glsl */`
+    float warmFront(vec2 frag){                               // 0보다 크면 온기가 닿은 곳
+      vec2 q = (frag - uAnchor) / uRes.y * vec2(1.0, 1.15);   // 불 밑동에서 시작, 위로는 조금 느리게
+      float far = length(vec2(0.5 * uRes.x / uRes.y, 1.1));   // 가장 먼 모서리까지
+      float n = fbm(q * 2.4 + vec2(0.0, -uTime * 0.05));       // 둥글지만 너무 반듯하지 않게
+      return uFill * (far + 0.6) - length(q) - 0.06 - n * 0.14;
     }`;
 
   const FRAG = /* glsl */`
@@ -217,7 +215,7 @@ async function init() {
     uniform sampler2D uF0, uF1, uF2, uF3;
     uniform vec2 uFT1;
     ${NOISE}
-    ${BURN}
+    ${WARM}
 
     void main(){
       vec2 frag = gl_FragCoord.xy;
@@ -258,18 +256,11 @@ async function init() {
       vec2 gd = (frag - uGlow.xy) / uGlow.z;
       col += vec3(0.85, 0.3, 0.07) * exp(-dot(gd, gd) * 1.6) * uGlowA;
 
-      // 마지막: 종이가 타들어 가듯 화면이 열리며 아이보리 포트폴리오가 드러남
+      // 마지막: 온기가 지나간 자리부터 점이 커져 이어지고, 그 뒤로 바탕이 아이보리로 차오름
       if (uFill > 0.001) {
-        vec2 q = burnQ(frag);
-        float e = burnEdge(q);
-        vec3 paper = vec3(0.965, 0.949, 0.922);              // #F6F2EB
-        float scorch = smoothstep(-0.08, 0.0, e) * (1.0 - step(0.0, e));
-        col = mix(col, col * 0.2 + vec3(0.07, 0.03, 0.012), scorch);   // 타기 직전 그을림
-        col = mix(col, paper, smoothstep(0.004, 0.022, e));
-        float rim = exp(-pow(e / 0.011, 2.0));                          // 불씨 테두리
-        float flick = 0.7 + 0.6 * noise(q * 46.0 + vec2(0.0, uTime * 3.0));
-        vec3 ember = mix(vec3(1.25, 0.38, 0.06), vec3(1.6, 1.1, 0.55), smoothstep(-0.008, 0.01, e));
-        col += ember * rim * flick;
+        float e = warmFront(frag);
+        col += vec3(0.9, 0.42, 0.12) * exp(-pow((e - 0.03) / 0.1, 2.0)) * 0.14;   // 온기가 지나가는 자리의 은은한 빛
+        col = mix(col, vec3(0.965, 0.949, 0.922), smoothstep(0.12, 0.3, e));        // #F6F2EB
       }
       col += (hash(frag + fract(uTime)) - 0.5) / 255.0;
       gl_FragColor = vec4(max(col, 0.0), 1.0);
@@ -312,6 +303,8 @@ async function init() {
         uniform vec2 uRes, uAnchor, uBurstPos;
         attribute vec4 aSeed; attribute float aIdx; attribute float aBurst;
         varying float vHeat; varying float vA;
+        ${NOISE}
+        ${WARM}
         void main(){
           float h1 = aSeed.x, h2 = aSeed.y, h3 = aSeed.z, h4 = aSeed.w;
           float gr = clamp(uStage, 0.0, 1.0), sp = clamp(uStage - 1.0, 0.0, 1.0);
@@ -337,9 +330,10 @@ async function init() {
             pos = uBurstPos + vec2(cos(ang), sin(ang)) * v * tt + vec2(0.0, -0.16 * tt * tt);
           }
           float fade = smoothstep(0.0, 0.06, life) * (1.0 - smoothstep(0.5, 1.0, life));
-          vA = fade * alive * (1.0 - smoothstep(0.3, 0.62, uFill));   // 타들어 가는 초반까지 날리다, 밝은 바탕이 넓어지기 전에 사라짐
+          vA = fade * alive * (1.0 - smoothstep(0.3, 0.62, uFill));   // 온기가 번지는 초반까지 날리다, 밝은 바탕이 넓어지기 전에 사라짐
           vHeat = 1.0 - life;
           vec2 px = uAnchor + pos * uUnit;
+          if (uFill > 0.001) vA *= 1.0 - smoothstep(0.0, 0.14, warmFront(px));   // 온기가 닿아 밝아진 자리에선 사라짐
           gl_Position = vec4(px / uRes * 2.0 - 1.0, 0.0, 1.0);
           float size = (2.2 + 3.2 * h4) * (1.0 - 0.4 * life) * uPx * mix(1.0, 1.3, aBurst);
           gl_PointSize = vA > 0.002 ? size * 4.0 : 0.0;   // 보이지 않는 불티는 그리지 않음
@@ -395,7 +389,7 @@ async function init() {
         attribute float aSeed;
         varying vec3 vCol;
         ${NOISE}
-        ${BURN}
+        ${WARM}
         void main(){
           vec3 p = position;
           float gr = clamp(uStage, 0.0, 1.0), sp = clamp(uStage - 1.0, 0.0, 1.0);
@@ -426,7 +420,15 @@ async function init() {
           }
           lift += ring * 0.7;
 
-          p.y += lift;   // 면의 수직 방향 = 화면 쪽으로 솟음
+          // 마지막 전환: 온기가 닿으면 점이 따뜻해지고(warm), 커지며 아이보리로 이어짐(grow)
+          float e = -1.0;
+          if (uFill > 0.001) {
+            vec4 c0 = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            e = warmFront((c0.xy / c0.w * 0.5 + 0.5) * uRes);
+          }
+          float warmT = smoothstep(-0.06, 0.04, e), grow = smoothstep(0.02, 0.22, e);
+
+          p.y += lift * (1.0 - grow);   // 면의 수직 방향 = 화면 쪽으로 솟음 (이어질 땐 평평하게)
           vec4 mv = modelViewMatrix * vec4(p, 1.0);
           gl_Position = projectionMatrix * mv;
 
@@ -438,14 +440,14 @@ async function init() {
                    + warm * heat * flick * (0.85 + 0.4 * uPuff);
           col *= 1.0 - far * 0.7;
 
-          // 타들어 간 자리의 점은 사라짐
-          if (uFill > 0.001) {
-            vec2 frag = (gl_Position.xy / gl_Position.w * 0.5 + 0.5) * uRes;
-            col *= 1.0 - smoothstep(-0.02, 0.004, burnEdge(burnQ(frag)));
-          }
+          col = mix(col, vec3(1.0, 0.55, 0.2) * 0.85, warmT);
+          col = mix(col, mix(vec3(1.0, 0.72, 0.45), vec3(0.965, 0.949, 0.922), grow) * 0.5, grow);   // 겹쳐도 눈부시지 않게
+          col *= 1.0 - smoothstep(0.12, 0.3, e);   // 바탕이 아이보리로 차오르는 만큼 점은 물러남 (더해져 하얗게 뜨지 않도록)
           vCol = col;
-          float size = (2.6 + 1.8 * bump + 1.2 * heat + ring) * 20.0 / -mv.z;
-          gl_PointSize = dot(col, vec3(1.0)) > 0.004 ? max(size, 1.4) * uPx : 0.0;   // 보이지 않는 점은 그리지 않음
+          float size = max((2.6 + 1.8 * bump + 1.2 * heat + ring) * 20.0 / -mv.z, 1.4) * uPx;
+          float gap = ${FIELD.step} * projectionMatrix[1][1] * 0.5 * uRes.y / -mv.z;   // 이웃 점까지 거리(px)
+          size = mix(size, gap * 1.25, grow);   // 이웃과 맞닿을 만큼
+          gl_PointSize = dot(col, vec3(1.0)) > 0.004 ? size : 0.0;   // 보이지 않는 점은 그리지 않음
         }`,
       fragmentShader: /* glsl */`
         varying vec3 vCol;
@@ -634,7 +636,7 @@ async function init() {
 
     MU.uWindM.value = st.wind * 1.1;
     MU.uAttnM.value = st.attn;
-    MU.uFade.value = 1 - smooth(0.0, 0.4, S.fill);     // 화면이 타들어 갈 때 함께 사라짐
+    MU.uFade.value = 1 - smooth(0.0, 0.4, S.fill);     // 온기가 번져 나갈 때 불씨는 점들에 옮겨 가듯 잦아듦
     if (mdl.pulse >= 0) {
       const t = st.t - mdl.pulse;
       MU.uPulseH.value = -0.5 + t * 9;
@@ -794,7 +796,7 @@ async function init() {
       U.uFlameOn.value = flame ? 1 : 0;
       if (flame) renderFlame();
       renderer.clear();
-      renderer.render(scene, camera);   // 배경 + 흐린 불씨 + 타들어 가는 전환
+      renderer.render(scene, camera);   // 배경 + 흐린 불씨 + 밝아지는 전환
       renderer.render(dotScene, modelCam);
     }
     root.classList.add('is-3d');

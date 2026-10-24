@@ -42,11 +42,8 @@
 
     <div class="intro-copy">
       <p class="eyebrow">PLANNING / MARKETING / CONTENT</p>
-      <!-- 표지 문구: 후보안(사용자 미확정) -->
-      <h1 id="cover-title">
-        <span class="line l1">작은 호기심을,</span>
-        <span class="line l2">사람에게 닿는 기획으로.</span>
-      </h1>
+      <!-- 표지 문구는 글 대신 장면(호기심 불티가 닿아 퍼지는 물결)으로 전달하고, 화면 낭독기·검색용으로만 남김 -->
+      <h1 id="cover-title" class="sr-only">작은 호기심을, 사람에게 닿는 기획으로.</h1>
       <div class="intro-end" aria-hidden="true">
         <p class="label">PORTFOLIO</p>
         <p class="name">김시언 · 기획 · 마케팅 · 콘텐츠</p>
@@ -55,7 +52,7 @@
 
     <div class="intro-ui">
       <span class="scroll-cue" aria-hidden="true"><span class="bar"></span>SCROLL</span>
-      <p class="intro-hint" aria-hidden="true">불씨를 끌어 돌리거나 눌러 보세요</p>
+      <p class="intro-hint" aria-hidden="true">화면을 누르면 불티가 날아가 닿아요</p>
       <a class="skip-intro" href="#intro-me">포트폴리오 바로 보기</a>
     </div>
   </div>
@@ -113,7 +110,6 @@
     st.setProperty('--fill', S.fill.toFixed(4));
     st.setProperty('--solid', S.solid.toFixed(4));
     st.setProperty('--t1', (1 - smooth(0.16, 0.26, p)).toFixed(4));
-    st.setProperty('--t2', (smooth(0.28, 0.38, p) * (1 - smooth(0.6, 0.68, p))).toFixed(4));
     st.setProperty('--t3', smooth(0.88, 0.98, p).toFixed(4));
     root.classList.toggle('is-light', S.solid > 0.5 || r.bottom < 80);
   }
@@ -357,12 +353,12 @@ async function init() {
      불씨 밑동을 지나 뒤로 비스듬히 올라가는 면에 점을 고르게 깔고, 3D 불씨와 같은 카메라로 그림.
      점의 움직임은 모두 정점 셰이더에서 계산 → 매 프레임 CPU 갱신 없음 */
   const FIELD = { tilt: THREE.MathUtils.degToRad(36), step: 0.26, near: -3, far: 34 };
-  const RIPPLES = 3;
+  const RIPPLES = 6;
   const DOT = {
     uTime: U.uTime, uStage: U.uStage, uFill: U.uFill, uRes: U.uRes, uAnchor: U.uAnchor, uPuff: U.uPuff,
     uPx: { value: 1 }, uIgnite: { value: 0 },
     uPtr: { value: new THREE.Vector2(0, 99) }, uPtrA: { value: 0 },
-    uRip: { value: Array.from({ length: RIPPLES }, () => new THREE.Vector3(0, 0, -99)) }
+    uRip: { value: Array.from({ length: RIPPLES }, () => new THREE.Vector4(0, 0, -99, 0)) }   // x, z, 시작 시각, 크기(0~1)
   };
   const dotScene = new THREE.Scene();
   const field = new THREE.Group();
@@ -385,7 +381,7 @@ async function init() {
       vertexShader: /* glsl */`
         uniform float uTime, uStage, uFill, uPuff, uPx, uIgnite, uPtrA;
         uniform vec2 uRes, uAnchor, uPtr;
-        uniform vec3 uRip[${RIPPLES}];
+        uniform vec4 uRip[${RIPPLES}];
         attribute float aSeed;
         varying vec3 vCol;
         ${NOISE}
@@ -399,7 +395,7 @@ async function init() {
           float lift = (noise(p.xz * 0.22 + vec2(uTime * 0.05, -uTime * 0.12)) - 0.5) * (0.5 + 0.35 * gr + 0.5 * sp);
 
           // 불씨 열기: 밑동에서부터 점을 물들이며 번짐
-          float R = 2.4 + 4.0 * gr + 16.0 * sp;
+          float R = 2.4 + 4.0 * gr + 6.0 * sp;   // 넓게 번지는 건 호기심 물결의 몫
           float heat = smoothstep(R, R * 0.25, r) * uIgnite;
           float flick = 0.6 + 0.8 * noise(vec2(aSeed * 40.0, uTime * (1.6 + aSeed * 2.0)));
           lift += sin(r * 1.5 - uTime * 2.2) * 0.08 * heat;
@@ -409,16 +405,19 @@ async function init() {
           float bump = exp(-dot(pd, pd) / 6.0) * uPtrA;
           lift += bump * 1.3;
 
-          // 누른 자리에서 퍼지는 물결
-          float ring = 0.0;
+          // 호기심 불티가 닿은 자리에서 퍼지는 물결: 클수록 빠르고 멀리, 지나간 자리엔 잠시 온기가 남음
+          float ring = 0.0, trail = 0.0;
           for (int i = 0; i < ${RIPPLES}; i++) {
-            float tt = uTime - uRip[i].z;
-            if (tt > 0.0 && tt < 2.6) {
-              float d = length(p.xz - uRip[i].xy) - tt * 7.0;
-              ring += exp(-d * d * 1.2) * (1.0 - tt / 2.6);
+            float tt = uTime - uRip[i].z, sz = uRip[i].w;
+            float life = 1.6 + 2.4 * sz;
+            if (tt > 0.0 && tt < life) {
+              float d = length(p.xz - uRip[i].xy) - tt * (3.5 + 6.5 * sz);
+              float fade = 1.0 - tt / life;
+              ring += exp(-d * d * 0.55) * fade * (0.7 + 0.5 * sz);
+              trail += exp(min(d, 0.0) * 0.3) * step(d, 0.0) * fade * fade * 0.5;
             }
           }
-          lift += ring * 0.7;
+          lift += ring * 0.5;
 
           // 마지막 전환: 온기가 닿으면 점이 따뜻해지고(warm), 커지며 아이보리로 이어짐(grow)
           float e = -1.0;
@@ -436,7 +435,8 @@ async function init() {
           vec3 cool = vec3(0.42, 0.5, 0.72) * 0.36;
           vec3 ivory = vec3(1.0, 0.88, 0.7);
           vec3 warm = mix(vec3(1.0, 0.36, 0.08), vec3(1.25, 0.85, 0.45), heat * flick * 0.8);
-          vec3 col = cool * (1.0 + clamp(lift, 0.0, 1.0)) + ivory * (bump * 0.75 + ring * 0.55)
+          vec3 col = cool * (1.0 + clamp(lift, 0.0, 1.0)) + ivory * bump * 0.75
+                   + mix(vec3(1.0, 0.5, 0.18), vec3(1.0, 0.85, 0.62), clamp(ring, 0.0, 1.0)) * (ring * 1.5 + trail * 0.6)
                    + warm * heat * flick * (0.85 + 0.4 * uPuff);
           col *= 1.0 - far * 0.7;
 
@@ -444,7 +444,7 @@ async function init() {
           col = mix(col, mix(vec3(1.0, 0.72, 0.45), vec3(0.965, 0.949, 0.922), grow) * 0.5, grow);   // 겹쳐도 눈부시지 않게
           col *= 1.0 - smoothstep(0.12, 0.3, e);   // 바탕이 아이보리로 차오르는 만큼 점은 물러남 (더해져 하얗게 뜨지 않도록)
           vCol = col;
-          float size = max((2.6 + 1.8 * bump + 1.2 * heat + ring) * 20.0 / -mv.z, 1.4) * uPx;
+          float size = max((2.6 + 1.8 * bump + 1.2 * heat + 2.4 * clamp(ring, 0.0, 1.2) + trail) * 20.0 / -mv.z, 1.4) * uPx;
           float gap = ${FIELD.step} * projectionMatrix[1][1] * 0.5 * uRes.y / -mv.z;   // 이웃 점까지 거리(px)
           size = mix(size, gap * 1.25, grow);   // 이웃과 맞닿을 만큼
           gl_PointSize = dot(col, vec3(1.0)) > 0.004 ? size : 0.0;   // 보이지 않는 점은 그리지 않음
@@ -460,7 +460,103 @@ async function init() {
     field.add(dots);
   }
   let ripIdx = 0;
-  const addRipple = (x, z) => { DOT.uRip.value[ripIdx].set(x, z, st.t); ripIdx = (ripIdx + 1) % RIPPLES; };
+  const addRipple = (x, z, size) => { DOT.uRip.value[ripIdx].set(x, z, st.t, size); ripIdx = (ripIdx + 1) % RIPPLES; };
+
+  /* ---------- 호기심 불티 ----------
+     불씨에서 나온 작은 불티 하나가 점 배경 위를 이리저리 살피며 날다가, 멈춘 자리의 점에 살짝 닿으면 물결이 퍼짐.
+     스크롤할수록 더 멀리 가고, 더 자주, 더 크게 닿음. 포인터가 움직이면 궁금한 듯 따라오고, 화면을 누르면 그 자리로 날아가 닿음 */
+  const TRAIL = 16;   // [0] 빛 번짐, [1] 불티, [2..] 꼬리
+  const CU = { uPx: DOT.uPx, uAlpha: { value: 0 } };
+  const curio = { x: 0, y: 0.6, z: -0.4, vx: 0, vz: 0, tx: 0, tz: -2, state: 'fly', t: 0, lastTouch: 0, follow: 0, pending: null, touched: false };
+  const curioPos = new Float32Array(TRAIL * 3);
+  for (let i = 0; i < TRAIL; i++) curioPos.set([curio.x, curio.y, curio.z], i * 3);   // 처음엔 꼬리도 불티 자리에
+  let curioAttr;
+  {
+    const k = new Float32Array(TRAIL);
+    for (let i = 0; i < TRAIL; i++) k[i] = i === 0 ? -1 : (i - 1) / (TRAIL - 1);
+    const g = new THREE.BufferGeometry();
+    curioAttr = new THREE.BufferAttribute(curioPos, 3).setUsage(THREE.DynamicDrawUsage);
+    g.setAttribute('position', curioAttr);
+    g.setAttribute('aK', new THREE.BufferAttribute(k, 1));
+    const pts = new THREE.Points(g, new THREE.ShaderMaterial({
+      uniforms: CU, transparent: true, depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending,
+      vertexShader: /* glsl */`
+        uniform float uPx, uAlpha; attribute float aK; varying float vK;
+        void main(){
+          vec4 mv = modelViewMatrix * vec4(position, 1.0);
+          gl_Position = projectionMatrix * mv;
+          vK = aK;
+          float size = aK < 0.0 ? 80.0 : mix(15.0, 3.0, aK);
+          gl_PointSize = uAlpha > 0.002 ? size * 20.0 / -mv.z * uPx : 0.0;
+        }`,
+      fragmentShader: /* glsl */`
+        uniform float uAlpha; varying float vK;
+        void main(){
+          float r = length(gl_PointCoord - 0.5);
+          if (vK < 0.0) { gl_FragColor = vec4(1.0, 0.55, 0.2, exp(-r * r * 18.0) * 0.55 * uAlpha); return; }   // 은은한 빛 번짐
+          float a = smoothstep(0.5, 0.0, r) * pow(1.0 - vK, 1.4) * uAlpha;
+          gl_FragColor = vec4(mix(vec3(1.3, 1.05, 0.75), vec3(1.0, 0.42, 0.1), vK), a);
+        }`
+    }));
+    pts.frustumCulled = false;
+    field.add(pts);
+  }
+
+  function updateCurio(dt, k) {
+    const c = curio, reach = Math.min(S.stage / 2, 1);   // 0(작은 불꽃) → 1(번지는 불)
+    CU.uAlpha.value += ((S.reduced ? 0.8 : st.ignite) * (1 - smooth(0.0, 0.3, S.fill)) - CU.uAlpha.value) * k(3);
+    if (S.reduced || !dt) {   // 멈춘 화면: 불씨 옆에 가만히 떠 있음
+      if (S.reduced) { curio.x = -3; curio.z = -4; curio.y = 0.9; CU.uAlpha.value = 0.8 * (1 - smooth(0.0, 0.3, S.fill)); }
+      writeCurio(S.reduced); return;
+    }
+    c.t += dt; c.follow = Math.max(0, c.follow - dt);
+
+    // 가고 싶은 곳: 누른 자리 > 움직이는 포인터 근처 > 스스로 고른 곳
+    if (c.pending) { c.tx = c.pending.x; c.tz = c.pending.z; }
+    else if (c.follow > 0 && DOT.uPtrA.value > 0.3) {
+      c.tx = DOT.uPtr.value.x + Math.sin(st.t * 1.3) * 0.9;
+      c.tz = DOT.uPtr.value.y + 0.6 + Math.cos(st.t * 1.1) * 0.5;
+    }
+    const dx = c.tx - c.x, dz = c.tz - c.z, dist = Math.hypot(dx, dz);
+    const speed = (c.pending ? 7 : 2.2 + 2.4 * reach) * Math.min(1, dist / 1.2 + 0.15);
+    const vx = dist > 1e-3 ? dx / dist * speed : 0, vz = dist > 1e-3 ? dz / dist * speed : 0;
+    c.vx += (vx - c.vx) * k(c.pending ? 8 : 3.5);
+    c.vz += (vz - c.vz) * k(c.pending ? 8 : 3.5);
+
+    const touchEvery = 3.2 - 2.2 * reach;   // 점점 더 자주 닿음
+    let hover = 0.9 + Math.sin(st.t * 3.1) * 0.12 + Math.sin(st.t * 5.3) * 0.05;
+    if (c.state === 'fly') {
+      c.x += c.vx * dt; c.z += c.vz * dt;
+      if (dist < 0.35) {
+        if (c.pending) { c.pending = null; c.state = 'dip'; c.t = 0; c.touched = false; }
+        else { c.state = 'look'; c.t = 0; c.look = 0.35 + Math.random() * 0.7; }
+      }
+    } else if (c.state === 'look') {   // 잠깐 멈춰 두리번거림
+      c.x += Math.sin(st.t * 9) * 0.004; c.z += Math.cos(st.t * 7) * 0.003;
+      if (c.pending) c.state = 'fly';
+      else if (c.t > c.look) {
+        if (st.t - c.lastTouch > touchEvery) { c.state = 'dip'; c.t = 0; c.touched = false; }
+        else { pickTarget(reach); c.state = 'fly'; }
+      }
+    } else if (c.state === 'dip') {   // 살짝 내려가 점에 닿았다가 다시 떠오름
+      const u = Math.min(1, c.t / 0.55);
+      hover *= 1 - Math.sin(u * Math.PI) * 0.9;
+      if (!c.touched && u > 0.45) { c.touched = true; c.lastTouch = st.t; addRipple(c.x, c.z, 0.25 + 0.75 * reach); }
+      if (u >= 1) { pickTarget(reach); c.state = 'fly'; }
+    }
+    if (c.state !== 'fly' && c.pending) c.state = 'fly';
+    c.y += (hover - c.y) * k(c.state === 'dip' ? 30 : 6);
+    writeCurio();
+  }
+  function pickTarget(reach) {   // 스크롤할수록 더 넓은 곳을 살핌
+    curio.tx = (Math.random() * 2 - 1) * (2.5 + 11 * reach);
+    curio.tz = -(0.6 + Math.random() * (3 + 17 * reach));
+  }
+  function writeCurio(still) {   // 꼬리는 지나온 길을 한 칸씩 밀어 냄 (멈춘 화면에선 꼬리 없이)
+    if (!still) for (let i = TRAIL - 1; i > 2; i--) for (let j = 0; j < 3; j++) curioPos[i * 3 + j] = curioPos[(i - 1) * 3 + j];
+    for (let i = 0; i < (still ? TRAIL : 3); i++) curioPos.set([curio.x, curio.y, curio.z], i * 3);
+    curioAttr.needsUpdate = true;
+  }
 
   // 화면의 한 점(px) → 점 배경 면 위의 좌표(x, z). 면을 벗어나면 null
   const ray = new THREE.Raycaster(), fieldPlane = new THREE.Plane(), hitV = new THREE.Vector3(), ndcV = new THREE.Vector2();
@@ -601,6 +697,7 @@ async function init() {
     });
     MU.uTotalH.value = total || 7.5;
     if (parts.length) { modelState.ready = true; root.classList.add('model-ready'); }
+    if (S.reduced) renderStill();   // 움직임 줄이기: 멈춘 화면을 모델과 함께 다시 그림
   }).catch(() => { /* 불러오지 못하면 점 배경과 불티만 보임 */ });
 
   // 3D 불씨 배치·피어남·인터랙션 (매 프레임)
@@ -721,6 +818,7 @@ async function init() {
     U.uAttn.value = st.attn;
     U.uPuff.value = st.puff;
     U.uTime.value = st.t;
+    updateCurio(dt, k);
     updateModel(dt, k);
   }
 
@@ -732,7 +830,7 @@ async function init() {
     return x > st.ax - half && x < st.ax + half && y < baseY + 20 && y > baseY - height;
   }
 
-  /* ---------- 입력: 3D 불씨를 끌어 돌리고, 누르면 빛이 지나가며 불티가 튐. 배경을 누르면 점에 물결 ---------- */
+  /* ---------- 입력: 3D 불씨를 끌어 돌리고, 누르면 빛이 지나가며 불티가 튐. 배경을 누르면 호기심 불티가 날아가 닿음 ---------- */
   const hitAt = (x, y) => (parts.length ? onModel(x, y) : nearFire(x, y, S.stage));
   window.addEventListener('pointermove', (ev) => {
     const rect = sticky.getBoundingClientRect();
@@ -740,6 +838,7 @@ async function init() {
     st.ptrIn = y >= 0 && y <= rect.height;
     st.px = x; st.py = y;
     st.ptrX = clamp(x / rect.width * 2 - 1, -1, 1);
+    if (st.ptrIn && !mdl.dragging) curio.follow = 1.6;   // 움직이는 포인터가 궁금해 따라감
     if (mdl.dragging) {
       const dx = ev.clientX - mdl.lastX, dy = ev.clientY - mdl.lastY;
       mdl.rotY += dx * 0.008;
@@ -756,9 +855,9 @@ async function init() {
   sticky.addEventListener('pointerdown', (ev) => {
     if (S.reduced || ev.button !== 0 || ev.target.closest('a, button') || S.fill > 0.3) return;
     const rect = sticky.getBoundingClientRect();
-    if (!hitAt(ev.clientX - rect.left, ev.clientY - rect.top)) {   // 불씨 밖: 누른 자리의 점에서 물결이 퍼짐
+    if (!hitAt(ev.clientX - rect.left, ev.clientY - rect.top)) {   // 불씨 밖: 불티가 누른 자리로 날아가 닿음
       const fp = fieldPoint(ev.clientX - rect.left, ev.clientY - rect.top);
-      if (fp) addRipple(fp.x, fp.z);
+      if (fp) { curio.pending = { x: fp.x, z: fp.z }; root.classList.add('has-played'); }
       return;
     }
     mdl.dragging = !!parts.length;
@@ -781,7 +880,7 @@ async function init() {
   function pressFire(ev, rect) {
     st.puff = 1;
     mdl.pulse = st.t;
-    addRipple(0, 0);   // 밑동에서 점 배경으로 물결이 퍼짐
+    addRipple(0, 0, 0.6);   // 밑동에서 점 배경으로 물결이 퍼짐
     const x = ev.clientX - rect.left, y = ev.clientY - rect.top;
     SP.uBurstPos.value.set((x - st.ax) / st.h, ((st.h - y) - st.ay) / st.h);
     SP.uBurstT.value = st.t;

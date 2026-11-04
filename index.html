@@ -61,26 +61,24 @@
 
 <!-- 포트폴리오 (밝은 영역). 문구·프로젝트는 content/*.js 에서 채움 (js/portfolio.js) -->
 <main class="portfolio">
-  <!-- 자기소개: 왼쪽 관찰·작업 이미지 순환, 오른쪽 이름·직무·소개문·버튼 고정 -->
-  <section class="section" id="intro-me" aria-labelledby="intro-title">
-    <p class="section-label">01 · ABOUT</p>
-    <h2 id="intro-title" class="sr-only">자기소개</h2>
-    <div class="about" data-about>
-      <div class="about-media" data-about-media></div>
-      <div class="about-copy" data-about-copy></div>
+  <!-- 자기소개: 화면 가득 남색. 왼쪽 사진 순환, 오른쪽 직무·소개문·버튼 고정. 지나가면 다시 크림 바탕 -->
+  <section class="about-band" id="intro-me" aria-labelledby="intro-title">
+    <div class="about-inner">
+      <p class="section-label">01 · ABOUT</p>
+      <h2 id="intro-title" class="sr-only">자기소개</h2>
+      <div class="about" data-about>
+        <div class="about-media" data-about-media></div>
+        <div class="about-copy" data-about-copy></div>
+      </div>
     </div>
   </section>
 
-  <!-- 프로젝트 목차: 대표 이미지 2열, 한 프로젝트가 여러 분야에 들어갈 수 있음 -->
+  <!-- 프로젝트 목차: 대표 2열 + 분야별 3열 묶음. 카드 썸네일이 소표지(올리거나 고르면 움직임) -->
   <section class="section" id="projects" aria-labelledby="projects-title" data-projects-section>
     <p class="section-label">02 · PROJECTS</p>
     <h2 id="projects-title">프로젝트</h2>
-    <div class="toc-bar">
-      <div class="filters" role="group" aria-label="분야로 보기" data-filters></div>
-      <p class="toc-count" aria-live="polite" data-count></p>
-    </div>
-    <ul class="project-grid" data-projects></ul>
-    <noscript><p class="toc-count">프로젝트 목록은 JavaScript를 켜면 보입니다.</p></noscript>
+    <div class="toc" data-toc></div>
+    <noscript><p class="toc-note">프로젝트 목록은 JavaScript를 켜면 보입니다.</p></noscript>
   </section>
 
   <section class="section" id="contact" aria-labelledby="contact-title">

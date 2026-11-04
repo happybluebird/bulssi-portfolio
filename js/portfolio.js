@@ -11,7 +11,6 @@
   var FILTERS = list(SITE.filters).length ? list(SITE.filters) : [ALL, '서비스 기획', 'UI/UX', '마케팅'];
   if (FILTERS.indexOf(ALL) < 0) FILTERS.unshift(ALL);
   var reduceMQ = matchMedia('(prefers-reduced-motion: reduce)');
-  var FILTER_KEY = 'bulssi:filter';
 
   /* ---------- 도우미 ---------- */
   function el(tag, attrs, children) {
@@ -36,6 +35,23 @@
   function text(v) { return typeof v === 'string' ? v.trim() : (typeof v === 'number' ? String(v) : ''); }
   function list(v) { return Array.isArray(v) ? v.filter(function (x) { return x != null && x !== ''; }) : (text(v) ? [v] : []); }
   function paras(v) { return list(v).map(text).filter(Boolean); }
+  // 본문 블록: 문장(문자열) 또는 이름표 줄({ label, text })
+  function blocks(v) {
+    return list(v).map(function (b) {
+      if (b && typeof b === 'object') return text(b.text) ? { label: text(b.label), text: text(b.text) } : null;
+      return text(b) || null;
+    }).filter(Boolean);
+  }
+  // 이어지는 이름표 줄은 하나의 목록으로 묶고, 문장은 문단으로
+  function renderBlocks(items) {
+    var out = [], rows = null;
+    items.forEach(function (b) {
+      if (typeof b === 'string') { rows = null; out.push(el('p', null, b)); return; }
+      if (!rows) { rows = el('dl', { class: 'story-rows' }); out.push(rows); }
+      rows.append(el('div', null, [el('dt', null, b.label), el('dd', null, b.text)]));
+    });
+    return out;
+  }
   function pad(n) { return (n < 10 ? '0' : '') + n; }
   function categories(p) { var c = list(p.categories).map(text).filter(Boolean); return FILTERS.filter(function (f) { return c.indexOf(f) >= 0; }).concat(c.filter(function (x) { return FILTERS.indexOf(x) < 0; })); }
   function roleText(p) { return list(p.role).map(text).filter(Boolean).join(' · '); }
@@ -88,15 +104,15 @@
     copy.replaceChildren();
     append(copy, [
       text(SITE.role) && el('p', { class: 'about-role' }, SITE.role),
-      text(SITE.name) && el('p', { class: 'about-name' }, SITE.name),
       paras(about.paragraphs).map(function (t) { return el('p', { class: 'about-text' }, t); }),
       el('a', { class: 'pill-link', href: cta.charAt(0) === '#' ? cta : (safeUrl(cta) || '#projects') },
         [el('span', null, text(about.ctaLabel) || '프로젝트 살펴보기'), icon('down-right')])
     ]);
-    renderAboutImages(media, list(about.images).map(toImage).filter(Boolean));
+    renderAboutImages(media, list(about.images).map(toImage).filter(Boolean), +about.interval);
   }
 
-  function renderAboutImages(media, images) {
+  function renderAboutImages(media, images, interval) {
+    interval = Math.max(1000, interval || 4500);
     if (rotation) rotation.stop();
     rotation = null;
     media.replaceChildren();
@@ -119,7 +135,7 @@
     });
     if (images.length < 2) return;   // 1개: 순환하지 않음
 
-    // 여러 개: 짧은 크로스페이드로 순환. 화면 밖·탭 숨김·모션 축소에서는 멈춤, 버튼으로 멈추고 다시 재생
+    // 여러 개: 짧은 크로스페이드로 순환(간격은 about.interval). 화면 밖·탭 숨김·모션 축소에서는 멈춤, 버튼으로 멈추고 다시 재생
     var current = 0, timer = 0, visible = false;
     var playing = !reduceMQ.matches;
     var count = el('span', { class: 'about-count' });
@@ -143,7 +159,7 @@
       btn.textContent = playing ? '멈춤' : '재생';
       btn.setAttribute('aria-label', playing ? '이미지 순환 멈추기' : '이미지 순환 재생');
       btn.setAttribute('aria-pressed', playing ? 'false' : 'true');
-      if (playing && visible && !document.hidden) timer = setInterval(function () { show(current + 1); }, 4500);
+      if (playing && visible && !document.hidden) timer = setInterval(function () { show(current + 1); }, interval);
     }
     btn.addEventListener('click', function () { playing = !playing; sync(); });
     var io = new IntersectionObserver(function (entries) { visible = entries[0].isIntersecting; sync(); });
@@ -153,6 +169,21 @@
     reduceMQ.addEventListener('change', onMotion);
     rotation = { stop: function () { clearInterval(timer); io.disconnect(); document.removeEventListener('visibilitychange', sync); reduceMQ.removeEventListener('change', onMotion); } };
     sync();
+  }
+
+  // 남색 자기소개가 머리말 아래를 지나는 동안에는 머리말을 밝은 글자로 (크림 바탕으로 돌아오면 원래대로)
+  function watchDarkBand(band) {
+    if (!band || !band.classList.contains('about-band')) return;
+    var root = document.documentElement, queued = false;
+    var check = function () {
+      queued = false;
+      var r = band.getBoundingClientRect(), line = 46;   // 머리말 가운데 높이
+      root.classList.toggle('on-dark', r.top <= line && r.bottom >= line);
+    };
+    var queue = function () { if (!queued) { queued = true; requestAnimationFrame(check); } };
+    window.addEventListener('scroll', queue, { passive: true });
+    window.addEventListener('resize', queue);
+    check();
   }
 
   /* ---------- 연락처: 제공된 정보가 있을 때만 채움 ---------- */
@@ -167,7 +198,124 @@
     ]));
   }
 
-  /* ---------- 프로젝트 목차: 대표 이미지 2열 + 복수 분류 필터 ---------- */
+  /* ---------- 소표지: 목차 카드와 상세 위쪽이 함께 쓰는 움직이는 표지 ----------
+     symbol: 프로젝트 상징 → (올리거나 키보드로 고르면) 빛이 켜지고 이름이 드러남 (OpenTabs 원리)
+     metric: 확인된 지표 카드 → 블록이 흩어져 그 지표를 이루는 구성으로 다시 모임 (Domu 원리)
+     같은 내용이 카드 아래 글과 상세 본문에 있으므로 소표지는 장식(aria-hidden) */
+  var SVG_NS = 'http://www.w3.org/2000/svg';
+  // 상징 그림 (48×48). lit = 빛이 켜질 때 채워지는 면, ln = 선, occ = 뒤의 선을 가리는 면
+  var SYMBOLS = {
+    route: [
+      ['lit', 'path', { d: 'M37 22c-4-4.6-5-6.8-5-8.8a5 5 0 0 1 10 0c0 2-1 4.2-5 8.8z' }],
+      ['ln', 'path', { d: 'M9 38c8 0 6-12 15-12s9-6 10.5-9', 'stroke-dasharray': '2.4 3' }],
+      ['ln', 'circle', { cx: 9, cy: 38, r: 2.6 }],
+      ['ln', 'path', { d: 'M37 22c-4-4.6-5-6.8-5-8.8a5 5 0 0 1 10 0c0 2-1 4.2-5 8.8z' }],
+      ['ln', 'circle', { cx: 37, cy: 13.2, r: 1.6 }]
+    ],
+    gavel: [
+      ['lit', 'rect', { x: 10, y: 13, width: 18, height: 9, rx: 2, transform: 'rotate(-45 19 17.5)' }],
+      ['ln', 'rect', { x: 10, y: 13, width: 18, height: 9, rx: 2, transform: 'rotate(-45 19 17.5)' }],
+      ['ln', 'path', { d: 'M22.2 20.7L35 33.5' }],
+      ['ln', 'rect', { x: 24, y: 38, width: 18, height: 4.5, rx: 1.5 }]
+    ],
+    cards: [
+      ['ln occ', 'rect', { x: 18, y: 6, width: 22, height: 28, rx: 3 }],
+      ['ln occ', 'rect', { x: 14, y: 9.5, width: 22, height: 28, rx: 3 }],
+      ['ln occ', 'rect', { x: 10, y: 13, width: 22, height: 28, rx: 3 }],
+      ['lit', 'rect', { x: 10, y: 13, width: 22, height: 28, rx: 3 }],
+      ['ln', 'path', { d: 'M15 31h12M15 35.5h7' }]
+    ],
+    backpack: [
+      ['ln', 'path', { d: 'M19 14v-2.5a5 5 0 0 1 10 0V14' }],
+      ['ln occ', 'rect', { x: 11, y: 14, width: 26, height: 28, rx: 7 }],
+      ['lit', 'rect', { x: 17, y: 29, width: 14, height: 9, rx: 2.5 }],
+      ['ln', 'rect', { x: 17, y: 29, width: 14, height: 9, rx: 2.5 }],
+      ['ln', 'path', { d: 'M11 24h26' }]
+    ],
+    box: [
+      ['lit', 'rect', { x: 9, y: 19, width: 22, height: 20 }],
+      ['ln', 'path', { d: 'M9 19l8-8h22l-8 8zM31 19l8-8v20l-8 8' }],
+      ['ln', 'rect', { x: 9, y: 19, width: 22, height: 20 }],
+      ['ln', 'path', { d: 'M14.5 29l4 4 7.5-8' }]
+    ],
+    book: [
+      ['lit', 'path', { d: 'M24 14c-5-4-12-4.5-17-3v26c5-1.5 12-1 17 3zM24 14c5-4 12-4.5 17-3v26c-5-1.5-12-1-17 3z' }],
+      ['ln', 'path', { d: 'M24 14c-5-4-12-4.5-17-3v26c5-1.5 12-1 17 3zM24 14c5-4 12-4.5 17-3v26c-5-1.5-12-1-17 3z' }]
+    ],
+    sprout: [
+      ['lit', 'path', { d: 'M24 27c-7.5 0-12-5-12-12 7 0 12 5 12 12zM24 23c0-7 4.5-12.5 13-12.5 0 7.5-5 12.5-13 12.5z' }],
+      ['ln', 'path', { d: 'M10 40h28M24 40V22' }],
+      ['ln', 'path', { d: 'M24 27c-7.5 0-12-5-12-12 7 0 12 5 12 12zM24 23c0-7 4.5-12.5 13-12.5 0 7.5-5 12.5-13 12.5z' }]
+    ]
+  };
+
+  function symbolSvg(name) {
+    var svg = document.createElementNS(SVG_NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 48 48');
+    svg.setAttribute('class', 'cv-svg');
+    SYMBOLS[name].forEach(function (s) {
+      var n = document.createElementNS(SVG_NS, s[1]);
+      n.setAttribute('class', s[0]);
+      Object.keys(s[2]).forEach(function (k) { n.setAttribute(k, s[2][k]); });
+      svg.append(n);
+    });
+    return svg;
+  }
+
+  function symbolCover(p, c, hero) {
+    return el('div', { class: 'cv cv--symbol' + (hero ? ' cv--hero' : ''), 'aria-hidden': 'true' }, [
+      el('span', { class: 'cv-dots' }), el('span', { class: 'cv-warm' }), el('span', { class: 'cv-glow' }),
+      el('span', { class: 'cv-symbol' }, symbolSvg(c.symbol)),
+      el('span', { class: 'cv-name' }, p.name),
+      el('span', { class: 'cv-view' }, 'VIEW')
+    ]);
+  }
+
+  // 블록 위치 (표지 폭 기준 cqw). 처음엔 지표 카드 아래 띠, 켜지면 무리별 격자
+  var STRIP = { x: 21, bottom: 50.5, step: 2.4, cols: 24 };   // 띠는 지표 카드 아랫단에 맞춰 줄 수만큼 위로 쌓임
+  var GRID = { y: 24, size: 3, step: 3.8, gap: 7 };
+  function metricCover(p, c, hero) {
+    var groups = list(c.groups).map(function (g) {
+      return { label: text(g.label), count: Math.max(0, Math.min(72, Math.round(+g.count || 0))), tone: g.tone === 'muted' ? 'muted' : 'accent' };
+    }).filter(function (g) { return g.count > 0; });
+    var cols = groups.length > 2 ? 6 : 8;
+    var gw = cols * GRID.step - (GRID.step - GRID.size);
+    var x0 = (100 - (groups.length * gw + (groups.length - 1) * GRID.gap)) / 2;
+    var total = groups.reduce(function (n, g) { return n + g.count; }, 0);
+    var stripY = STRIP.bottom - Math.ceil(total / STRIP.cols) * STRIP.step;
+    var parts = [], k = 0;
+    groups.forEach(function (g, gi) {
+      var gx = x0 + gi * (gw + GRID.gap);
+      parts.push(el('span', { class: 'cv-glabel t-' + g.tone, style: 'left:' + gx.toFixed(2) + 'cqw;width:' + gw.toFixed(2) + 'cqw' }, g.label));
+      for (var i = 0; i < g.count; i++, k++) {
+        parts.push(el('span', { class: 'blk t-' + g.tone, style: [
+          '--x1:' + (STRIP.x + (k % STRIP.cols) * STRIP.step).toFixed(2), '--y1:' + (stripY + Math.floor(k / STRIP.cols) * STRIP.step).toFixed(2),
+          '--x2:' + (gx + (i % cols) * GRID.step).toFixed(2), '--y2:' + (GRID.y + Math.floor(i / cols) * GRID.step).toFixed(2),
+          '--d:' + Math.min(k * 14, 600) + 'ms'].join(';') }));
+      }
+    });
+    var markImg = toImage(c.markImage);
+    return el('div', { class: 'cv cv--metric' + (hero ? ' cv--hero' : ''), 'aria-hidden': 'true' }, [
+      el('span', { class: 'cv-mark' }, [markImg && el('img', { src: markImg.src, alt: '' }), p.name]),
+      el('span', { class: 'cv-card' }, [
+        text(c.label) && el('span', { class: 'cv-label' }, c.label),
+        el('strong', { class: 'cv-value' }, text(c.value)),
+        text(c.note) && el('span', { class: 'cv-note' }, c.note)
+      ]),
+      parts,
+      text(c.unit) && el('span', { class: 'cv-unit' }, c.unit),
+      el('span', { class: 'cv-view' }, 'VIEW')
+    ]);
+  }
+
+  function coverArt(p, hero) {
+    var c = p.cover || {};
+    if (c.type === 'metric' && text(c.value) && list(c.groups).length) return metricCover(p, c, hero);
+    if (c.type === 'symbol' && SYMBOLS[c.symbol]) return symbolCover(p, c, hero);
+    return null;
+  }
+
+  /* ---------- 프로젝트 목차: 대표 2열 + 분야별 3열 묶음 ---------- */
   function cardPlaceholder(p) {
     return el('div', { class: 'media-ph', 'aria-hidden': 'true' }, [
       el('span', { class: 'media-ph-name' }, p.name),
@@ -175,10 +323,15 @@
     ]);
   }
 
-  function projectCard(p) {
+  // 썸네일: 소표지 → 대표 이미지 → 이름만 있는 대기 화면 순
+  function projectCard(p, headingTag) {
     var media = el('div', { class: 'card-media' });
+    var art = coverArt(p, false);
     var cover = toImage(p.image);
-    if (cover) {
+    if (art) {
+      media.classList.add('has-cover');
+      media.append(art);
+    } else if (cover) {
       if (text(cover.bg)) media.style.background = cover.bg;
       var img = imageNode(cover, { alt: p.name + ' 대표 화면', lazy: true });
       img.addEventListener('error', function () { media.style.background = ''; img.replaceWith(cardPlaceholder(p)); });
@@ -189,83 +342,78 @@
     var cats = categories(p);
     var role = roleText(p);
     var problem = text(p.displayProblem) || text(p.desc);
-    return el('li', { class: 'card', 'data-cats': cats.join('|') }, [
+    return el('li', { class: 'card' }, [
       media,
       el('div', { class: 'card-body' }, [
         cats.length > 0 && el('p', { class: 'card-cats' }, cats.join(' · ')),
-        el('h3', { class: 'card-title' }, el('a', { class: 'card-link', href: detailHref(p.id) }, p.name)),
+        el(headingTag, { class: 'card-title' }, el('a', { class: 'card-link', href: detailHref(p.id) }, p.name)),
         problem && el('p', { class: 'card-problem' }, problem),
         role && el('p', { class: 'card-role' }, [el('span', { class: 'k' }, '역할'), role])
       ])
     ]);
   }
 
-  function renderProjects(section) {
-    var bar = section.querySelector('[data-filters]');
-    var countEl = section.querySelector('[data-count]');
-    var grid = section.querySelector('[data-projects]');
-    var items = PROJECTS.map(function (p) { return { cats: categories(p), li: projectCard(p) }; });
-    grid.replaceChildren.apply(grid, items.map(function (it) { return it.li; }));
+  // 묶음은 site-content.js 의 projectGroups 순서대로. 어느 묶음에도 없는 프로젝트는 마지막 묶음으로
+  function projectGroups() {
+    var byId = {}, used = {};
+    PROJECTS.forEach(function (p) { byId[p.id] = p; });
+    var groups = list(SITE.projectGroups).map(function (g) {
+      return {
+        title: text(g.title), desc: text(g.desc), featured: g.layout === 'featured',
+        items: list(g.ids).map(function (id) { return byId[id]; }).filter(function (p) { return p && !used[p.id] && (used[p.id] = true); })
+      };
+    }).filter(function (g) { return g.items.length; });
+    var rest = PROJECTS.filter(function (p) { return !used[p.id]; });
+    if (rest.length) groups.push({ title: groups.length ? '그 밖의 작업' : '', desc: '', featured: !groups.length, items: rest });
+    return groups;
+  }
 
-    if (!items.length) {
-      bar.hidden = true;
-      countEl.textContent = '';
-      grid.replaceWith(el('div', { class: 'placeholder' }, el('div', null, [el('strong', null, '준비 중'), '프로젝트 자료를 정리하고 있습니다.'])));
+  function renderProjects(section) {
+    var root = section.querySelector('[data-toc]');
+    var groups = projectGroups();
+    if (!groups.length) {
+      root.replaceChildren(el('div', { class: 'placeholder' }, el('div', null, [el('strong', null, '준비 중'), '프로젝트 자료를 정리하고 있습니다.'])));
       return;
     }
-
-    function matches(it, f) { return f === ALL || it.cats.indexOf(f) >= 0; }
-    function total(f) { return items.filter(function (it) { return matches(it, f); }).length; }
-
-    var buttons = FILTERS.map(function (f) {
-      var n = total(f);
-      return el('button', { type: 'button', class: 'filter', 'aria-pressed': 'false', 'data-filter': f, 'aria-label': f + ', ' + n + '개' }, [
-        el('span', null, f), el('span', { class: 'filter-n', 'aria-hidden': 'true' }, String(n))
-      ]);
+    root.replaceChildren();
+    groups.forEach(function (g, gi) {
+      var hid = 'toc-group-' + (gi + 1);
+      append(root, el('section', { class: 'toc-group', 'aria-labelledby': g.title ? hid : null }, [
+        g.title && el('div', { class: 'toc-group-head' }, [
+          el('h3', { id: hid }, g.title),
+          el('span', { class: 'toc-group-n' }, g.items.length + '개')
+        ]),
+        g.desc && el('p', { class: 'toc-group-desc' }, g.desc),
+        el('ul', { class: 'project-grid ' + (g.featured ? 'is-featured' : 'is-compact') },
+          g.items.map(function (p) { return projectCard(p, g.title ? 'h4' : 'h3'); }))
+      ]));
     });
-    bar.replaceChildren.apply(bar, buttons);
 
-    function apply(f, animate) {
-      var shown = 0;
-      buttons.forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-filter') === f)); });
-      items.forEach(function (it) {
-        var on = matches(it, f);
-        it.li.hidden = !on;
-        it.li.classList.remove('is-entering');
-        if (on) {
-          if (animate && !reduceMQ.matches) {
-            it.li.style.setProperty('--i', shown);
-            void it.li.offsetWidth;   // 같은 카드도 다시 등장 효과를 받도록
-            it.li.classList.add('is-entering');
-          }
-          shown++;
-        }
-      });
-      countEl.textContent = (f === ALL ? '전체' : f) + ' · ' + shown + '개 프로젝트';
+    // 목차 아래 짧은 기록 (예: 실패 기록). 상세 페이지 없이 한 줄로
+    var notes = list(SITE.projectNotes).filter(function (n) { return n && text(n.text); });
+    if (notes.length) root.append(el('div', { class: 'toc-notes' }, notes.map(function (n) {
+      return el('p', { class: 'toc-note' }, [text(n.label) && el('span', { class: 'toc-note-k' }, n.label), el('span', null, n.text)]);
+    })));
+
+    // 마우스가 없는 기기: 카드가 화면에 충분히 들어오면 소표지를 한 번 펼침
+    if (matchMedia('(hover: none)').matches && !reduceMQ.matches && 'IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('is-on'); io.unobserve(e.target); } });
+      }, { threshold: 0.6 });
+      root.querySelectorAll('.cv').forEach(function (c) { io.observe(c); });
     }
-
-    bar.addEventListener('click', function (e) {
-      var b = e.target.closest('.filter');
-      if (!b) return;
-      var f = b.getAttribute('data-filter');
-      stored(FILTER_KEY, f);
-      apply(f, true);
-    });
-
-    // 상세에서 돌아왔을 때 고른 분야를 그대로
-    var saved = stored(FILTER_KEY);
-    apply(FILTERS.indexOf(saved) >= 0 ? saved : ALL, false);
   }
 
   /* ---------- 프로젝트 상세: 소표지 → 구성 지도 → 문제 / 판단 근거 / 설계·실행 / 결과·한계 ---------- */
   var SECTIONS = [
-    { id: 'problem', name: '문제', body: function (p) { return paras(p.problem); },
+    { id: 'problem', name: '문제', body: function (p) { return blocks(p.problem); },
       pending: function () { return '풀고자 한 문제를 정리해 추가합니다.'; } },
-    { id: 'judgment', name: '판단 근거', body: function (p) { return paras(p.judgmentEvidence); },
+    { id: 'judgment', name: '판단 근거', body: function (p) { return blocks(p.judgmentEvidence); },
       pending: function () { return '판단의 근거가 된 관찰·자료를 확인한 뒤 정리합니다.'; } },
-    { id: 'build', name: '설계·실행', body: function (p) { return paras(p.approach); }, images: true,
+    { id: 'build', name: '설계·실행', body: function (p) { return blocks(p.approach); }, images: true,
       pending: function () { return '설계와 실행 과정을 정리해 추가합니다.'; } },
-    { id: 'result', name: '결과·한계', body: function (p) { return paras(p.outcome).concat(paras(p.limitations)); },
+    { id: 'result', name: '결과·한계', body: function (p) { return blocks(p.outcome).concat(blocks(p.limitations)); },
+      learned: function (p) { return blocks(p.learned); },
       // 확인된 결과가 없으면 evidence(보완할 자료 메모)를 '보완 예정'으로만 보여 줌
       pending: function (p) { return text(p.evidence) || '확인된 결과와 한계를 정리해 추가합니다.'; } }
   ];
@@ -308,6 +456,9 @@
     var isDraft = /^draft/.test(text(p.contentStatus));
     var cover = toImage(p.image);
     var detailImages = list(p.detailImages).map(toImage).filter(Boolean);
+    // 대표 이미지는 상세 이미지에 같은 파일이 없을 때만 설계·실행 맨 앞에 둠
+    // (로고처럼 작업 화면이 아닌 대표 이미지는 showInDetail: false)
+    if (cover && cover.showInDetail !== false && !detailImages.some(function (im) { return im.src === cover.src; })) detailImages.unshift(cover);
 
     document.title = p.name + ' · 김시언 포트폴리오';
     var md = document.querySelector('meta[name="description"]');
@@ -316,14 +467,19 @@
     var sections = SECTIONS.map(function (s) {
       var body = s.body(p);
       var imgs = s.images ? detailImages : [];
-      return { s: s, body: body, imgs: imgs, filled: body.length > 0 || imgs.length > 0 };
+      var learned = s.learned ? s.learned(p) : [];
+      return { s: s, body: body, imgs: imgs, learned: learned, filled: body.length + imgs.length + learned.length > 0 };
     });
 
     // 소표지: 어두운 면의 점들이 불씨의 온기로 밝아진 뒤 프로젝트명이 드러남 (긴 도입 없이 바로 읽을 수 있음)
-    var subcover = el('section', { class: 'subcover', 'aria-labelledby': 'project-title' }, [
+    // 목차 카드와 같은 소표지(상징·지표)를 오른쪽에 크게 두고, 등장이 끝나면 한 번 펼침
+    var heroArt = coverArt(p, true);
+    if (heroArt) setTimeout(function () { heroArt.classList.add('is-on'); }, reduceMQ.matches ? 0 : 1100);
+    var subcover = el('section', { class: 'subcover' + (heroArt ? ' has-cover' : ''), 'aria-labelledby': 'project-title' }, [
       el('div', { class: 'subcover-art', 'aria-hidden': 'true' }, [
         el('span', { class: 'sc-dots' }), el('span', { class: 'sc-dots sc-dots--warm' }), el('span', { class: 'sc-ember' })
       ]),
+      heroArt && el('div', { class: 'subcover-cover' }, heroArt),
       el('div', { class: 'subcover-copy' }, [
         el('p', { class: 'subcover-eyebrow' }, ['PROJECT ' + pad(index + 1), cats.length ? ' · ' + cats.join(' · ') : '']),
         el('h1', { id: 'project-title', class: 'subcover-title' }, p.name),
@@ -335,7 +491,20 @@
       cats.length > 0 && el('div', null, [el('dt', null, '분야'), el('dd', null, cats.join(' · '))]),
       period && el('div', null, [el('dt', null, '기간'), el('dd', null, period)]),
       role && el('div', null, [el('dt', null, '역할'), el('dd', null, role)]),
-      link && el('div', null, [el('dt', null, '링크'), el('dd', null, el('a', { href: link, target: '_blank', rel: 'noopener' }, ['프로젝트 보기', icon('up-right')]))])
+      link && el('div', null, [el('dt', null, '링크'), el('dd', null, el('a', { href: link, target: '_blank', rel: 'noopener' }, [text(p.linkLabel) || '프로젝트 보기', icon('up-right')]))])
+    ]);
+
+    // 핵심 결과: 데이터에 적힌 확인된 수치만, 숫자 애니메이션 없이
+    var metricList = list(p.metrics).filter(function (m) { return m && text(m.value); });
+    var metrics = metricList.length > 0 && el('section', { class: 'metrics', 'aria-label': '핵심 결과' }, [
+      el('ul', { class: 'metrics-list' }, metricList.map(function (m) {
+        return el('li', { class: 'metric' }, [
+          text(m.label) && el('span', { class: 'metric-label' }, m.label),
+          el('strong', { class: 'metric-value' }, m.value),
+          text(m.note) && el('span', { class: 'metric-note' }, m.note)
+        ]);
+      })),
+      text(p.metricsNote) && el('p', { class: 'metrics-note' }, p.metricsNote)
     ]);
 
     // 구성 지도: 네 단계가 블록으로 이어지고, 정리된 단계와 보완할 단계를 구분 (수치는 쓰지 않음)
@@ -350,8 +519,12 @@
 
     var story = el('div', { class: 'story' }, sections.map(function (x, i) {
       var body = el('div', { class: 'story-body' });
-      if (x.body.length) append(body, x.body.map(function (t) { return el('p', null, t); }));
-      x.imgs.forEach(function (im, k) { body.append(figure(im, p.name + ' 작업 화면 ' + (k + 1))); });
+      append(body, renderBlocks(x.body));
+      if (x.imgs.length) {
+        var figs = x.imgs.map(function (im, k) { return figure(im, p.name + ' 작업 화면 ' + (k + 1)); });
+        body.append(figs.length > 1 ? el('div', { class: 'story-gallery' }, figs) : figs[0]);
+      }
+      if (x.learned.length) body.append(el('div', { class: 'learned' }, [el('p', { class: 'learned-k' }, '배운 점'), renderBlocks(x.learned)]));
       if (!x.filled) body.append(el('p', { class: 'pending' }, [el('span', { class: 'pending-tag' }, '보완 예정'), el('span', null, x.s.pending(p))]));
       return el('section', { class: 'story-section', id: x.s.id, 'aria-labelledby': x.s.id + '-title' }, [
         el('div', { class: 'story-head' }, [el('span', { class: 'story-no' }, pad(i + 1)), el('h2', { id: x.s.id + '-title' }, x.s.name)]),
@@ -372,9 +545,9 @@
       subcover,
       el('div', { class: 'project-body', id: 'project-body', tabindex: '-1' }, [
         facts,
+        metrics,
         isDraft && el('p', { class: 'draft-note' }, '이 페이지의 설명은 정리 중인 초안입니다. 담당 역할과 결과는 자료를 확인한 뒤 추가합니다.'),
         map,
-        cover && figure(cover, p.name + ' 대표 화면'),
         story,
         pager
       ])
@@ -402,13 +575,13 @@
   var projectsRoot = document.querySelector('[data-projects-section]');
   var contactRoot = document.querySelector('[data-contact]');
   var detailRoot = document.querySelector('[data-project-root]');
-  if (aboutRoot) renderAbout(aboutRoot);
+  if (aboutRoot) { renderAbout(aboutRoot); watchDarkBand(document.getElementById('intro-me')); }
   if (projectsRoot) renderProjects(projectsRoot);
   if (contactRoot) renderContact(contactRoot);
   if (detailRoot) renderDetail(detailRoot);
 
   // 이미지 상태 확인용 (콘솔에서 Bulssi.renderAboutImages([...]) 로 0·1·여러 장 상태를 볼 수 있음)
   window.Bulssi = {
-    renderAboutImages: function (images) { if (aboutRoot) renderAboutImages(aboutRoot.querySelector('[data-about-media]'), list(images).map(toImage).filter(Boolean)); }
+    renderAboutImages: function (images, interval) { if (aboutRoot) renderAboutImages(aboutRoot.querySelector('[data-about-media]'), list(images).map(toImage).filter(Boolean), interval); }
   };
 })();

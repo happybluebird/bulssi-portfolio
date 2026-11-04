@@ -2,7 +2,8 @@
    - 아웃백·우주도서관·OCM·기쁜오목눈이·OZ TRIP·경매 드래프트·카드뉴스 자동화: 김시언_포트폴리오_카카오뱅크.pdf(2026.10)에서 옮김
    - 스쿨존윅·이사이상무·기억의 궁전·SEED: bulssi-claude-handoff 초안(2026-10-24), 검증 전
    problem·judgmentEvidence·approach·outcome·learned 는 문장 배열. {"label","text"} 는 이름표가 붙은 줄로 표시.
-   cover: 목차 카드·상세 위쪽 소표지 (metric = 확인된 지표 → 블록 구성, symbol = 상징 → 빛 → 이름).
+   cover: 목차 카드·상세 위쪽 소표지 (metric = 확인된 지표 → 블록 구성, symbol = 상징 → 빛 → 이름,
+          board = 보드게임 판 위를 팀 말이 달림, book = 카드뉴스가 책처럼 넘어감, flight = 낮게 날던 오목눈이가 하늘 높이, video = 실제 사이트 시연 영상).
    role·period·outcome·link·image 가 null 이면 화면에서 숨기거나 '보완 예정'으로 표시합니다. 작성법은 README.md */
 window.BULSSI_PROJECTS = {
   "schemaVersion": 1,
@@ -43,8 +44,7 @@ window.BULSSI_PROJECTS = {
       "outcome": [
         "객단가 +16%(37,000원 → 43,000원) · 2024년 하남스타필드점 전국 매출 1위.",
         "월별 프로모션 객단가 전월 대비: 8월 +2,712원 · 9월 −482원 · 10월 +1,285원, 3개월 합계 +3,515원.",
-        "아웃백 제2회 D.N.A 이달의 사원(2023.09.17, 하남스타필드점) · 2025 시즌(서비스 교육) 3개월 연속 이달의 우수사원.",
-        "“어느 외식업체에서도 만나 보지 못했던 귀한 직원인 것 같습니다” — 2023.09.17 고객의 소리 중"
+        "아웃백 제2회 D.N.A 이달의 사원(2023.09.17, 하남스타필드점) · 2025 시즌(서비스 교육) 3개월 연속 이달의 우수사원."
       ],
       "learned": [
         "매출은 상품만이 아니라 고객이 고르는 순간의 설계로도 바뀝니다."
@@ -101,23 +101,280 @@ window.BULSSI_PROJECTS = {
       "contentStatus": "from_portfolio_2026_10",
       "sourceNote": "김시언_포트폴리오_카카오뱅크.pdf (2026.10)",
       "cover": {
-        "type": "metric",
-        "label": "객단가",
-        "value": "+16%",
-        "note": "37,000원 → 43,000원",
-        "groups": [
+        "type": "board",
+        "image": {
+          "src": "assets/projects/outback-board-08-race.jpg",
+          "width": 533,
+          "height": 319
+        },
+        "pieces": [
+          "#D3372D",
+          "#2F62C6",
+          "#2E9B4D",
+          "#EFBD2E"
+        ],
+        "track": [
+          [
+            25.9,
+            91.2
+          ],
+          [
+            24.9,
+            76.8
+          ],
+          [
+            24.9,
+            67.7
+          ],
+          [
+            24.9,
+            58.3
+          ],
+          [
+            24.9,
+            48.9
+          ],
+          [
+            24.9,
+            39.5
+          ],
+          [
+            24.9,
+            30.1
+          ],
+          [
+            24.9,
+            20.7
+          ],
+          [
+            25.7,
+            9.4
+          ],
+          [
+            33.3,
+            8.5
+          ],
+          [
+            38.8,
+            8.5
+          ],
+          [
+            44.4,
+            8.5
+          ],
+          [
+            50,
+            8.5
+          ],
+          [
+            55.7,
+            8.5
+          ],
+          [
+            61.3,
+            8.5
+          ],
+          [
+            66.8,
+            8.5
+          ],
+          [
+            74.6,
+            9.4
+          ],
+          [
+            75.3,
+            20.7
+          ],
+          [
+            75.3,
+            30.1
+          ],
+          [
+            75.3,
+            39.5
+          ],
+          [
+            75.3,
+            48.9
+          ],
+          [
+            75.3,
+            58.3
+          ],
+          [
+            75.3,
+            67.7
+          ],
+          [
+            75.3,
+            76.8
+          ],
+          [
+            74.2,
+            91.2
+          ],
+          [
+            66.3,
+            89.7
+          ],
+          [
+            61.2,
+            89.7
+          ],
+          [
+            56,
+            89.7
+          ],
+          [
+            50.8,
+            89.7
+          ],
+          [
+            45.5,
+            89.7
+          ],
+          [
+            40.1,
+            89.7
+          ],
+          [
+            34.6,
+            89.7
+          ]
+        ],
+        "label": "8월 팀 프로모션",
+        "title": "국내 여행 보드게임",
+        "note": "객단가 전월 대비 +2,712원"
+      },
+      "training": {
+        "title": "FOH CLASS 서비스 트레이닝북",
+        "meta": "2024.06 · 직접 기획·제작 · 홀(FOH) 직원 교육용",
+        "intro": "홀 직원 교육용 트레이닝북을 직접 만들었습니다. 일을 시작하기 전의 태도에서 고객 앞에서 꺼낼 말 한마디까지, 네 장으로 나눴습니다.",
+        "pages": [
           {
-            "label": "도입 전 · 37,000원",
-            "count": 37,
-            "tone": "muted"
+            "src": "assets/projects/foh/s01.webp",
+            "alt": "표지: FOH CLASS 서비스 트레이닝북 — 가족을 모시듯, 뜻깊은 경험과 좋은 추억을 만드는 법",
+            "width": 1280,
+            "height": 720
           },
           {
-            "label": "도입 후 · 43,000원",
-            "count": 43,
-            "tone": "accent"
+            "src": "assets/projects/foh/s02.webp",
+            "alt": "목차: 01 MIND · 02 SERVICE · 03 STRATEGY · 04 CLOSE",
+            "width": 1280,
+            "height": 720
+          },
+          {
+            "src": "assets/projects/foh/s03.webp",
+            "alt": "01 MIND: 우리는 모두 사람 — 처음이니까 배우고 익히며 성장한다, 도덕과 책임감",
+            "width": 1280,
+            "height": 720
+          },
+          {
+            "src": "assets/projects/foh/s04.webp",
+            "alt": "좋은 서비스를 위한 4가지 태도: 겸손, 자기 객관화, 기분이 태도가 되지 않기, 긍정",
+            "width": 1280,
+            "height": 720
+          },
+          {
+            "src": "assets/projects/foh/s05.webp",
+            "alt": "02 SERVICE: 좋은 서비스는 사소한 것부터 차곡차곡 쌓아 뜻깊은 경험을 드리는 것",
+            "width": 1280,
+            "height": 720
+          },
+          {
+            "src": "assets/projects/foh/s06.webp",
+            "alt": "선 서비스를 만드는 세 문장",
+            "width": 1280,
+            "height": 720
+          },
+          {
+            "src": "assets/projects/foh/s07.webp",
+            "alt": "사례 1: 메뉴 선택을 돕는 세심한 관찰",
+            "width": 1280,
+            "height": 720
+          },
+          {
+            "src": "assets/projects/foh/s08.webp",
+            "alt": "사례 2: 아이의 생일을 기억하는 서비스",
+            "width": 1280,
+            "height": 720
+          },
+          {
+            "src": "assets/projects/foh/s09.webp",
+            "alt": "현장에서 실천하는 6가지 서비스 전략",
+            "width": 1280,
+            "height": 720
+          },
+          {
+            "src": "assets/projects/foh/s10.webp",
+            "alt": "마무리: 서비스는 어떻게 생각하고 실천하느냐에 달렸다",
+            "width": 1280,
+            "height": 720
           }
         ],
-        "unit": "블록 1개 = 객단가 1,000원"
+        "pagesNote": "원본 11쪽 가운데 매니저 실명이 담긴 1쪽(매니저들의 조언)은 빼고 실었습니다.",
+        "chapters": [
+          {
+            "no": "01",
+            "name": "MIND",
+            "text": "일을 시작하기 전의 생각과 태도. 겸손, 자기 객관화, 기분이 태도가 되지 않기, 긍정"
+          },
+          {
+            "no": "02",
+            "name": "SERVICE",
+            "text": "고객이 요청하기 전에 먼저 다가가는 ‘선 서비스’와 현장 사례 2가지"
+          },
+          {
+            "no": "03",
+            "name": "STRATEGY",
+            "text": "현장에서 실천하는 6가지 전략. 넓은 시야, 대화, 표정·목소리, 과도한 관심 금지, 좋은 기억, 인사"
+          },
+          {
+            "no": "04",
+            "name": "CLOSE",
+            "text": "혼자 풀기 어려울 때 기댈 매니저들의 조언과 마무리"
+          }
+        ],
+        "phrasesLabel": "선 서비스를 만드는 세 문장",
+        "phrases": [
+          "음료수 더 리필 해드릴까요?",
+          "피클 더 준비 해드릴까요?",
+          "실례하겠습니다. 편안한 대화 환경을 위해 다 드신 그릇 정리해 드릴까요?"
+        ],
+        "case": {
+          "label": "사례 · 메뉴 선택을 돕는 세심한 관찰",
+          "steps": [
+            "5분이 지나도 블로그와 메뉴판을 번갈아 보며 고민하는 고객에게 먼저 추천을 제안",
+            "토마호크 스테이크의 세 부위를 설명하고 제휴 할인·멤버십 쿠폰·와인 혜택을 안내",
+            "컷팅부터 중간 체크, 후식, 남은 빵 포장까지 끝까지 챙김"
+          ],
+          "quote": "너무 감사합니다. 잘 몰랐는데.. 되게 친절하시고 맛있게 잘 먹었어요. 다음에 또 올게요!",
+          "note": "트레이닝북 7쪽 · 할인·혜택은 2024년 6월 기준"
+        },
+        "recognition": {
+          "image": {
+            "src": "assets/projects/outback-dna.jpg",
+            "alt": "아웃백 하남스타필드점 D.N.A 선정 증서. 이름 김시언, 날짜 2023.09.17, 고객의 소리 원문이 함께 실려 있음",
+            "width": 520,
+            "height": 562,
+            "caption": "D.N.A 선정 증서 · 고객의 소리 원문 포함"
+          },
+          "quote": {
+            "text": "어느 외식업체에서도 만나 보지 못했던 귀한 직원인 것 같습니다",
+            "source": "2023.09.17 고객의 소리 중"
+          },
+          "awards": [
+            {
+              "k": "2023.09.17 · 하남스타필드점",
+              "v": "아웃백 제2회 D.N.A 이달의 사원"
+            },
+            {
+              "k": "2025 시즌 · 서비스 교육",
+              "v": "3개월 연속 이달의 우수사원"
+            }
+          ]
+        }
       }
     },
     {
@@ -163,14 +420,25 @@ window.BULSSI_PROJECTS = {
         "src": "assets/projects/space-cover.jpg",
         "alt": "우주도서관 첫 화면 — 내가 태어난 날, NASA는 무엇을 올렸을까",
         "width": 600,
-        "height": 500
+        "height": 500,
+        "showInDetail": false
       },
       "contentStatus": "from_portfolio_2026_10",
       "displayProblem": "NASA·ESA 관측 정보를 한국어로 쉽게 탐색하는 서비스",
       "judgmentEvidence": [
         "반응은 GA4로 측정하되, 해외 유입을 걸러 국내 실사용자 기준으로 봤습니다."
       ],
-      "detailImages": [],
+      "detailImages": [
+        {
+          "src": "assets/projects/space-demo-poster.jpg",
+          "video": "assets/projects/space-demo.mp4",
+          "webm": "assets/projects/space-demo.webm",
+          "width": 1280,
+          "height": 740,
+          "alt": "우주도서관 시연 영상: 생일을 넣어 그날 NASA 사진과 한국어 해설을 보고, 오늘의 우주와 천체보관소를 둘러봄",
+          "caption": "실제 사이트 시연(2026.11.05 녹화, 28초) · 생일 우주 → 한국어 해설 → 오늘의 우주 → 천체보관소"
+        }
+      ],
       "sourceNote": "김시언_포트폴리오_카카오뱅크.pdf (2026.10)",
       "metrics": [
         {
@@ -192,23 +460,11 @@ window.BULSSI_PROJECTS = {
       "metricsNote": "GA4 2026.08.01~10.28 · 검색 한도 수치는 서비스 화면 기준",
       "linkLabel": "cosmoslib.com",
       "cover": {
-        "type": "metric",
-        "label": "국내 참여율",
-        "value": "73.2%",
-        "note": "전체 46.4% · GA4 2026.08~10",
-        "groups": [
-          {
-            "label": "국내 · 109명",
-            "count": 22,
-            "tone": "accent"
-          },
-          {
-            "label": "그 외 · 137명",
-            "count": 27,
-            "tone": "muted"
-          }
-        ],
-        "unit": "블록 1개 ≈ 활성 사용자 5명 · 전체 246명"
+        "type": "video",
+        "src": "assets/projects/space-demo.mp4",
+        "webm": "assets/projects/space-demo.webm",
+        "poster": "assets/projects/space-demo-poster.jpg",
+        "url": "cosmoslib.com"
       }
     },
     {
@@ -283,24 +539,149 @@ window.BULSSI_PROJECTS = {
       "metricsNote": "2026.10.11 개설 → 10.28 기준",
       "linkLabel": "@ocm.magazine",
       "cover": {
-        "type": "metric",
-        "label": "대회 목표 KPI",
-        "value": "점유율 60%",
-        "note": "드래프트 기준 · 본대회 50%",
-        "groups": [
-          {
-            "label": "14시 · 600명",
-            "count": 3,
-            "tone": "muted"
-          },
-          {
-            "label": "22시 · 8,000명",
-            "count": 40,
-            "tone": "accent"
-          }
+        "type": "book",
+        "pages": [
+          "assets/projects/ocm-book/p000.webp",
+          "assets/projects/ocm-book/p001.webp",
+          "assets/projects/ocm-book/p002.webp",
+          "assets/projects/ocm-book/p003.webp",
+          "assets/projects/ocm-book/p004.webp",
+          "assets/projects/ocm-book/p005.webp",
+          "assets/projects/ocm-book/p006.webp",
+          "assets/projects/ocm-book/p007.webp",
+          "assets/projects/ocm-book/p008.webp",
+          "assets/projects/ocm-book/p009.webp",
+          "assets/projects/ocm-book/p010.webp",
+          "assets/projects/ocm-book/p011.webp",
+          "assets/projects/ocm-book/p012.webp",
+          "assets/projects/ocm-book/p013.webp",
+          "assets/projects/ocm-book/p014.webp",
+          "assets/projects/ocm-book/p015.webp",
+          "assets/projects/ocm-book/p016.webp",
+          "assets/projects/ocm-book/p017.webp",
+          "assets/projects/ocm-book/p018.webp",
+          "assets/projects/ocm-book/p019.webp",
+          "assets/projects/ocm-book/p020.webp",
+          "assets/projects/ocm-book/p021.webp",
+          "assets/projects/ocm-book/p022.webp",
+          "assets/projects/ocm-book/p023.webp",
+          "assets/projects/ocm-book/p024.webp",
+          "assets/projects/ocm-book/p025.webp",
+          "assets/projects/ocm-book/p026.webp",
+          "assets/projects/ocm-book/p027.webp",
+          "assets/projects/ocm-book/p028.webp",
+          "assets/projects/ocm-book/p029.webp",
+          "assets/projects/ocm-book/p030.webp",
+          "assets/projects/ocm-book/p031.webp",
+          "assets/projects/ocm-book/p032.webp",
+          "assets/projects/ocm-book/p033.webp",
+          "assets/projects/ocm-book/p034.webp",
+          "assets/projects/ocm-book/p035.webp",
+          "assets/projects/ocm-book/p036.webp",
+          "assets/projects/ocm-book/p037.webp",
+          "assets/projects/ocm-book/p038.webp",
+          "assets/projects/ocm-book/p039.webp",
+          "assets/projects/ocm-book/p040.webp",
+          "assets/projects/ocm-book/p041.webp",
+          "assets/projects/ocm-book/p042.webp",
+          "assets/projects/ocm-book/p043.webp",
+          "assets/projects/ocm-book/p044.webp",
+          "assets/projects/ocm-book/p045.webp",
+          "assets/projects/ocm-book/p046.webp",
+          "assets/projects/ocm-book/p047.webp",
+          "assets/projects/ocm-book/p048.webp",
+          "assets/projects/ocm-book/p049.webp",
+          "assets/projects/ocm-book/p050.webp",
+          "assets/projects/ocm-book/p051.webp",
+          "assets/projects/ocm-book/p052.webp",
+          "assets/projects/ocm-book/p053.webp",
+          "assets/projects/ocm-book/p054.webp",
+          "assets/projects/ocm-book/p055.webp",
+          "assets/projects/ocm-book/p056.webp",
+          "assets/projects/ocm-book/p057.webp",
+          "assets/projects/ocm-book/p058.webp",
+          "assets/projects/ocm-book/p059.webp",
+          "assets/projects/ocm-book/p060.webp",
+          "assets/projects/ocm-book/p061.webp",
+          "assets/projects/ocm-book/p062.webp",
+          "assets/projects/ocm-book/p063.webp",
+          "assets/projects/ocm-book/p064.webp",
+          "assets/projects/ocm-book/p065.webp",
+          "assets/projects/ocm-book/p066.webp",
+          "assets/projects/ocm-book/p067.webp",
+          "assets/projects/ocm-book/p068.webp",
+          "assets/projects/ocm-book/p069.webp",
+          "assets/projects/ocm-book/p070.webp",
+          "assets/projects/ocm-book/p071.webp",
+          "assets/projects/ocm-book/p072.webp",
+          "assets/projects/ocm-book/p073.webp",
+          "assets/projects/ocm-book/p074.webp",
+          "assets/projects/ocm-book/p075.webp",
+          "assets/projects/ocm-book/p076.webp",
+          "assets/projects/ocm-book/p077.webp",
+          "assets/projects/ocm-book/p078.webp",
+          "assets/projects/ocm-book/p079.webp",
+          "assets/projects/ocm-book/p080.webp",
+          "assets/projects/ocm-book/p081.webp",
+          "assets/projects/ocm-book/p082.webp",
+          "assets/projects/ocm-book/p083.webp",
+          "assets/projects/ocm-book/p084.webp",
+          "assets/projects/ocm-book/p085.webp",
+          "assets/projects/ocm-book/p086.webp",
+          "assets/projects/ocm-book/p087.webp",
+          "assets/projects/ocm-book/p088.webp",
+          "assets/projects/ocm-book/p089.webp",
+          "assets/projects/ocm-book/p090.webp",
+          "assets/projects/ocm-book/p091.webp",
+          "assets/projects/ocm-book/p092.webp",
+          "assets/projects/ocm-book/p093.webp",
+          "assets/projects/ocm-book/p094.webp",
+          "assets/projects/ocm-book/p095.webp",
+          "assets/projects/ocm-book/p096.webp",
+          "assets/projects/ocm-book/p097.webp",
+          "assets/projects/ocm-book/p098.webp",
+          "assets/projects/ocm-book/p099.webp",
+          "assets/projects/ocm-book/p100.webp",
+          "assets/projects/ocm-book/p101.webp",
+          "assets/projects/ocm-book/p102.webp",
+          "assets/projects/ocm-book/p103.webp",
+          "assets/projects/ocm-book/p104.webp",
+          "assets/projects/ocm-book/p105.webp",
+          "assets/projects/ocm-book/p106.webp",
+          "assets/projects/ocm-book/p107.webp",
+          "assets/projects/ocm-book/p108.webp",
+          "assets/projects/ocm-book/p109.webp",
+          "assets/projects/ocm-book/p110.webp",
+          "assets/projects/ocm-book/p111.webp",
+          "assets/projects/ocm-book/p112.webp",
+          "assets/projects/ocm-book/p113.webp",
+          "assets/projects/ocm-book/p114.webp",
+          "assets/projects/ocm-book/p115.webp",
+          "assets/projects/ocm-book/p116.webp",
+          "assets/projects/ocm-book/p117.webp",
+          "assets/projects/ocm-book/p118.webp",
+          "assets/projects/ocm-book/p119.webp",
+          "assets/projects/ocm-book/p120.webp",
+          "assets/projects/ocm-book/p121.webp",
+          "assets/projects/ocm-book/p122.webp",
+          "assets/projects/ocm-book/p123.webp",
+          "assets/projects/ocm-book/p124.webp",
+          "assets/projects/ocm-book/p125.webp",
+          "assets/projects/ocm-book/p126.webp",
+          "assets/projects/ocm-book/p127.webp",
+          "assets/projects/ocm-book/p128.webp",
+          "assets/projects/ocm-book/p129.webp"
         ],
-        "unit": "블록 1개 = 시청자 200명 · 같은 금요일(9/11) 치지직 오버워치",
-        "markImage": "assets/projects/ocm-logo.jpg"
+        "stops": [
+          1,
+          3,
+          35,
+          59,
+          89,
+          117
+        ],
+        "markImage": "assets/projects/ocm-logo.jpg",
+        "caption": "게시한 카드뉴스 17세트 · 121장 · 2026.10.15~11.04"
       }
     },
     {
@@ -435,23 +816,19 @@ window.BULSSI_PROJECTS = {
       "contentStatus": "from_portfolio_2026_10",
       "sourceNote": "김시언_포트폴리오_카카오뱅크.pdf (2026.10)",
       "cover": {
-        "type": "metric",
+        "type": "flight",
         "label": "하루 평균 조회",
-        "value": "5 → 159회",
-        "note": "공연 글 시작 전 → 후",
-        "groups": [
-          {
-            "label": "에세이 중심 · 5회",
-            "count": 1,
-            "tone": "muted"
-          },
-          {
-            "label": "공연 글 병행 · 159회",
-            "count": 32,
-            "tone": "accent"
-          }
-        ],
-        "unit": "블록 1개 = 하루 평균 조회 5회"
+        "unit": "회",
+        "from": {
+          "value": 5,
+          "label": "에세이 중심",
+          "note": "02.19~08.22"
+        },
+        "to": {
+          "value": 159,
+          "label": "공연 글 병행",
+          "note": "08.23~10.27"
+        }
       }
     },
     {

@@ -733,10 +733,10 @@ html.on-dark .site-header {
 :is(.card:hover, .card:focus-within) .cv-svg .lit, .cv.is-on .cv-svg .lit { opacity: .95; }
 :is(.card:hover, .card:focus-within) .cv-name, .cv.is-on .cv-name { clip-path: inset(0 0 0 0); transform: translate(0, -50%); }
 
-/* 상세 위쪽: 소표지 판이 이미 점·빛을 그리므로 상징만 가운데에 크게 (이름은 제목이 대신함) */
-.cv--hero.cv--symbol { --sx: 50%; background: transparent; }
-.cv--hero .cv-dots, .cv--hero .cv-warm, .cv--hero .cv-glow, .cv--hero .cv-name { display: none; }
-.cv--hero .cv-symbol { width: 26cqw; }
+/* 상세 위쪽: 상징형도 하나의 판으로 크게 (이름은 옆 제목이 대신함) */
+.cv--hero.cv--symbol { --sx: 50%; background: #050B1F; box-shadow: inset 0 0 0 1px rgba(243, 237, 228, .1); }
+.cv--hero .cv-name { display: none; }
+.cv--hero .cv-symbol { width: 20cqw; }
 
 /* 지표형: 확인된 지표 카드 → 블록이 흩어져 그 지표를 이루는 무리로 다시 모임 */
 .cv--metric { background: #ECE5DA; color: var(--text); }
@@ -826,6 +826,246 @@ html.on-dark .site-header {
 :is(.card:hover, .card:focus-within) .cv-unit, .cv.is-on .cv-unit { opacity: 1; transition-delay: 420ms; }
 .cv--hero.cv--metric { border-radius: 10px; }
 .cv--hero .cv-mark { display: none; }   /* 상세에서는 바로 아래 제목이 이름을 보여 줌 */
+.cv--hero:is(.cv--board, .cv--book, .cv--flight, .cv--video, .cv--symbol) { border-radius: 10px; }
+
+/* 보드게임형: 실제 프로모션 판 위를 팀 말 넷이 칸을 뛰며 돎 (움직임은 portfolio.js 의 Web Animations) */
+.cv--board { display: grid; place-items: center; background: #F5EDDA; }
+.cv-board { position: relative; display: block; width: 100%; }
+.cv-board img { display: block; width: 100%; height: 100%; }
+.cv-board-card {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .7cqw;
+  padding: 2.2cqw 3.2cqw 2.4cqw;
+  border-radius: 1.6cqw;
+  background: rgba(255, 251, 243, .9);
+  box-shadow: 0 1cqw 3cqw rgba(56, 51, 46, .12);
+  text-align: center;
+  white-space: nowrap;
+  transform: translate(-50%, -50%);
+}
+.cv-board-title { font-size: max(13px, 3.2cqw); font-weight: 700; line-height: 1.2; letter-spacing: -.02em; color: #283143; }
+.cv-board-note { font-size: max(11px, 2.1cqw); font-weight: 600; color: var(--accent-ink); font-variant-numeric: tabular-nums; }
+.pawn {
+  position: absolute;
+  z-index: 2;
+  width: 3.1%;
+  transform: translate(-50%, -84%);
+  filter: drop-shadow(0 .3cqw .25cqw rgba(40, 28, 18, .35));
+}
+.pawn-hop { display: block; }
+.pawn-svg { display: block; width: 100%; height: auto; overflow: visible; }
+.pw-body, .pw-base { fill: var(--c); stroke: rgba(30, 20, 12, .32); stroke-width: .8; }
+.pw-shine { fill: rgba(255, 255, 255, .55); }
+.pw-pole { fill: none; stroke: #5B4636; stroke-width: 1.1; stroke-linecap: round; }
+.pw-flag { fill: var(--c); stroke: rgba(30, 20, 12, .3); stroke-width: .5; }
+.cv--board .cv-view { left: 0; right: 0; top: 44cqw; width: max-content; margin: 0 auto; background: #283143; color: var(--bg); }
+
+/* 책형: 게시한 카드뉴스 전부를 엮은 잡지 (넘김은 StPageFlip — 종이가 모서리부터 휘며 넘어감) */
+.cv--book {
+  background: radial-gradient(ellipse 70% 80% at 50% 42%, #2B2024 0%, #141117 58%, #0B0A0E 100%);
+  color: var(--night-text);
+}
+.cv-book-glow {
+  position: absolute;
+  left: 50%;
+  top: 44%;
+  width: 70cqw;
+  aspect-ratio: 2;
+  background: radial-gradient(ellipse 50% 50% at 50% 50%, rgba(255, 96, 67, .26), rgba(255, 96, 67, 0) 100%);
+  filter: blur(8px);
+  transform: translate(-50%, -50%);
+}
+.cv-book { position: absolute; left: 11.6cqw; top: 4.4cqw; width: 76.8cqw; height: 48cqw; }
+.cv-book-in {
+  position: absolute;
+  inset: 0;
+  transition: transform 700ms cubic-bezier(.3, .7, .2, 1);
+}
+.cv-book-in.is-front { transform: translateX(-25%); }   /* 닫힌 앞표지는 오른쪽 한 쪽뿐 → 가운데로 */
+.cv-book-in.is-back { transform: translateX(25%); }
+.bk { position: relative; width: 100%; height: 100%; }
+/* 라이브러리를 불러오기 전(또는 못 불러왔을 때): 앞표지 한 장만 */
+.bk:not(.stf__parent) > .bk-page { display: none; }
+.bk:not(.stf__parent) > .bk-page:first-child { display: block; position: absolute; left: 50%; top: 0; width: 50%; height: 100%; }
+.bk-page { overflow: hidden; background: #16141A; }
+.bk-page img { display: block; width: 100%; height: 100%; object-fit: cover; pointer-events: none; -webkit-user-drag: none; user-select: none; }
+/* 제본선: 두 쪽이 한 장처럼 붙어 보이지 않게 안쪽 가장자리를 접힌 종이처럼 어둡게 */
+.bk-page::after { content: ""; position: absolute; inset: 0; pointer-events: none; }
+.bk-page.--left::after {
+  background: linear-gradient(270deg, rgba(0, 0, 0, .5) 0%, rgba(0, 0, 0, .2) 3.5%, rgba(255, 255, 255, .05) 6%, rgba(0, 0, 0, 0) 14%);
+}
+.bk-page.--right::after {
+  background: linear-gradient(90deg, rgba(0, 0, 0, .5) 0%, rgba(0, 0, 0, .2) 3.5%, rgba(255, 255, 255, .05) 6%, rgba(0, 0, 0, 0) 14%);
+}
+.bk-page.is-cover::after { background: linear-gradient(90deg, rgba(0, 0, 0, .28), rgba(0, 0, 0, 0) 4%); }
+.bk-page.is-cover.--left::after { background: linear-gradient(270deg, rgba(0, 0, 0, .28), rgba(0, 0, 0, 0) 4%); }
+.bk-page.--left { border-radius: .7cqw 0 0 .7cqw; }
+.bk-page.--right { border-radius: 0 .7cqw .7cqw 0; }
+.bk .stf__block { filter: drop-shadow(0 1.2cqw 2cqw rgba(0, 0, 0, .5)); }
+/* StPageFlip 기본 배치 (라이브러리 stPageFlip.css) */
+.stf__parent { position: relative; display: block; box-sizing: border-box; transform: translateZ(0); touch-action: pan-y; }
+.stf__wrapper { position: relative; width: 100%; box-sizing: border-box; }
+.stf__block { position: absolute; width: 100%; height: 100%; box-sizing: border-box; perspective: 2000px; }
+.stf__item { display: none; position: absolute; transform-style: preserve-3d; }
+.stf__outerShadow, .stf__innerShadow, .stf__hardShadow, .stf__hardInnerShadow { position: absolute; left: 0; top: 0; }
+.cv--book .cv-mark { top: auto; bottom: 3.6cqw; color: var(--night-text); }
+.cv-book-cap {
+  position: absolute;
+  right: 4.5cqw;
+  bottom: 3.8cqw;
+  font-size: max(10px, 1.8cqw);
+  letter-spacing: .02em;
+  color: var(--night-muted);
+  transition: opacity 280ms ease;
+}
+.cv--book .cv-view { right: 4.5cqw; bottom: 3.2cqw; border: 1px solid rgba(243, 237, 228, .4); background: rgba(243, 237, 228, .08); color: var(--night-text); }
+:is(.card:hover, .card:focus-within) .cv-book-cap, .cv.is-on:not(.cv--hero) .cv-book-cap { opacity: 0; }
+.cv--hero .cv-book-cap { left: 0; right: 0; text-align: center; }
+.cv--hero.cv--book, .cv--hero .cv-book { pointer-events: auto; }   /* 상세에서는 직접 넘겨 볼 수 있음 */
+.cv--hero .cv-book { cursor: grab; }
+.cv--hero .cv-book:active { cursor: grabbing; }
+
+/* 비행형: 오목눈이 한 마리(에세이)가 낮게 날아가는데, 공연 정보 글로 바꾸자 저 높이에서 새 오목눈이가 빠르게 날아 들어옴
+   (높이는 비유, 숫자는 확인된 값). 낮은 새는 계속 제 높이로 날고, 높은 새는 속도선을 남기며 들어와 자리를 잡음 */
+@property --n {
+  syntax: '<integer>';
+  inherits: false;
+  initial-value: 0;
+}
+.cv--flight { background: linear-gradient(180deg, #E9DCCB 0%, #F1E7DA 55%, #F4ECE2 100%); color: var(--text); }
+.fl-sky-hi {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 84% 16%, rgba(255, 236, 205, .95) 0 4cqw, rgba(255, 214, 160, .45) 9cqw, rgba(255, 214, 160, 0) 24cqw),
+    linear-gradient(180deg, #F0C7A0 0%, #F6E0C8 48%, #FBF3E9 100%);
+  opacity: 0;
+  transition: opacity 700ms ease;
+}
+.fl-svg { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+.fl-svg :is(.fl-clouds, .fl-a, .fl-b, .fl-bob) { transform-box: view-box; }
+.fl-cloud ellipse { fill: #FFFBF5; }
+.fl-clouds { transition: transform 2600ms cubic-bezier(.2, .6, .3, 1); }
+.fl-clouds.is-hi { opacity: .9; }
+.fl-clouds.is-mid { opacity: .75; }
+.fl-hills { fill: #DCCDB9; }
+.fl-trees { fill: #C3AE95; }
+.fl-line { fill: none; stroke: rgba(103, 93, 83, .45); stroke-width: .35; stroke-dasharray: 1.6 1.4; transition: opacity 300ms ease; }
+.fl-line.is-low { opacity: .45; }
+.fl-line.is-high { stroke: rgba(143, 78, 44, .5); opacity: 0; }
+.fl-bob { animation: fl-bob 1.8s ease-in-out infinite alternate; }
+.fl-b .fl-bob { animation-duration: 1.3s; }
+/* 낮은 새: 제자리에서 날갯짓 → 켜지면 계속 앞으로 날아감 */
+.fl-a { transition: transform 600ms ease; }
+/* 높은 새: 왼쪽 밖에서 대기 → 켜지면 빠르게 날아 들어옴. 끌 때는 사라진 뒤 제자리로 */
+.fl-b {
+  opacity: 0;
+  transform: translate(-150px, 40px);   /* 왼쪽 아래 밖에서 비스듬히 치고 올라옴 (숫자 아래로 지나감) */
+  transition: opacity 260ms ease, transform 0s linear 260ms;
+}
+.fl-glow { fill: rgba(255, 186, 120, .5); filter: blur(5px); opacity: 0; transition: opacity 500ms ease; }
+.fl-streaks path { fill: none; stroke: rgba(143, 78, 44, .55); stroke-width: .5; stroke-linecap: round; transform-box: fill-box; transform-origin: 100% 50%; opacity: 0; }
+.tt-body { fill: #FFFDF9; stroke: rgba(56, 51, 46, .28); stroke-width: .25; }
+.tt-flank { fill: #E2B3A6; }
+.tt-back, .tt-tail { fill: #2E2824; }
+.tt-brow { fill: #1F1A17; }
+.tt-eye { fill: #1A1714; }
+.tt-beak { fill: #3A332E; }
+.tt-wing { fill: #3B332E; transform-box: fill-box; transform-origin: 30% 100%; animation: fl-flap 300ms ease-in-out infinite alternate; }
+.fl-b .tt-wing { animation-duration: 130ms; }
+.fl-copy { position: absolute; left: 4.5cqw; top: 4.2cqw; display: flex; flex-direction: column; gap: .8cqw; }
+.fl-count {
+  --n: var(--from);
+  counter-reset: fl var(--n);
+  font-size: 9.5cqw;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -.03em;
+  color: #283143;
+  font-variant-numeric: tabular-nums;
+  transition: --n 400ms ease;
+}
+.fl-count::before { content: counter(fl); }
+.fl-unit { margin-left: .08em; font-size: .42em; font-weight: 600; letter-spacing: 0; }
+.fl-stages { position: relative; display: block; height: 1.5em; font-size: max(11px, 2.2cqw); font-weight: 600; }
+.fl-stage { position: absolute; left: 0; top: 0; white-space: nowrap; transition: opacity 360ms ease, transform 420ms cubic-bezier(.2, .7, .2, 1); }
+.fl-stage.is-from { color: var(--muted); }
+.fl-stage.is-to { color: var(--accent-ink); opacity: 0; transform: translateY(60%); }
+.fl-stage-note { margin-left: .6em; font-weight: 400; color: var(--muted); }
+.fl-tag {
+  position: absolute;
+  font-size: max(10px, 1.7cqw);
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+.fl-tag.is-low { left: 4.5cqw; top: 44.2cqw; color: var(--muted); }    /* 낮은 점선 바로 위 */
+.fl-tag.is-high { right: 4.5cqw; top: 20.4cqw; color: var(--accent-ink); }   /* 높은 점선 바로 아래 */
+.cv--flight .cv-view { right: 4.5cqw; bottom: 4.2cqw; background: #283143; color: var(--bg); }
+:is(.card:hover, .card:focus-within) .fl-sky-hi, .cv.is-on .fl-sky-hi { opacity: 1; transition-delay: 300ms; }
+:is(.card:hover, .card:focus-within) .fl-clouds.is-hi, .cv.is-on .fl-clouds.is-hi { transform: translateX(-8px); }
+:is(.card:hover, .card:focus-within) .fl-clouds.is-mid, .cv.is-on .fl-clouds.is-mid { transform: translateX(-16px); }
+:is(.card:hover, .card:focus-within) .fl-a, .cv.is-on .fl-a { transform: translateX(34px); transition: transform 3400ms cubic-bezier(.25, .2, .55, 1); }
+:is(.card:hover, .card:focus-within) .fl-b, .cv.is-on .fl-b {
+  opacity: 1;
+  transform: none;
+  transition: opacity 160ms ease 280ms, transform 760ms cubic-bezier(.12, .9, .22, 1) 280ms;
+}
+:is(.card:hover, .card:focus-within) .fl-streaks path, .cv.is-on .fl-streaks path { animation: fl-streak 1000ms ease-out 300ms both; }
+:is(.card:hover, .card:focus-within) .fl-streaks path:nth-child(2), .cv.is-on .fl-streaks path:nth-child(2) { animation-delay: 340ms; }
+:is(.card:hover, .card:focus-within) .fl-glow, .cv.is-on .fl-glow { opacity: 1; transition-delay: 800ms; }
+:is(.card:hover, .card:focus-within) .fl-line, .cv.is-on .fl-line { opacity: 1; transition-delay: 900ms; }
+:is(.card:hover, .card:focus-within) .fl-tag, .cv.is-on .fl-tag { opacity: 1; transition-delay: 1000ms; }
+:is(.card:hover, .card:focus-within) .fl-count, .cv.is-on .fl-count { --n: var(--to); transition: --n 1100ms cubic-bezier(.3, .6, .2, 1) 300ms; }
+:is(.card:hover, .card:focus-within) .fl-stage.is-from, .cv.is-on .fl-stage.is-from { opacity: 0; transform: translateY(-60%); }
+:is(.card:hover, .card:focus-within) .fl-stage.is-to, .cv.is-on .fl-stage.is-to { opacity: 1; transform: none; transition-delay: 300ms; }
+@keyframes fl-bob { from { transform: translateY(-1.1px); } to { transform: translateY(1.1px); } }
+@keyframes fl-flap { from { transform: scaleY(1); } to { transform: scaleY(-.5); } }
+@keyframes fl-streak {
+  0% { opacity: 0; transform: scaleX(1); }
+  12% { opacity: 1; }
+  100% { opacity: 0; transform: scaleX(.12); }
+}
+
+/* 좁은 소표지(휴대폰 폭): 글자 하한 때문에 판·산을 가리지 않게 덜어 냄 */
+@container (max-width: 420px) {
+  .cv-board-card { gap: 2px; padding: 6px 10px 7px; }
+  .cv-board-card .cv-label { display: none; }
+  .cv-book-hint { display: none; }
+  .cv-board-title { font-size: 12px; }
+  .cv-board-note { font-size: 10px; }
+  .fl-stage-note { display: none; }
+}
+
+/* 영상형: 실제 사이트를 쓰는 화면을 브라우저 창 안에서 재생 */
+.cv--video { display: flex; flex-direction: column; background: #0B0F1A; }
+.cv-browser { flex: none; display: flex; align-items: center; gap: 2cqw; height: 4.6cqw; padding: 0 1.8cqw; background: #1A1F2B; }
+.cv-browser-dots { display: flex; gap: .7cqw; }
+.cv-browser-dots i { width: 1.1cqw; height: 1.1cqw; border-radius: 50%; background: rgba(243, 237, 228, .26); }
+.cv-browser-url {
+  flex: 1;
+  max-width: 44cqw;
+  height: 2.8cqw;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 1.4cqw;
+  background: rgba(243, 237, 228, .08);
+  font-size: max(10px, 1.6cqw);
+  letter-spacing: .02em;
+  color: var(--night-muted);
+  transform: translateX(-3cqw);   /* 점 셋만큼 왼쪽으로 당겨 창 가운데에 */
+}
+.cv-screen { position: relative; flex: 1; min-height: 0; }
+.cv-video { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 0; }
+.cv--video .cv-view { right: 4.5cqw; bottom: 4.2cqw; border: 1px solid rgba(243, 237, 228, .4); background: rgba(1, 5, 20, .55); color: var(--night-text); }
 
 /* ---------- 03 연락처 (제공된 정보가 있을 때) ---------- */
 .contact-list {
@@ -929,18 +1169,32 @@ html.on-dark .site-header {
 @keyframes sc-rise { from { opacity: 0; transform: translateY(16px); } }
 @keyframes sc-fade { from { opacity: 0; } }
 
-/* 목차 카드와 같은 소표지를 오른쪽에 크게. 빛(--ex/--ey)은 소표지 가운데에서 번짐 */
-.subcover.has-cover { --ex: 74%; --ey: 50%; }
+/* 소표지가 있는 상세: 글 2 : 움직이는 소표지 8. 소표지가 화면 높이를 넘지 않게 폭 상한, 빛(--ex/--ey)은 소표지 가운데 */
+.subcover.has-cover {
+  --ex: 60%;
+  --ey: 50%;
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 8fr);
+  align-items: end;
+  column-gap: clamp(24px, 3vw, 44px);
+  min-height: 0;
+  padding: clamp(24px, 3vw, 40px);
+}
 .subcover-cover {
-  position: absolute;
-  right: 5%;
-  top: 50%;
-  width: 42%;
+  position: relative;
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
+  align-self: center;
+  width: min(100%, calc((100vh - 220px) * 1.6));
   aspect-ratio: 16 / 10;
-  transform: translateY(-50%);
   animation: sc-fade 700ms ease 200ms both;
 }
-.subcover.has-cover .subcover-copy { max-width: 46%; }
+.subcover.has-cover .subcover-copy { grid-column: 1; grid-row: 1; max-width: none; padding-bottom: 4px; }
+.subcover.has-cover .subcover-eyebrow { margin-bottom: 12px; font-size: 11px; letter-spacing: .14em; line-height: 1.6; }
+.subcover.has-cover .subcover-title { font-size: clamp(24px, 2.1vw, 34px); line-height: 1.2; word-break: keep-all; overflow-wrap: anywhere; }
+.subcover.has-cover .subcover-lede { margin-top: 14px; font-size: 14.5px; line-height: 1.7; word-break: keep-all; }
+.subcover-cover:has(.cv--video) { animation-duration: 260ms; animation-delay: 0ms; }   /* 영상은 바로 보이고 바로 재생 */
 
 .subcover-eyebrow { margin: 0 0 16px; font-size: 12px; letter-spacing: .2em; color: var(--night-muted); }
 .subcover-title {
@@ -1131,6 +1385,89 @@ html.on-dark .site-header {
   border-radius: var(--radius);
   background: var(--paper-2);
 }
+/* 서비스 교육 (선택 섹션): 직접 만든 트레이닝북 넘겨 보기 + 구성·선 서비스 문장·사례·인정받은 기록 */
+.story-body.is-wide { max-width: none; }
+.training > * + * { margin-top: 32px; }
+.training > .training-note { margin-top: 10px; }
+.training-intro { margin: 0; font-size: 18px; line-height: 1.9; }
+.training-note { margin: 0; font-size: 13px; color: var(--muted); }
+.tb { margin: 0; padding: 18px 18px 14px; border-radius: 12px; background: #173B37; }   /* 트레이닝북 표지의 짙은 초록 */
+.tb:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.tb-stage { position: relative; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 4px; }   /* 넘어가며 커지는 쪽이 초록 판 밖으로 나가지 않게 */
+.tb-book { position: relative; width: 100%; height: 100%; cursor: pointer; touch-action: pan-y; user-select: none; }
+.tb-page { display: none; position: absolute; inset: 0; overflow: hidden; border-radius: 4px; background: #F6F1E7; transform-origin: 0 50%; backface-visibility: hidden; }
+.tb-page.is-now, .tb-page.is-under, .tb-page.is-turning { display: block; }
+.tb-page.is-under { z-index: 1; }
+.tb-page.is-now { z-index: 2; }
+.tb-page.is-turning { z-index: 3; box-shadow: 0 10px 30px rgba(0, 0, 0, .35); }
+.tb-page img { display: block; width: 100%; height: 100%; object-fit: cover; pointer-events: none; -webkit-user-drag: none; }
+.tb-shade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0, 0, 0, .55), rgba(0, 0, 0, .15)); opacity: 0; pointer-events: none; }
+.tb-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 14px; color: #EDE6DA; }
+.tb-title { display: flex; flex-direction: column; gap: 3px; font-size: 13px; color: rgba(237, 230, 218, .72); }
+.tb-title strong { font-size: 15px; font-weight: 600; color: #F6F1E7; }
+.tb-nav { display: flex; flex: none; align-items: center; gap: 10px; }
+.tb-btn {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid rgba(246, 241, 231, .35);
+  border-radius: 50%;
+  background: transparent;
+  color: #F6F1E7;
+  cursor: pointer;
+  transition: background-color var(--hover) ease;
+}
+.tb-btn:hover:not(:disabled) { background: rgba(246, 241, 231, .12); }
+.tb-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tb-btn:disabled { opacity: .35; cursor: default; }
+.tb-btn .icon { width: 18px; height: 18px; }
+.tb-count { min-width: 56px; font-size: 14px; text-align: center; font-variant-numeric: tabular-nums; }
+.tr-chapters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
+.tr-chapters li { padding: 16px 16px 18px; border: 1px solid var(--line); border-radius: var(--radius); background: #FFFDF9; }
+.tr-no { display: block; font-size: 12px; letter-spacing: .16em; color: var(--accent-ink); }
+.tr-chapters strong { display: block; margin: 6px 0 8px; font-size: 17px; letter-spacing: .04em; }
+.tr-chapters p { margin: 0; font-size: 14px; line-height: 1.65; color: #4E463F; }
+.tr-k { margin: 0 0 12px; font-size: 14px; font-weight: 600; color: var(--accent-ink); }
+.tr-phrases ul { display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.tr-phrases li {
+  align-self: flex-start;
+  max-width: 100%;
+  padding: 12px 18px;
+  border-radius: 18px 18px 18px 4px;   /* 말풍선 */
+  background: #283143;
+  color: var(--bg);
+  font-size: 16px;
+  line-height: 1.5;
+}
+.tr-case { padding: 22px 24px; border-radius: var(--radius); background: var(--paper-2); }
+.tr-case ol { display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; list-style: none; counter-reset: st; }
+.tr-case li { display: grid; grid-template-columns: 32px 1fr; font-size: 16px; line-height: 1.7; counter-increment: st; }
+.tr-case li::before { content: counter(st, decimal-leading-zero); padding-top: 4px; font-size: 12px; letter-spacing: .1em; color: var(--accent-ink); }
+.tr-case blockquote { margin: 16px 0 0; padding-left: 14px; border-left: 2px solid var(--accent); font-size: 16px; line-height: 1.7; }
+.tr-note { margin: 10px 0 0; font-size: 13px; color: var(--muted); }
+.tr-proof { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 20px; align-items: start; }
+.tr-proof .story-figure { margin: 0; }
+.tr-proof-side { display: flex; flex-direction: column; gap: 12px; }
+.tr-voice { margin: 0; padding: 22px 22px 20px; border: 1px solid var(--line); border-radius: var(--radius); background: #FFFDF9; }
+.tr-voice p { margin: 0; font-size: 19px; font-weight: 600; line-height: 1.55; letter-spacing: -.01em; }
+.tr-voice cite { display: block; margin-top: 10px; font-size: 13px; font-style: normal; color: var(--muted); }
+.tr-award { padding: 18px 22px; border-radius: var(--radius); background: #283143; color: var(--bg); }
+.tr-award span { display: block; font-size: 13px; color: rgba(246, 242, 235, .7); }
+.tr-award strong { display: block; margin-top: 6px; font-size: 18px; font-weight: 700; }
+.tr-award + .tr-award { background: var(--paper-2); color: var(--text); }
+.tr-award + .tr-award span { color: var(--muted); }
+@media (max-width: 900px) {
+  .tr-chapters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tr-proof { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 720px) {
+  .tb { padding: 10px 10px 12px; }
+  .tb-bar { flex-direction: column; align-items: stretch; }
+  .tb-nav { justify-content: space-between; }
+}
+
 /* 이미지가 여럿이면 2열로 */
 .story-gallery {
   display: grid;
@@ -1140,6 +1477,9 @@ html.on-dark .site-header {
   margin-top: 28px;
 }
 .story-gallery .story-figure { margin: 0; }
+/* 시연 영상은 이미지 묶음 안에서도 한 줄을 다 씀 */
+.story-figure video { display: block; width: 100%; height: auto; border-radius: var(--radius); background: #0B0F1A; }
+.story-gallery .story-figure.is-video { grid-column: 1 / -1; }
 .story-figure figcaption { margin-top: 10px; font-size: 14px; color: var(--muted); }
 
 .pager {
@@ -1197,9 +1537,11 @@ html.on-dark .site-header {
   .story-gallery { grid-template-columns: minmax(0, 1fr); }
   .project-grid.is-compact { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   /* 상세 소표지: 소표지 위, 제목 아래로 쌓음 */
-  .subcover.has-cover { flex-direction: column; align-items: stretch; justify-content: flex-end; gap: 28px; --ex: 50%; --ey: 30%; }
-  .subcover-cover { position: relative; right: auto; top: auto; width: 100%; max-width: 560px; align-self: center; transform: none; }
-  .subcover.has-cover .subcover-copy { max-width: none; }
+  .subcover.has-cover { grid-template-columns: minmax(0, 1fr); row-gap: 24px; --ex: 50%; --ey: 30%; }
+  .subcover-cover { grid-column: 1; grid-row: 1; justify-self: stretch; width: 100%; }
+  .subcover.has-cover .subcover-copy { grid-column: 1; grid-row: 2; }
+  .subcover.has-cover .subcover-title { font-size: clamp(30px, 7vw, 44px); }
+  .subcover.has-cover .subcover-lede { font-size: 16px; }
 }
 @media (max-width: 720px) {
   .project-grid, .project-grid.is-compact { grid-template-columns: minmax(0, 1fr); gap: 56px; }
@@ -1208,6 +1550,8 @@ html.on-dark .site-header {
   .metrics-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
   .metric { padding: 16px; }
   .subcover { --ex: 70%; --ey: 28%; min-height: 480px; }
+  .subcover.has-cover { min-height: 0; padding: 14px 14px 28px; }
+  .subcover.has-cover .subcover-copy { padding: 0 10px; }
   .sc-dots--warm { --warm: 300px; }
   .facts { gap: 16px 32px; }
   .pager { grid-template-columns: 1fr 1fr; padding-bottom: 72px; }
@@ -1220,6 +1564,6 @@ html.on-dark .site-header {
   .about-frame img, .card-media img { transition: none; }
   .card:hover .card-media img { transform: none; }
   .sc-dots--warm, .sc-ember, .subcover-copy > *, .step-mark, .subcover-cover { animation: none; }
-  .cv, .cv * { transition: none !important; }   /* 소표지는 움직임 없이 바로 바뀜 */
+  .cv, .cv * { transition: none !important; animation: none !important; }   /* 소표지는 움직임 없이 바로 바뀜 (말·영상은 portfolio.js 에서 멈춤) */
   .dawn { display: none; }   /* 스크롤에 따라 바뀌는 전환은 빼고 바로 크림 바탕 */
 }

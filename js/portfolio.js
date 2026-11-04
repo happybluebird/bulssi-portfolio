@@ -11,6 +11,7 @@
   var FILTERS = list(SITE.filters).length ? list(SITE.filters) : [ALL, '서비스 기획', 'UI/UX', '마케팅'];
   if (FILTERS.indexOf(ALL) < 0) FILTERS.unshift(ALL);
   var reduceMQ = matchMedia('(prefers-reduced-motion: reduce)');
+  var SCRIPT_SRC = (document.currentScript && document.currentScript.src) || location.href;
 
   /* ---------- 도우미 ---------- */
   function el(tag, attrs, children) {
@@ -375,11 +376,293 @@
     ]);
   }
 
+  /* 보드게임형: 실제 프로모션 판 위를 팀 말 넷이 칸을 뛰며 돎 (켜져 있는 동안 계속, 끄면 출발 칸으로)
+     track = 판 이미지 기준 칸 가운데 좌표(%) 목록, 출발 칸부터 한 바퀴 순서 */
+  var PAWN_LANES = [[-2.1, .9], [-.7, -.5], [.7, .9], [2.1, -.5]];   // 같은 칸에서 겹치지 않게 (판 폭·높이 %)
+  function pawnSvg() {
+    var svg = document.createElementNS(SVG_NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 20 34');
+    svg.setAttribute('class', 'pawn-svg');
+    [['path', { class: 'pw-pole', d: 'M10 13V1.5' }],
+     ['path', { class: 'pw-flag', d: 'M10.6 1.5l7.4 2.9-7.4 2.9z' }],
+     ['ellipse', { class: 'pw-base', cx: 10, cy: 30.5, rx: 7.2, ry: 2.6 }],
+     ['path', { class: 'pw-body', d: 'M4.2 30c.8-5.6 3-9.4 4-12h3.6c1 2.6 3.2 6.4 4 12z' }],
+     ['circle', { class: 'pw-body', cx: 10, cy: 14.6, r: 4.6 }],
+     ['ellipse', { class: 'pw-shine', cx: 8.3, cy: 13, rx: 1.4, ry: 1.9 }]
+    ].forEach(function (s) {
+      var n = document.createElementNS(SVG_NS, s[0]);
+      Object.keys(s[1]).forEach(function (k) { n.setAttribute(k, s[1][k]); });
+      svg.append(n);
+    });
+    return svg;
+  }
+  function boardCover(p, c, hero) {
+    var im = toImage(c.image);
+    var track = list(c.track).filter(function (t) { return Array.isArray(t) && t.length === 2; });
+    var pawns = list(c.pieces).slice(0, 4).map(function (color, i) {
+      var lane = PAWN_LANES[i];
+      return el('span', { class: 'pawn', style: '--c:' + color + ';left:' + (track[0][0] + lane[0]) + '%;top:' + (track[0][1] + lane[1]) + '%' },
+        el('span', { class: 'pawn-hop' }, pawnSvg()));
+    });
+    var cv = el('div', { class: 'cv cv--board' + (hero ? ' cv--hero' : ''), 'aria-hidden': 'true' }, [
+      el('span', { class: 'cv-board', style: im.width && im.height ? 'aspect-ratio:' + im.width + '/' + im.height : null }, [
+        el('img', { src: im.src, alt: '', decoding: 'async', loading: hero ? null : 'lazy' }),
+        el('span', { class: 'cv-board-card' }, [
+          text(c.label) && el('span', { class: 'cv-label' }, c.label),
+          text(c.title) && el('strong', { class: 'cv-board-title' }, c.title),
+          text(c.note) && el('span', { class: 'cv-board-note' }, c.note)
+        ]),
+        pawns
+      ]),
+      el('span', { class: 'cv-view' }, 'VIEW')
+    ]);
+    var anims = [];
+    // 한 바퀴 = 칸 수 × 한 칸. 말마다 속도가 조금씩 달라 서로 앞서거니 뒤서거니 함
+    var LAP = [6.0, 6.6, 5.5, 6.3];
+    cv._toggle = function (on) {
+      if (reduceMQ.matches || !track.length || typeof Element.prototype.animate !== 'function') return;
+      if (on && anims.length) return;
+      anims.forEach(function (a) { a.cancel(); });
+      anims = [];
+      if (!on) {
+        pawns.forEach(function (pw) { pw.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 260, easing: 'ease-out' }); });
+        return;
+      }
+      pawns.forEach(function (pw, i) {
+        var lane = PAWN_LANES[i], n = track.length, lap = LAP[i % LAP.length] * 1000, delay = i * 140;
+        var frames = track.concat([track[0]]).map(function (t, j) {
+          return { offset: j / n, left: (t[0] + lane[0]) + '%', top: (t[1] + lane[1]) + '%', easing: 'cubic-bezier(.45,0,.4,1)' };
+        });
+        anims.push(pw.animate(frames, { duration: lap, delay: delay, iterations: Infinity }));
+        anims.push(pw.firstChild.animate([
+          { transform: 'translateY(0)', easing: 'cubic-bezier(.25,.6,.45,1)' },
+          { transform: 'translateY(-42%)', offset: .45, easing: 'cubic-bezier(.55,0,.75,.4)' },
+          { transform: 'translateY(0)' }
+        ], { duration: lap / n, delay: delay, iterations: Infinity }));
+      });
+    };
+    return cv;
+  }
+
+  /* 책형: 게시한 카드뉴스 전부를 엮은 잡지. 넘김은 StPageFlip(js/page-flip.browser.js, MIT)으로 —
+     모서리부터 종이가 휘며 넘어가고 그림자가 생김. pages[0] = 앞표지, 마지막 = 뒤표지(단단한 장).
+     목차 카드: 올리거나 고르면 표지가 열리고 stops(쪽 번호) 차례로 펼침면을 넘겨 보여 줌, 떼면 표지로 돌아감.
+     상세: 한 번 넘겨 보인 뒤 직접 끌거나 눌러 끝까지 넘겨 볼 수 있음. 이미지는 지금 펼침면 앞뒤만 불러옴 */
+  var BOOK_FLIP = 820, BOOK_HOLD = 650;
+  // 책 넘김 라이브러리는 책이 있는 페이지에서만, 이 파일 옆(js/)에서 불러옴
+  var pageFlipLoad = null;
+  function loadPageFlip() {
+    if (window.St && St.PageFlip) return Promise.resolve();
+    if (!pageFlipLoad) pageFlipLoad = new Promise(function (ok, fail) {
+      var sc = document.createElement('script');
+      sc.src = new URL('page-flip.browser.js' + new URL(SCRIPT_SRC).search, SCRIPT_SRC).href;   // 같은 배포 버전(?v=)으로
+      sc.onload = ok; sc.onerror = fail;
+      document.head.append(sc);
+    });
+    return pageFlipLoad;
+  }
+  function bookCover(p, c, hero) {
+    var pages = list(c.pages).map(toImage).filter(Boolean);
+    var last = pages.length - 1;
+    var stops = list(c.stops).map(Number).filter(function (n) { return n > 0 && n < last; });
+    if (!stops.length) stops = [1];
+    var pageEls = pages.map(function (im, i) {
+      var img = el('img', { alt: '', decoding: 'async', draggable: 'false' });
+      img.dataset.src = im.src;
+      return el('div', { class: 'bk-page' + (i === 0 || i === last ? ' is-cover' : ''), 'data-density': i === 0 || i === last ? 'hard' : 'soft' }, img);
+    });
+    function load(from, to) {
+      for (var i = Math.max(0, from); i <= Math.min(last, to); i++) {
+        var img = pageEls[i].firstChild;
+        if (!img.src) img.src = img.dataset.src;
+      }
+    }
+    var bookEl = el('div', { class: 'bk' }, pageEls);   // 라이브러리가 없을 때도 앞표지는 보임
+    load(0, 0);
+    var shift = el('span', { class: 'cv-book-in is-front' }, bookEl);
+    var markImg = toImage(c.markImage);
+    var cv = el('div', { class: 'cv cv--book' + (hero ? ' cv--hero' : ''), 'aria-hidden': 'true' }, [
+      el('span', { class: 'cv-book-glow' }),
+      el('span', { class: 'cv-book' }, shift),
+      el('span', { class: 'cv-mark' }, [markImg && el('img', { src: markImg.src, alt: '' }), p.name]),
+      text(c.caption) && el('span', { class: 'cv-book-cap' }, hero ? [c.caption, el('span', { class: 'cv-book-hint' }, ' · 책장을 끌거나 눌러 넘겨 보세요')] : c.caption),
+      el('span', { class: 'cv-view' }, 'VIEW')
+    ]);
+
+    var pf = null, want = false, step = 0, timer = null;
+    // 닫힌 앞표지·뒤표지는 한 쪽뿐이라 책을 가운데로 옮김
+    function place(n) {
+      shift.classList.toggle('is-front', n === 0);
+      shift.classList.toggle('is-back', n >= last);
+    }
+    function go(n) {
+      load(n - 2, n + 3);
+      place(n);
+      pf.flip(n);
+      timer = setTimeout(next, BOOK_FLIP + (want ? BOOK_HOLD : 0) + 80);
+    }
+    function next() {
+      timer = null;
+      if (!pf) return;
+      var cur = pf.getCurrentPageIndex();
+      if (!want) { if (cur !== 0) go(0); return; }
+      while (step < stops.length && stops[step] === cur) step++;
+      if (step < stops.length) go(stops[step++]);
+    }
+    function init() {
+      if (pf) return true;
+      if (!window.St || !St.PageFlip) { loadPageFlip().then(function () { if (init()) apply(); }, function () {}); return false; }
+      if (!cv.isConnected || !bookEl.clientWidth) return false;
+      load(0, 2);
+      pf = new St.PageFlip(bookEl, {
+        width: 400, height: 500, size: 'stretch', minWidth: 60, maxWidth: 1400, minHeight: 75, maxHeight: 1750,
+        showCover: true, usePortrait: false, autoSize: true, drawShadow: true, maxShadowOpacity: .5,
+        flippingTime: BOOK_FLIP, mobileScrollSupport: false, useMouseEvents: hero, showPageCorners: hero
+      });
+      pf.loadFromHTML(pageEls);
+      pf.on('flip', function (e) { load(e.data - 3, e.data + 4); if (!timer) place(e.data); });
+      pf.on('changeState', function (e) { if (e.data === 'user_fold' || e.data === 'fold_corner') { var cur = pf.getCurrentPageIndex(); load(cur - 3, cur + 4); place(-1); } });
+      if (hero && reduceMQ.matches) { load(0, stops[stops.length - 1] + 2); pf.turnToPage(stops[stops.length - 1]); place(pf.getCurrentPageIndex()); }
+      return true;
+    }
+    var wish = false;   // 켜짐 요청. 라이브러리를 불러오는 중이면 다 불러온 뒤 apply()
+    function apply() {
+      if (reduceMQ.matches || wish === want) return;   // 모션 축소: 자동으로 넘기지 않음 (상세는 펼친 면에서 직접 넘김)
+      want = wish;
+      if (want) step = 0;
+      if (!timer) next();
+    }
+    cv._toggle = function (on) {
+      wish = on;
+      if (reduceMQ.matches && !hero) return;
+      if (init()) apply();
+    };
+    // 화면 가까이 오면 미리 만들어 둠 (크기를 잴 수 있어야 함)
+    if ('IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (es) {
+        if (es[0].isIntersecting && init()) io.disconnect();
+      }, { rootMargin: '300px 0px' });
+      io.observe(cv);
+    }
+    return cv;
+  }
+
+  /* 비행형: 같은 블로그의 하루 조회 — 오목눈이 한 마리(에세이)가 낮게 날아가는데,
+     공연 정보 글로 바꾸자 저 높이에서 새 오목눈이가 빠르게 날아 들어옴. 높이는 비유(실제 비율 아님), 숫자는 확인된 값 */
+  function svgAdd(parent, items) {
+    items.forEach(function (s) {
+      var node = document.createElementNS(SVG_NS, s[0]);
+      Object.keys(s[1] || {}).forEach(function (k) { node.setAttribute(k, s[1][k]); });
+      if (s[2]) svgAdd(node, s[2]);
+      parent.append(node);
+    });
+    return parent;
+  }
+  function cloud(x, y, sc) {
+    return ['g', { class: 'fl-cloud', transform: 'translate(' + x + ' ' + y + ') scale(' + sc + ')' }, [
+      ['ellipse', { cx: 0, cy: 0, rx: 7, ry: 3.6 }], ['ellipse', { cx: 6.5, cy: -2.6, rx: 5.6, ry: 4.4 }],
+      ['ellipse', { cx: 12.5, cy: -.4, rx: 6, ry: 3.6 }], ['ellipse', { cx: 6.5, cy: 1.4, rx: 10, ry: 2.4 }]
+    ]];
+  }
+  // 오목눈이: 흰 둥근 몸, 굵은 검은 눈썹줄, 분홍빛 옆구리, 긴 꼬리 (오른쪽을 봄, 원점이 몸 가운데)
+  var TIT = [
+    ['path', { class: 'tt-tail', d: 'M-3.2-.2L-15 1.9c-.4.5-.2.9.3 1L-2.6 2.2z' }],
+    ['ellipse', { class: 'tt-body', cx: 0, cy: .4, rx: 4.8, ry: 3.7 }],
+    ['path', { class: 'tt-flank', d: 'M-3.6 1.3c1.6 2.4 5 2.9 7.2 1.2-1.6.2-4.6.1-7.2-1.2z' }],
+    ['path', { class: 'tt-back', d: 'M-4.2-.6c1.4-2.6 4.6-3.3 6.6-2.1-2.4-.2-4.6.7-6.6 2.1z' }],
+    ['circle', { class: 'tt-body', cx: 3.4, cy: -1.5, r: 2.7 }],
+    ['path', { class: 'tt-brow', d: 'M1.4-3.1c1.5-.9 3.5-.8 4.6.3l-.3.6c-1.2-.7-2.8-.8-4.1-.1z' }],
+    ['circle', { class: 'tt-eye', cx: 4.6, cy: -1.5, r: .55 }],
+    ['path', { class: 'tt-beak', d: 'M5.9-1.4l1.3.4-1.3.4z' }],
+    ['path', { class: 'tt-wing', d: 'M-2.2-.4c.6-4.2 4.4-6.2 6-5.4-.6 1.6-2.2 4-3.6 5.6z' }]
+  ];
+  var LOW = [40, 72], HIGH = [112, 26];   // 낮게 나는 새(에세이) · 높이 나타나는 새(공연 정보 글)
+  function birdAt(pos, scale, extra) {
+    return ['g', { class: 'fl-bob' }, [['g', { transform: 'translate(' + pos[0] + ' ' + pos[1] + ')' }, (extra || []).concat([['g', { class: 'fl-bird', transform: 'scale(' + scale + ')' }, TIT]])]]];
+  }
+  function flightSvg() {
+    var svg = document.createElementNS(SVG_NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 160 100');
+    svg.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+    svg.setAttribute('class', 'fl-svg');
+    return svgAdd(svg, [
+      ['g', { class: 'fl-clouds is-hi' }, [cloud(18, 4, 1.1), cloud(76, 12, .8), cloud(134, 2, 1.2)]],
+      ['g', { class: 'fl-clouds is-mid' }, [cloud(96, 44, .9), cloud(142, 54, .7), cloud(58, 50, .6)]],
+      ['path', { class: 'fl-hills', d: 'M0 84c14-6 26-7 40-3s26 2 40-4 30-5 44 0 26 4 36 1V100H0z' }],
+      ['path', { class: 'fl-trees', d: 'M0 93c1.3 -4.5 7.6 -4.5 9 0c1.5 -3.5 8.5 -3.5 10 0c1.1 -3.5 6.0 -3.5 7 0c1.3 -3.5 7.6 -3.5 9 0c1.2 -3.5 6.8 -3.5 8 0c1.1 -6.5 6.0 -6.5 7 0c1.5 -3.5 8.5 -3.5 10 0c1.2 -3.5 6.8 -3.5 8 0c1.5 -3.5 8.5 -3.5 10 0c1.1 -4.5 6.0 -4.5 7 0c1.1 -6.5 6.0 -6.5 7 0c1.1 -4.5 6.0 -4.5 7 0c1.1 -4.5 6.0 -4.5 7 0c1.3 -6.5 7.6 -6.5 9 0c1.2 -3.5 6.8 -3.5 8 0c1.3 -4.5 7.6 -4.5 9 0c1.1 -4.5 6.0 -4.5 7 0c1.3 -3.5 7.6 -3.5 9 0c1.1 -3.5 6.0 -3.5 7 0c1.2 -6.5 6.8 -6.5 8 0V100H0z' }],
+      ['path', { class: 'fl-line is-low', d: 'M6 ' + (LOW[1] + 4) + 'H154' }],
+      ['path', { class: 'fl-line is-high', d: 'M72 ' + (HIGH[1] + 5) + 'H154' }],   // 왼쪽 위 숫자와 겹치지 않게 오른쪽만
+      ['g', { class: 'fl-a' }, [birdAt(LOW, 1.3)]],
+      ['g', { class: 'fl-b' }, [birdAt(HIGH, 1.7, [
+        ['circle', { class: 'fl-glow', r: 15 }],
+        ['g', { class: 'fl-streaks' }, [
+          ['path', { d: 'M-9-2H-44' }], ['path', { d: 'M-8 1.5H-58' }], ['path', { d: 'M-10 5H-38' }]
+        ]]
+      ])]]
+    ]);
+  }
+  function flightCover(p, c, hero) {
+    var from = c.from || {}, to = c.to || {};
+    var unit = text(c.unit);
+    function stage(s, cls) {
+      return el('span', { class: 'fl-stage ' + cls }, [text(s.label), text(s.note) && el('span', { class: 'fl-stage-note' }, s.note)]);
+    }
+    return el('div', { class: 'cv cv--flight' + (hero ? ' cv--hero' : ''), 'aria-hidden': 'true' }, [
+      el('span', { class: 'fl-sky-hi' }),
+      flightSvg(),
+      el('span', { class: 'fl-copy' }, [
+        text(c.label) && el('span', { class: 'cv-label' }, c.label),
+        el('strong', { class: 'fl-count', style: '--from:' + (+from.value || 0) + ';--to:' + (+to.value || 0) }, el('span', { class: 'fl-unit' }, unit)),
+        el('span', { class: 'fl-stages' }, [stage(from, 'is-from'), stage(to, 'is-to')])
+      ]),
+      el('span', { class: 'fl-tag is-low' }, [text(from.label), ' · ', (+from.value || 0) + unit]),
+      el('span', { class: 'fl-tag is-high' }, [text(to.label), ' · ', (+to.value || 0) + unit]),
+      el('span', { class: 'cv-view' }, 'VIEW')
+    ]);
+  }
+
+  /* 영상형: 실제 사이트를 쓰는 화면을 브라우저 창 안에서 재생 (목차에선 올리거나 고를 때만, 상세에선 반복)
+     모션 축소 설정이면 자동 재생하지 않고 첫 화면(poster)만 */
+  function videoCover(p, c, hero) {
+    var video = el('video', { class: 'cv-video', muted: true, playsinline: true, loop: true, preload: hero ? 'auto' : 'metadata', poster: text(c.poster) || null, disablepictureinpicture: true });
+    video.muted = true;
+    if (text(c.webm)) video.append(el('source', { src: c.webm, type: 'video/webm' }));
+    video.append(el('source', { src: c.src, type: 'video/mp4' }));
+    var cv = el('div', { class: 'cv cv--video' + (hero ? ' cv--hero' : ''), 'aria-hidden': 'true' }, [
+      el('span', { class: 'cv-browser' }, [
+        el('span', { class: 'cv-browser-dots' }, [el('i'), el('i'), el('i')]),
+        text(c.url) && el('span', { class: 'cv-browser-url' }, c.url)
+      ]),
+      el('span', { class: 'cv-screen' }, video),
+      el('span', { class: 'cv-view' }, 'VIEW')
+    ]);
+    // 목차: 카드가 화면 가까이 오면 미리 받아 둬서 올리자마자 재생
+    if (!hero && 'IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (es) { if (es[0].isIntersecting) { video.preload = 'auto'; io.disconnect(); } }, { rootMargin: '300px 0px' });
+      io.observe(cv);
+    }
+    cv._toggle = function (on) {
+      if (reduceMQ.matches) return;
+      if (on) { var pr = video.play(); if (pr && pr.catch) pr.catch(function () {}); }
+      else { video.pause(); try { video.currentTime = 0; } catch (e) {} }
+    };
+    return cv;
+  }
+
   function coverArt(p, hero) {
     var c = p.cover || {};
     if (c.type === 'metric' && text(c.value) && list(c.groups).length) return metricCover(p, c, hero);
     if (c.type === 'symbol' && SYMBOLS[c.symbol]) return symbolCover(p, c, hero);
+    if (c.type === 'board' && toImage(c.image) && list(c.track).length && list(c.pieces).length) return boardCover(p, c, hero);
+    if (c.type === 'book' && list(c.pages).length > 1) return bookCover(p, c, hero);
+    if (c.type === 'flight' && c.from && c.to) return flightCover(p, c, hero);
+    if (c.type === 'video' && text(c.src)) return videoCover(p, c, hero);
     return null;
+  }
+  // 소표지 켜기: CSS 쪽은 .is-on, 스크립트로 움직이는 소표지(board·video)는 _toggle 도 부름
+  function coverOn(cv) {
+    cv.classList.add('is-on');
+    if (cv._toggle) cv._toggle(true);
   }
 
   /* ---------- 프로젝트 목차: 대표 2열 + 분야별 3열 묶음 ---------- */
@@ -409,7 +692,16 @@
     var cats = categories(p);
     var role = roleText(p);
     var problem = text(p.displayProblem) || text(p.desc);
-    return el('li', { class: 'card' }, [
+    var card = el('li', { class: 'card' });
+    if (art && art._toggle) {
+      var hovered = false, focused = false;
+      var sync = function () { if (!art.classList.contains('is-on')) art._toggle(hovered || focused); };
+      card.addEventListener('mouseenter', function () { hovered = true; sync(); });
+      card.addEventListener('mouseleave', function () { hovered = false; sync(); });
+      card.addEventListener('focusin', function () { focused = true; sync(); });
+      card.addEventListener('focusout', function () { focused = false; sync(); });
+    }
+    return append(card, [
       media,
       el('div', { class: 'card-body' }, [
         cats.length > 0 && el('p', { class: 'card-cats' }, cats.join(' · ')),
@@ -465,7 +757,7 @@
     // 마우스가 없는 기기: 카드가 화면에 충분히 들어오면 소표지를 한 번 펼침
     if (matchMedia('(hover: none)').matches && !reduceMQ.matches && 'IntersectionObserver' in window) {
       var io = new IntersectionObserver(function (entries) {
-        entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('is-on'); io.unobserve(e.target); } });
+        entries.forEach(function (e) { if (e.isIntersecting) { coverOn(e.target); io.unobserve(e.target); } });
       }, { threshold: 0.6 });
       root.querySelectorAll('.cv').forEach(function (c) { io.observe(c); });
     }
@@ -501,11 +793,129 @@
   }
 
   function figure(im, alt) {
-    var f = el('figure', { class: 'story-figure' });
-    var img = imageNode(im, { alt: alt, lazy: true });
-    img.addEventListener('error', function () { f.remove(); });
-    append(f, [img, text(im.caption) && el('figcaption', null, im.caption)]);
+    var f = el('figure', { class: 'story-figure' + (text(im.video) ? ' is-video' : '') });
+    var media;
+    if (text(im.video)) {
+      // 시연 영상: 소리 없음, 직접 재생(controls). 설명은 aria-label 로
+      media = el('video', { controls: true, playsinline: true, muted: true, preload: 'none', poster: im.src, 'aria-label': text(im.alt) || alt });
+      media.muted = true;
+      if (im.width && im.height) { media.width = im.width; media.height = im.height; }
+      if (text(im.webm)) media.append(el('source', { src: im.webm, type: 'video/webm' }));
+      media.append(el('source', { src: im.video, type: 'video/mp4' }));
+    } else {
+      media = imageNode(im, { alt: alt, lazy: true });
+      media.addEventListener('error', function () { f.remove(); });
+    }
+    append(f, [media, text(im.caption) && el('figcaption', null, im.caption)]);
     return f;
+  }
+
+  /* 서비스 교육(선택 섹션 p.training): 직접 만든 트레이닝북을 한 쪽씩 넘겨 보고,
+     네 장의 구성·선 서비스 문장·현장 사례·인정받은 기록을 함께 보여 줌. 글은 모두 데이터에 적힌 그대로.
+     넘김: 지금 쪽이 왼쪽 모서리를 축으로 들려 넘어가고(그림자), 아래 다음 쪽이 드러남. 버튼·방향키·밀기 */
+  function trainingBook(t) {
+    var pages = list(t.pages).map(toImage).filter(Boolean);
+    var last = pages.length - 1, cur = 0, anim = null;
+    var pageEls = pages.map(function (im, i) {
+      var img = el('img', { alt: text(im.alt) || (t.title + ' ' + (i + 1) + '쪽'), decoding: 'async', draggable: 'false' });
+      if (im.width && im.height) { img.width = im.width; img.height = im.height; }
+      img.dataset.src = im.src;
+      return el('div', { class: 'tb-page' + (i === 0 ? ' is-now' : ''), 'aria-hidden': i === 0 ? null : 'true' }, [img, el('span', { class: 'tb-shade' })]);
+    });
+    function load(from, to) {
+      for (var i = Math.max(0, from); i <= Math.min(last, to); i++) { var img = pageEls[i].firstChild; if (!img.src) img.src = img.dataset.src; }
+    }
+    var bookEl = el('div', { class: 'tb-book' }, pageEls);
+    var counter = el('span', { class: 'tb-count', 'aria-live': 'polite' });
+    var prev = el('button', { class: 'tb-btn', type: 'button', 'aria-label': '이전 쪽' }, icon('left'));
+    var next = el('button', { class: 'tb-btn', type: 'button', 'aria-label': '다음 쪽' }, icon('right'));
+    function show(n) {
+      pageEls.forEach(function (pg, i) {
+        pg.classList.toggle('is-now', i === n);
+        pg.classList.remove('is-under');
+        if (i === n) pg.removeAttribute('aria-hidden'); else pg.setAttribute('aria-hidden', 'true');
+      });
+      cur = n;
+      counter.textContent = (n + 1) + ' / ' + pages.length;
+      prev.disabled = n <= 0; next.disabled = n >= last;
+      load(n - 1, n + 2);
+    }
+    var TURN = [
+      { transform: 'perspective(2200px) rotateY(0deg)' },
+      { transform: 'perspective(2200px) rotateY(-96deg)' }
+    ];
+    function go(d) {
+      var n = cur + d;
+      if (n < 0 || n > last) return;
+      if (anim) anim.finish();
+      load(n, n);
+      if (reduceMQ.matches || typeof bookEl.animate !== 'function') return show(n);
+      // 앞으로: 지금 쪽이 넘어가며 다음 쪽이 드러남 / 뒤로: 이전 쪽이 되돌아와 덮음
+      var mover = d > 0 ? pageEls[cur] : pageEls[n];
+      var under = d > 0 ? pageEls[n] : pageEls[cur];
+      under.classList.add('is-under');
+      mover.classList.add('is-turning');
+      var opts = { duration: 620, easing: 'cubic-bezier(.45, .05, .3, 1)' };
+      anim = mover.animate(d > 0 ? TURN : TURN.slice().reverse(), opts);
+      mover.lastChild.animate(d > 0 ? [{ opacity: 0 }, { opacity: .55 }] : [{ opacity: .55 }, { opacity: 0 }], opts);
+      under.lastChild.animate(d > 0 ? [{ opacity: .35 }, { opacity: 0 }] : [{ opacity: 0 }, { opacity: .35 }], opts);
+      anim.onfinish = function () { anim = null; mover.classList.remove('is-turning'); show(n); };
+    }
+    prev.addEventListener('click', function () { go(-1); });
+    next.addEventListener('click', function () { go(1); });
+    // 밀어서 넘기기 (손가락·마우스)
+    var sx = null;
+    bookEl.addEventListener('pointerdown', function (e) { sx = e.clientX; });
+    bookEl.addEventListener('pointerup', function (e) {
+      if (sx == null) return;
+      var dx = e.clientX - sx; sx = null;
+      if (Math.abs(dx) > 40) go(dx < 0 ? 1 : -1);
+      else if (e.pointerType === 'mouse') go(e.offsetX > bookEl.clientWidth / 2 ? 1 : -1);   // 누르면 누른 쪽으로
+    });
+    var fig = el('figure', { class: 'tb', tabindex: '0', 'aria-label': t.title + ' 넘겨 보기 (왼쪽·오른쪽 방향키)' }, [
+      el('div', { class: 'tb-stage' }, bookEl),
+      el('figcaption', { class: 'tb-bar' }, [
+        el('span', { class: 'tb-title' }, [el('strong', null, t.title), text(t.meta) && el('span', null, t.meta)]),
+        el('span', { class: 'tb-nav' }, [prev, counter, next])
+      ])
+    ]);
+    fig.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowLeft') { e.preventDefault(); go(-1); }
+      if (e.key === 'ArrowRight') { e.preventDefault(); go(1); }
+    });
+    load(0, 0);
+    show(0);
+    return fig;
+  }
+
+  function trainingSection(t) {
+    var c = t.case || {}, r = t.recognition || {};
+    var rImg = toImage(r.image);
+    return el('div', { class: 'training' }, [
+      text(t.intro) && el('p', { class: 'training-intro' }, t.intro),
+      list(t.pages).length > 0 && trainingBook(t),
+      text(t.pagesNote) && el('p', { class: 'training-note' }, t.pagesNote),
+      list(t.chapters).length > 0 && el('ol', { class: 'tr-chapters' }, list(t.chapters).map(function (ch) {
+        return el('li', null, [el('span', { class: 'tr-no' }, ch.no), el('strong', null, ch.name), el('p', null, ch.text)]);
+      })),
+      list(t.phrases).length > 0 && el('div', { class: 'tr-phrases' }, [
+        text(t.phrasesLabel) && el('p', { class: 'tr-k' }, t.phrasesLabel),
+        el('ul', null, list(t.phrases).map(function (q) { return el('li', null, '“' + q + '”'); }))
+      ]),
+      list(c.steps).length > 0 && el('div', { class: 'tr-case' }, [
+        text(c.label) && el('p', { class: 'tr-k' }, c.label),
+        el('ol', null, list(c.steps).map(function (st) { return el('li', null, st); })),
+        text(c.quote) && el('blockquote', null, '“' + c.quote + '”'),
+        text(c.note) && el('p', { class: 'tr-note' }, c.note)
+      ]),
+      (rImg || r.quote || list(r.awards).length) && el('div', { class: 'tr-proof' }, [
+        rImg && figure(rImg, '선정 증서'),
+        el('div', { class: 'tr-proof-side' }, [
+          r.quote && text(r.quote.text) && el('blockquote', { class: 'tr-voice' }, [el('p', null, '“' + r.quote.text + '”'), text(r.quote.source) && el('cite', null, r.quote.source)]),
+          list(r.awards).map(function (a) { return el('div', { class: 'tr-award' }, [el('span', null, a.k), el('strong', null, a.v)]); })
+        ])
+      ])
+    ]);
   }
 
   function renderDetail(root) {
@@ -537,11 +947,18 @@
       var learned = s.learned ? s.learned(p) : [];
       return { s: s, body: body, imgs: imgs, learned: learned, filled: body.length + imgs.length + learned.length > 0 };
     });
+    // 선택 섹션: 서비스 교육 자료가 있으면 '설계·실행' 다음에
+    if (p.training && typeof p.training === 'object') {
+      var at = sections.findIndex(function (x) { return x.s.id === 'build'; }) + 1;
+      sections.splice(at, 0, { s: { id: 'training', name: '서비스 교육' }, body: [], imgs: [], learned: [], filled: true, node: trainingSection(p.training) });
+    }
 
     // 소표지: 어두운 면의 점들이 불씨의 온기로 밝아진 뒤 프로젝트명이 드러남 (긴 도입 없이 바로 읽을 수 있음)
     // 목차 카드와 같은 소표지(상징·지표)를 오른쪽에 크게 두고, 등장이 끝나면 한 번 펼침
     var heroArt = coverArt(p, true);
-    if (heroArt) setTimeout(function () { heroArt.classList.add('is-on'); }, reduceMQ.matches ? 0 : 1100);
+    // 영상은 첫 화면(poster)에서 멈춰 보이지 않게 바로 재생, 나머지는 등장이 끝난 뒤 한 번 펼침
+    var heroDelay = reduceMQ.matches || (p.cover && p.cover.type === 'video') ? 0 : 1100;
+    if (heroArt) setTimeout(function () { coverOn(heroArt); }, heroDelay);
     var subcover = el('section', { class: 'subcover' + (heroArt ? ' has-cover' : ''), 'aria-labelledby': 'project-title' }, [
       el('div', { class: 'subcover-art', 'aria-hidden': 'true' }, [
         el('span', { class: 'sc-dots' }), el('span', { class: 'sc-dots sc-dots--warm' }), el('span', { class: 'sc-ember' })
@@ -585,8 +1002,9 @@
     })));
 
     var story = el('div', { class: 'story' }, sections.map(function (x, i) {
-      var body = el('div', { class: 'story-body' });
+      var body = el('div', { class: 'story-body' + (x.node ? ' is-wide' : '') });
       append(body, renderBlocks(x.body));
+      if (x.node) body.append(x.node);
       if (x.imgs.length) {
         var figs = x.imgs.map(function (im, k) { return figure(im, p.name + ' 작업 화면 ' + (k + 1)); });
         body.append(figs.length > 1 ? el('div', { class: 'story-gallery' }, figs) : figs[0]);

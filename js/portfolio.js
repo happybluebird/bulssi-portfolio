@@ -431,7 +431,7 @@
       pawns.forEach(function (pw, i) {
         var lane = PAWN_LANES[i], n = track.length, lap = LAP[i % LAP.length] * 1000, delay = i * 140;
         var frames = track.concat([track[0]]).map(function (t, j) {
-          return { offset: j / n, left: (t[0] + lane[0]) + '%', top: (t[1] + lane[1]) + '%', easing: 'cubic-bezier(.45,0,.4,1)' };
+          return { offset: j / n, left: (t[0] + lane[0]) + '%', top: (t[1] + lane[1]) + '%', easing: 'cubic-bezier(.22,1,.36,1)' };
         });
         anims.push(pw.animate(frames, { duration: lap, delay: delay, iterations: Infinity }));
         anims.push(pw.firstChild.animate([
@@ -448,7 +448,8 @@
      모서리부터 종이가 휘며 넘어가고 그림자가 생김. pages[0] = 앞표지, 마지막 = 뒤표지(단단한 장).
      목차 카드: 올리거나 고르면 표지가 열리고 stops(쪽 번호) 차례로 펼침면을 넘겨 보여 줌, 떼면 표지로 돌아감.
      상세: 한 번 넘겨 보인 뒤 직접 끌거나 눌러 끝까지 넘겨 볼 수 있음. 이미지는 지금 펼침면 앞뒤만 불러옴 */
-  var BOOK_FLIP = 820, BOOK_HOLD = 650;
+  // 넘김 시간(ms): 목차·상세에서 올리면 표지 열기 + 세 번 넘김이 약 1.5초 안에 끝남. 직접 넘길 때는 조금 여유 있게
+  var BOOK_OPEN = 420, BOOK_FLIP = 320, BOOK_GAP = 50, BOOK_CLOSE = 380, BOOK_HAND = 560;
   // 책 넘김 라이브러리는 책이 있는 페이지에서만, 이 파일 옆(js/)에서 불러옴
   var pageFlipLoad = null;
   function loadPageFlip() {
@@ -495,19 +496,26 @@
       shift.classList.toggle('is-front', n === 0);
       shift.classList.toggle('is-back', n >= last);
     }
-    function go(n) {
+    // StPageFlip 은 넘기는 거리(px)에 비례해 시간을 줄이므로, 원하는 시간이 되게 flippingTime 을 맞춤
+    function flipTime(ms) {
+      var r = pf.getBoundsRect();
+      pf.getSettings().flippingTime = ms / Math.min(1, Math.max(1, 2 * r.pageWidth) / 1000);
+    }
+    function go(n, ms) {
       load(n - 2, n + 3);
       place(n);
+      flipTime(ms);
       pf.flip(n);
-      timer = setTimeout(next, BOOK_FLIP + (want ? BOOK_HOLD : 0) + 80);
+      timer = setTimeout(next, ms + BOOK_GAP);
     }
     function next() {
       timer = null;
       if (!pf) return;
       var cur = pf.getCurrentPageIndex();
-      if (!want) { if (cur !== 0) go(0); return; }
+      if (!want) { if (cur !== 0) go(0, BOOK_CLOSE); else flipTime(BOOK_HAND); return; }
       while (step < stops.length && stops[step] === cur) step++;
-      if (step < stops.length) go(stops[step++]);
+      if (step < stops.length) go(stops[step], step++ === 0 && cur === 0 ? BOOK_OPEN : BOOK_FLIP);
+      else flipTime(BOOK_HAND);   // 자동 넘김이 끝나면 직접 넘길 때의 속도로
     }
     function init() {
       if (pf) return true;
@@ -517,7 +525,7 @@
       pf = new St.PageFlip(bookEl, {
         width: 400, height: 500, size: 'stretch', minWidth: 60, maxWidth: 1400, minHeight: 75, maxHeight: 1750,
         showCover: true, usePortrait: false, autoSize: true, drawShadow: true, maxShadowOpacity: .5,
-        flippingTime: BOOK_FLIP, mobileScrollSupport: false, useMouseEvents: hero, showPageCorners: hero
+        flippingTime: BOOK_HAND, mobileScrollSupport: false, useMouseEvents: hero, showPageCorners: hero
       });
       pf.loadFromHTML(pageEls);
       pf.on('flip', function (e) { load(e.data - 3, e.data + 4); if (!timer) place(e.data); });
@@ -628,7 +636,13 @@
     video.muted = true;
     if (text(c.webm)) video.append(el('source', { src: c.webm, type: 'video/webm' }));
     video.append(el('source', { src: c.src, type: 'video/mp4' }));
-    var cv = el('div', { class: 'cv cv--video' + (hero ? ' cv--hero' : ''), 'aria-hidden': 'true' }, [
+    // frame: "phone" = 휴대폰 크기 앱(세로 영상)을 휴대폰 틀 안에, 그 밖에는 브라우저 창 안에
+    var phone = c.frame === 'phone';
+    var cv = el('div', { class: 'cv cv--video' + (phone ? ' cv--phone' : '') + (hero ? ' cv--hero' : ''), 'aria-hidden': 'true' }, phone ? [
+      el('span', { class: 'cv-phone' }, el('span', { class: 'cv-phone-screen' }, video)),
+      text(c.url) && el('span', { class: 'cv-phone-url' }, c.url),
+      el('span', { class: 'cv-view' }, 'VIEW')
+    ] : [
       el('span', { class: 'cv-browser' }, [
         el('span', { class: 'cv-browser-dots' }, [el('i'), el('i'), el('i')]),
         text(c.url) && el('span', { class: 'cv-browser-url' }, c.url)
@@ -793,7 +807,7 @@
   }
 
   function figure(im, alt) {
-    var f = el('figure', { class: 'story-figure' + (text(im.video) ? ' is-video' : '') });
+    var f = el('figure', { class: 'story-figure' + (text(im.video) ? ' is-video' : '') + (text(im.video) && im.height > im.width ? ' is-portrait' : '') });
     var media;
     if (text(im.video)) {
       // 시연 영상: 소리 없음, 직접 재생(controls). 설명은 aria-label 로

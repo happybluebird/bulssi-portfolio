@@ -884,7 +884,7 @@ html.on-dark .site-header {
 .cv-book-in {
   position: absolute;
   inset: 0;
-  transition: transform 700ms cubic-bezier(.3, .7, .2, 1);
+  transition: transform 420ms cubic-bezier(.22, 1, .36, 1);   /* ease-out: 표지가 열리는 넘김과 같은 시간 */
 }
 .cv-book-in.is-front { transform: translateX(-25%); }   /* 닫힌 앞표지는 오른쪽 한 쪽뿐 → 가운데로 */
 .cv-book-in.is-back { transform: translateX(25%); }
@@ -1033,6 +1033,25 @@ html.on-dark .site-header {
   100% { opacity: 0; transform: scaleX(.12); }
 }
 
+/* 영상형 · 휴대폰 틀: 휴대폰 크기 앱은 세로로 잘라 휴대폰 안에서 재생 (화면이 커서 잘 읽힘) */
+.cv--video.cv--phone { display: block; background: radial-gradient(ellipse 70% 80% at 50% 45%, #EEF1F8 0%, #DFE4F0 62%, #D2D9EA 100%); }
+.cv-phone {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  height: 54cqw;
+  aspect-ratio: 512 / 740;
+  padding: .9cqw;
+  border-radius: 4.4cqw;
+  background: #1B1F2A;
+  box-shadow: 0 2cqw 5cqw rgba(30, 40, 70, .26), 0 .4cqw 1cqw rgba(30, 40, 70, .2);
+  transform: translate(-50%, -50%);
+}
+.cv-phone-screen { position: relative; display: block; width: 100%; height: 100%; overflow: hidden; border-radius: 3.5cqw; background: #F4F5F9; }
+.cv-phone-url { position: absolute; left: 4.5cqw; bottom: 4.2cqw; font-size: max(10px, 1.7cqw); letter-spacing: .02em; color: #4A5578; }
+.cv--video.cv--phone .cv-view { right: 4.5cqw; bottom: 4.2cqw; background: #283143; color: var(--bg); }
+.story-figure.is-portrait video { width: auto; max-width: 100%; max-height: 640px; margin: 0 auto; border-radius: 20px; }
+
 /* 좁은 소표지(휴대폰 폭): 글자 하한 때문에 판·산을 가리지 않게 덜어 냄 */
 @container (max-width: 420px) {
   .cv-board-card { gap: 2px; padding: 6px 10px 7px; }
@@ -1062,6 +1081,9 @@ html.on-dark .site-header {
   letter-spacing: .02em;
   color: var(--night-muted);
   transform: translateX(-3cqw);   /* 점 셋만큼 왼쪽으로 당겨 창 가운데에 */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .cv-screen { position: relative; flex: 1; min-height: 0; }
 .cv-video { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 0; }

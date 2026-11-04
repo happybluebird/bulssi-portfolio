@@ -96,8 +96,7 @@ window.BULSSI_SITE = {
       "layout": "grid",
       "ids": [
         "moving",
-        "mindpalace",
-        "seed"
+        "mindpalace"
       ]
     }
   ]

@@ -1,6 +1,6 @@
 /* 프로젝트 목차·상세 데이터. = 뒤의 { } 는 JSON 그대로입니다. 목록 순서 = 목차 순서.
    - 아웃백·우주도서관·OCM·기쁜오목눈이·OZ TRIP·경매 드래프트·카드뉴스 자동화: 김시언_포트폴리오_카카오뱅크.pdf(2026.10)에서 옮김
-   - 스쿨존윅·이사이상무·기억의 궁전·SEED: bulssi-claude-handoff 초안(2026-10-24), 검증 전
+   - 스쿨존윅·이사이상무·기억의 궁전: bulssi-claude-handoff 초안(2026-10-24), 검증 전 (SEED는 제작 중단으로 2026-11-05 목록에서 뺌)
    problem·judgmentEvidence·approach·outcome·learned 는 문장 배열. {"label","text"} 는 이름표가 붙은 줄로 표시.
    cover: 목차 카드·상세 위쪽 소표지 (metric = 확인된 지표 → 블록 구성, symbol = 상징 → 빛 → 이름,
           board = 보드게임 판 위를 팀 말이 달림, book = 카드뉴스가 책처럼 넘어감, flight = 낮게 날던 오목눈이가 하늘 높이, video = 실제 사이트 시연 영상).
@@ -436,7 +436,7 @@ window.BULSSI_PROJECTS = {
           "width": 1280,
           "height": 740,
           "alt": "우주도서관 시연 영상: 생일을 넣어 그날 NASA 사진과 한국어 해설을 보고, 오늘의 우주와 천체보관소를 둘러봄",
-          "caption": "실제 사이트 시연(2026.11.05 녹화, 28초) · 생일 우주 → 한국어 해설 → 오늘의 우주 → 천체보관소"
+          "caption": "실제 사이트 시연(2026.11.05 녹화, 19초로 줄임: 날짜 입력은 2배·나머지는 1.25배 빠르게) · 생일 우주 → 한국어 해설 → 오늘의 우주 → 천체보관소"
         }
       ],
       "sourceNote": "김시언_포트폴리오_카카오뱅크.pdf (2026.10)",
@@ -674,10 +674,8 @@ window.BULSSI_PROJECTS = {
         ],
         "stops": [
           1,
-          3,
           35,
           59,
-          89,
           117
         ],
         "markImage": "assets/projects/ocm-logo.jpg",
@@ -852,25 +850,41 @@ window.BULSSI_PROJECTS = {
       "outcome": [
         "경진대회 탈락: 구조 증명·실적 부족."
       ],
-      "link": null,
+      "link": "https://oz-trip.netlify.app/",
       "image": {
         "src": "assets/projects/oztrip-screen.jpg",
         "alt": "OZ TRIP 화면 — 오늘은 어디로 가 볼까요?, 출발역 선택",
         "width": 258,
-        "height": 540
+        "height": 540,
+        "showInDetail": false
       },
       "contentStatus": "from_portfolio_2026_10",
       "displayProblem": "시니어 여행을 ‘선택 경로’ 문제로 다시 정의한 근교 여행 추천",
       "judgmentEvidence": null,
-      "detailImages": [],
+      "detailImages": [
+        {
+          "src": "assets/projects/oztrip-demo-poster.jpg",
+          "video": "assets/projects/oztrip-demo.mp4",
+          "webm": "assets/projects/oztrip-demo.webm",
+          "width": 512,
+          "height": 740,
+          "alt": "OZ TRIP 시연 영상: 출발역을 수원역으로 바꾸고 거리·취향·익숙함을 고른 뒤, 추천 1위 서호공원의 하루 코스와 식사 장소, 다음 목적지를 봄",
+          "caption": "실제 사이트 시연(2026.11.05 녹화, 16초) · 출발역 변경 → 거리·취향 선택 → 추천 결과 → 하루 코스"
+        }
+      ],
       "sourceNote": "김시언_포트폴리오_카카오뱅크.pdf (2026.10)",
       "learned": [
         "혁신 기술보다 쉽게 쓰는 간단한 앱."
       ],
       "cover": {
-        "type": "symbol",
-        "symbol": "route"
-      }
+        "type": "video",
+        "frame": "phone",
+        "src": "assets/projects/oztrip-demo.mp4",
+        "webm": "assets/projects/oztrip-demo.webm",
+        "poster": "assets/projects/oztrip-demo-poster.jpg",
+        "url": "oz-trip.netlify.app"
+      },
+      "linkLabel": "oz-trip.netlify.app"
     },
     {
       "id": "draft",
@@ -892,15 +906,29 @@ window.BULSSI_PROJECTS = {
       ],
       "role": null,
       "period": null,
-      "link": null,
+      "link": "https://ocm-draft-studio.happychovy.chatgpt.site/",
       "image": null,
-      "detailImages": [],
+      "detailImages": [
+        {
+          "src": "assets/projects/draft-demo-poster.jpg",
+          "video": "assets/projects/draft-demo.mp4",
+          "webm": "assets/projects/draft-demo.webm",
+          "width": 1280,
+          "height": 740,
+          "alt": "OCM 드래프트 스튜디오 화면 둘러보기: 6팀 경매 보드, 공개 선수·관전 모드, 방송 화면, 드래프트 방 만들기 설정과 선수 24명 명단",
+          "caption": "실제 사이트 둘러보기(2026.11.05 녹화, 17초) · 입찰·방 만들기는 공유 서버에 저장되는 기능이라 실행하지 않고 화면만 보여 줌"
+        }
+      ],
       "contentStatus": "from_portfolio_2026_10",
       "sourceNote": "김시언_포트폴리오_카카오뱅크.pdf (2026.10)",
       "cover": {
-        "type": "symbol",
-        "symbol": "gavel"
-      }
+        "type": "video",
+        "src": "assets/projects/draft-demo.mp4",
+        "webm": "assets/projects/draft-demo.webm",
+        "poster": "assets/projects/draft-demo-poster.jpg",
+        "url": "ocm-draft-studio"
+      },
+      "linkLabel": "OCM 드래프트 스튜디오"
     },
     {
       "id": "cardnews",
@@ -1035,38 +1063,24 @@ window.BULSSI_PROJECTS = {
       "contentStatus": "draft_from_prior_discussion",
       "displayProblem": "지식과 공간의 경험을 이어주는 기억의 궁전",
       "judgmentEvidence": null,
-      "detailImages": [],
-      "sourceNote": "이전 포트폴리오 허브의 소개 초안. 실제 구현·기여·성과 검증 전.",
-      "cover": {
-        "type": "symbol",
-        "symbol": "book"
-      }
-    },
-    {
-      "id": "seed",
-      "name": "SEED",
-      "categories": [
-        "서비스 기획",
-        "UI/UX"
+      "detailImages": [
+        {
+          "src": "assets/projects/palace-demo-poster.jpg",
+          "video": "assets/projects/palace-demo.mp4",
+          "webm": "assets/projects/palace-demo.webm",
+          "width": 1280,
+          "height": 740,
+          "alt": "기억의 궁전 시연 영상: 궁궐 그림 위로 스크롤하며 여정 지점이 켜지고, 열 개의 랜드마크 페이지로 된 기억의 책을 끌어 넘긴 뒤, 여섯 전각 카드를 둘러봄",
+          "caption": "실제 화면 시연(HTML 프로토타입, 2026.11.05 녹화, 18초) · 궁궐 스크롤 → 기억의 책 넘기기 → 여섯 개의 전각"
+        }
       ],
-      "desc": "이미지와 레퍼런스를 바탕으로 콘텐츠 제작을 돕는 서비스",
-      "tags": "SEED 브랜드 AI 포스터 카드뉴스 이미지 레퍼런스",
-      "problem": "이미지와 제작 의도를 구체적인 구도·분위기·문구로 연결하는 제작 과정을 돕고자 합니다.",
-      "approach": "이미지와 제작 형식을 입력받고, 레퍼런스의 구도·배경·분위기와 확인된 정보를 반영해 콘텐츠를 구성하는 흐름을 논의했습니다.",
-      "evidence": "현재 서비스 화면, 제작·수정 흐름, 실제 구현 범위와 사용자 반응을 보완할 예정입니다.",
-      "role": null,
-      "period": null,
-      "outcome": null,
-      "link": null,
-      "image": null,
-      "contentStatus": "draft_from_prior_discussion",
-      "displayProblem": "이미지와 레퍼런스를 바탕으로 콘텐츠 제작을 돕는 서비스",
-      "judgmentEvidence": null,
-      "detailImages": [],
       "sourceNote": "이전 포트폴리오 허브의 소개 초안. 실제 구현·기여·성과 검증 전.",
       "cover": {
-        "type": "symbol",
-        "symbol": "sprout"
+        "type": "video",
+        "src": "assets/projects/palace-demo.mp4",
+        "webm": "assets/projects/palace-demo.webm",
+        "poster": "assets/projects/palace-demo-poster.jpg",
+        "url": "기억의 궁전 · HTML 프로토타입"
       }
     }
   ]

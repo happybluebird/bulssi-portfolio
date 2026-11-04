@@ -73,6 +73,10 @@
     </div>
   </section>
 
+  <!-- 자기소개 → 목차: 남색 위의 점이 아래에서부터 따뜻해지고 커지며 크림 바탕으로 이어짐
+       (표지 끝에 있던 '온기가 점을 밝힘'을 이 자리로 옮김. 스크롤할 때만 그림, 모션 축소에서는 숨김) -->
+  <div class="dawn" data-dawn aria-hidden="true"><canvas></canvas></div>
+
   <!-- 프로젝트 목차: 대표 2열 + 분야별 3열 묶음. 카드 썸네일이 소표지(올리거나 고르면 움직임) -->
   <section class="section" id="projects" aria-labelledby="projects-title" data-projects-section>
     <p class="section-label">02 · PROJECTS</p>
@@ -114,7 +118,7 @@
     var r = track.getBoundingClientRect();
     var total = Math.max(1, track.offsetHeight - window.innerHeight);
     var p = S.reduced ? 0 : clamp(-r.top / total, 0, 1);
-    // 장면: 작은 불꽃(0) → 커지는 불(1) → 번지는 불(2) → 빛이 화면을 채움
+    // 장면: 작은 불꽃(0) → 커지는 불(1) → 번지는 불(2) → 온기가 점으로 번짐 → 남색으로 가라앉아 자기소개로 이어짐
     var toGrow = smooth(0.14, 0.4, p), toSpread = smooth(0.46, 0.7, p);
     S.p = p;
     S.stage = toGrow + toSpread;
@@ -126,7 +130,7 @@
     st.setProperty('--solid', S.solid.toFixed(4));
     st.setProperty('--t1', (1 - smooth(0.16, 0.26, p)).toFixed(4));
     st.setProperty('--t3', smooth(0.88, 0.98, p).toFixed(4));
-    root.classList.toggle('is-light', S.solid > 0.5 || r.bottom < 80);
+    root.classList.toggle('is-light', r.bottom < 80);   // 끝 장면도 남색이라 표지를 지난 뒤에만 밝은 머리말
   }
   function queue() { if (!queued) { queued = true; requestAnimationFrame(update); } }
 
@@ -267,11 +271,11 @@ async function init() {
       vec2 gd = (frag - uGlow.xy) / uGlow.z;
       col += vec3(0.85, 0.3, 0.07) * exp(-dot(gd, gd) * 1.6) * uGlowA;
 
-      // 마지막: 온기가 지나간 자리부터 점이 커져 이어지고, 그 뒤로 바탕이 아이보리로 차오름
+      // 마지막: 온기가 점에서 점으로 번져 지나감. 바탕은 남색 그대로 두어 남색 자기소개로 이어짐
+      // (아이보리로 밝아지는 장면은 자기소개 다음, 목차로 넘어가는 자리에서 점이 커지며 나타남)
       if (uFill > 0.001) {
         float e = warmFront(frag);
         col += vec3(0.9, 0.42, 0.12) * exp(-pow((e - 0.03) / 0.1, 2.0)) * 0.14;   // 온기가 지나가는 자리의 은은한 빛
-        col = mix(col, vec3(0.965, 0.949, 0.922), smoothstep(0.12, 0.3, e));        // #F6F2EB
       }
       col += (hash(frag + fract(uTime)) - 0.5) / 255.0;
       gl_FragColor = vec4(max(col, 0.0), 1.0);
@@ -434,7 +438,7 @@ async function init() {
           }
           lift += ring * 0.5;
 
-          // 마지막 전환: 온기가 닿으면 점이 따뜻해지고(warm), 커지며 아이보리로 이어짐(grow)
+          // 마지막 전환: 온기가 닿으면 점이 따뜻해지고(warm) 조금 커진 채 남음(grow). 이후 화면이 남색으로 가라앉음
           float e = -1.0;
           if (uFill > 0.001) {
             vec4 c0 = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
@@ -456,12 +460,11 @@ async function init() {
           col *= 1.0 - far * 0.7;
 
           col = mix(col, vec3(1.0, 0.55, 0.2) * 0.85, warmT);
-          col = mix(col, mix(vec3(1.0, 0.72, 0.45), vec3(0.965, 0.949, 0.922), grow) * 0.5, grow);   // 겹쳐도 눈부시지 않게
-          col *= 1.0 - smoothstep(0.12, 0.3, e);   // 바탕이 아이보리로 차오르는 만큼 점은 물러남 (더해져 하얗게 뜨지 않도록)
+          col = mix(col, vec3(1.0, 0.68, 0.38) * 0.62, grow);   // 온기가 머문 점: 은은한 주황빛 (겹쳐도 눈부시지 않게)
           vCol = col;
           float size = max((2.6 + 1.8 * bump + 1.2 * heat + 2.4 * clamp(ring, 0.0, 1.2) + trail) * 20.0 / -mv.z, 1.4) * uPx;
           float gap = ${FIELD.step} * projectionMatrix[1][1] * 0.5 * uRes.y / -mv.z;   // 이웃 점까지 거리(px)
-          size = mix(size, gap * 1.25, grow);   // 이웃과 맞닿을 만큼
+          size = mix(size, min(size * 1.7, gap * 0.6), grow);   // 조금 커지되 이웃과 맞닿지 않음
           gl_PointSize = dot(col, vec3(1.0)) > 0.004 ? size : 0.0;   // 보이지 않는 점은 그리지 않음
         }`,
       fragmentShader: /* glsl */`
@@ -905,7 +908,7 @@ async function init() {
   /* ---------- 루프 ---------- */
   let raf = 0, last = 0, visible = true;
   const draw = () => {
-    if (S.solid < 0.999) {   // 화면이 아이보리로 덮이면 그리지 않음
+    if (S.solid < 0.999) {   // 화면이 남색으로 가라앉으면 그리지 않음
       const flame = parts.length && MU.uFade.value > 0.002;
       U.uFlameOn.value = flame ? 1 : 0;
       if (flame) renderFlame();

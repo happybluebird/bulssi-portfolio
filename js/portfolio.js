@@ -186,6 +186,73 @@
     check();
   }
 
+  /* ---------- 자기소개 → 목차: 온기가 점을 밝혀 크림 바탕으로 ----------
+     남색 위 옅은 점들이 아래에서부터 따뜻해지고(주황) 커지며(크림) 서로 맞닿아 바탕이 됨.
+     스크롤·창 크기가 바뀔 때만 다시 그림 (상시 애니메이션 없음) */
+  function mountDawn(box) {
+    var canvas = box && box.querySelector('canvas');
+    if (!canvas || !canvas.getContext || reduceMQ.matches) return;
+    var ctx = canvas.getContext('2d');
+    var W = 0, H = 0, gap = 22, cols = 0, rows = 0, jitter = [], queued = false;
+
+    function hash(i, j) { var x = Math.sin(i * 127.1 + j * 311.7) * 43758.5453; return x - Math.floor(x); }
+    function vnoise(x, y) {   // 부드러운 값 잡음: 온기의 앞선이 반듯하지 않게
+      var i = Math.floor(x), j = Math.floor(y), fx = x - i, fy = y - j;
+      fx = fx * fx * (3 - 2 * fx); fy = fy * fy * (3 - 2 * fy);
+      var a = hash(i, j), b = hash(i + 1, j), c = hash(i, j + 1), d = hash(i + 1, j + 1);
+      return a + (b - a) * fx + (c - a) * fy + (a - b - c + d) * fx * fy;
+    }
+    function sm(a, b, x) { var t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); }
+
+    function resize() {
+      var dpr = Math.min(2, window.devicePixelRatio || 1);
+      W = box.clientWidth; H = box.clientHeight;
+      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      gap = W < 720 ? 18 : 22;
+      cols = Math.ceil(W / gap) + 2; rows = Math.ceil(H / gap) + 1;
+      jitter = [];
+      for (var j = 0; j < rows; j++) for (var i = 0; i < cols; i++) jitter.push(vnoise(i * 0.18, j * 0.22) - 0.5);
+      draw();
+    }
+
+    function draw() {
+      queued = false;
+      var r = box.getBoundingClientRect(), vh = window.innerHeight;
+      if (r.bottom < -40 || r.top > vh + 40) return;
+      // 띠 위쪽이 화면 아래에 닿을 때 0 → 띠 위쪽이 화면 위에 닿을 때 1
+      var t = Math.min(1, Math.max(0, (vh - r.top) / (H + vh * 0.3)));
+      ctx.fillStyle = '#010514';
+      ctx.fillRect(0, 0, W, H);
+      var x0 = (W - (cols - 1) * gap) / 2;
+      for (var j = 0; j < rows; j++) {
+        var y = H - j * gap, yb = y / H;   // 맨 아래 줄은 띠 아랫단에 딱 맞춤
+        for (var i = 0; i < cols; i++) {
+          var e = t * 1.65 - (1 - yb) + jitter[j * cols + i] * 0.36;
+          // 먼저 따뜻해지고(주황, 조금 커짐) → 이어서 커지며 크림으로 맞닿음
+          var warm = sm(-0.5, -0.12, e), grow = sm(0.0, 0.46, e), cream = sm(0.12, 0.42, e);
+          var base = 0.1 * sm(0, 0.3, yb) * (1 - warm);
+          var rad = 1.1 + 2.2 * warm + (gap * 0.76 - 3.3) * grow;
+          var cr = 243 + (240 - 243) * warm, cg = 237 + (150 - 237) * warm, cb = 228 + (88 - 228) * warm;   // 옅은 점 → 주황
+          cr += (246 - cr) * cream; cg += (242 - cg) * cream; cb += (235 - cb) * cream;                      // → 크림
+          var alpha = base + (0.9 - base) * warm;
+          alpha += (1 - alpha) * grow;
+          var edge = sm(0, 0.16, yb);           // 띠 윗단: 주황 단계는 흐리게 시작해 반듯한 줄이 생기지 않게
+          alpha *= edge + (1 - edge) * grow;
+          if (alpha < 0.01) continue;
+          ctx.fillStyle = 'rgba(' + (cr | 0) + ',' + (cg | 0) + ',' + (cb | 0) + ',' + alpha.toFixed(3) + ')';
+          ctx.beginPath();
+          ctx.arc(x0 + i * gap, y, rad, 0, 6.2832);
+          ctx.fill();
+        }
+      }
+    }
+    var queue = function () { if (!queued) { queued = true; requestAnimationFrame(draw); } };
+    window.addEventListener('scroll', queue, { passive: true });
+    window.addEventListener('resize', function () { requestAnimationFrame(resize); });
+    resize();
+  }
+
   /* ---------- 연락처: 제공된 정보가 있을 때만 채움 ---------- */
   function renderContact(root) {
     var c = SITE.contact || {};
@@ -576,6 +643,7 @@
   var contactRoot = document.querySelector('[data-contact]');
   var detailRoot = document.querySelector('[data-project-root]');
   if (aboutRoot) { renderAbout(aboutRoot); watchDarkBand(document.getElementById('intro-me')); }
+  mountDawn(document.querySelector('[data-dawn]'));
   if (projectsRoot) renderProjects(projectsRoot);
   if (contactRoot) renderContact(contactRoot);
   if (detailRoot) renderDetail(detailRoot);

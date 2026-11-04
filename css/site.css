@@ -1,5 +1,5 @@
 /* 불씨 포트폴리오 — 사이트 공통 + 표지
-   - 표지: 어두운 화면의 작은 불씨 → 스크롤하며 불이 번짐 → 빛이 화면을 채움
+   - 표지: 어두운 화면의 작은 불씨 → 스크롤하며 불이 번짐 → 온기가 점으로 번진 뒤 남색으로 가라앉아 자기소개로 이어짐
    - 포트폴리오: 밝은 아이보리. 컬러·서체는 tokens.css 를 따름 */
 
 :root {
@@ -156,7 +156,7 @@ html.on-dark .site-header {
 }
 .is-3d .intro-stage canvas { opacity: 1; }
 
-/* 대체 화면용 마지막 전환: 불 위치에서 빛이 번져 화면을 채움 → 아이보리 */
+/* 대체 화면용 마지막 전환: 불 위치에서 온기가 번졌다가 남색으로 가라앉음 */
 .intro-fill {
   position: absolute;
   left: 50%;
@@ -166,7 +166,7 @@ html.on-dark .site-header {
   z-index: 2;
   width: 160vmax;
   height: 160vmax;
-  background: radial-gradient(circle, #FFF1DF 0%, #F6F2EB 42%, rgba(246, 242, 235, 0) 70%);
+  background: radial-gradient(circle, rgba(242, 178, 122, .32) 0%, rgba(185, 109, 67, .14) 34%, rgba(1, 5, 20, 0) 70%);
   opacity: min(1, calc(var(--fill, 0) * var(--fill, 0) * 1.8));
   transform: translate(-50%, -50%) scale(calc(var(--fill, 0) * 2.2));
 }
@@ -178,7 +178,7 @@ html.on-dark .site-header {
   position: absolute;
   inset: 0;
   z-index: 3;
-  background: var(--bg);
+  background: var(--night);   /* 끝 장면: 남색으로 가라앉아 같은 색의 자기소개로 이어짐 */
   opacity: var(--solid, 0);
   pointer-events: none;
 }
@@ -221,7 +221,7 @@ html.on-dark .site-header {
   top: 50%;
   width: min(100% - 2 * var(--gutter), 720px);
   text-align: center;
-  color: var(--text);
+  color: var(--night-text);
   opacity: var(--t3, 0);
   transform: translate(-50%, calc(-50% + (1 - var(--t3, 0)) * 20px));
 }
@@ -229,7 +229,7 @@ html.on-dark .site-header {
   margin: 0 0 16px;
   font-size: 12px;
   letter-spacing: .22em;
-  color: var(--muted);
+  color: var(--night-muted);
 }
 .intro-end .name {
   margin: 0;
@@ -511,6 +511,16 @@ html.on-dark .site-header {
   color: var(--night-text);
 }
 .about-copy .pill-link:hover { background: rgba(233, 160, 102, .14); border-color: #F0B27F; color: var(--night-text); }
+
+/* 자기소개 → 목차: 온기가 점을 밝혀 크림 바탕으로 (js/portfolio.js 의 mountDawn 이 그림) */
+.dawn {
+  position: relative;
+  height: 70vh;
+  height: 70svh;
+  min-height: 360px;
+  background: var(--night);
+}
+.dawn canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 
 /* ---------- 02 프로젝트 목차: 대표 2열 + 분야별 3열 묶음 ---------- */
 .toc-group + .toc-group { margin-top: 120px; }
@@ -1211,4 +1221,5 @@ html.on-dark .site-header {
   .card:hover .card-media img { transform: none; }
   .sc-dots--warm, .sc-ember, .subcover-copy > *, .step-mark, .subcover-cover { animation: none; }
   .cv, .cv * { transition: none !important; }   /* 소표지는 움직임 없이 바로 바뀜 */
+  .dawn { display: none; }   /* 스크롤에 따라 바뀌는 전환은 빼고 바로 크림 바탕 */
 }

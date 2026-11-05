@@ -1065,40 +1065,23 @@ window.BULSSI_PROJECTS = {
       "image": null,
       "detailImages": [
         {
-          "src": "assets/projects/school-dashboard-overview.jpg",
-          "width": 1440,
-          "height": 900,
-          "alt": "스쿨존 안전 분석 대시보드 첫 화면: 성남시 스쿨존 142개, 평균 안전점수 47.3, 안전(A+B) 비율 50%, 사고건수 합계 835건과 안전점수 상위·하위 5곳",
-          "caption": "팀 Streamlit 대시보드 · 142곳 안전 등급을 한눈에"
-        },
-        {
-          "src": "assets/projects/school-dashboard-map.jpg",
-          "width": 1440,
-          "height": 900,
-          "alt": "대시보드 지도: 성남시 스쿨존을 안전 등급 색으로 표시하고, 주의가 필요한 D등급 36곳과 시설 보강 우선순위를 보여 줌",
-          "caption": "지도 · D등급 36곳 시설 보강 우선순위"
+          "src": "assets/projects/school-demo-poster.jpg",
+          "video": "assets/projects/school-demo.mp4",
+          "webm": "assets/projects/school-demo.webm",
+          "width": 1280,
+          "height": 740,
+          "alt": "스쿨존 안전 분석 대시보드 시연 영상: 성남시 스쿨존 142개소 지표 카드와 안전점수 상·하위 5곳, 안전 등급 색으로 표시한 성남 지도, D등급 시설별 개선 제안, 구별 시설 보유 현황 차트, 광명시 51개소 시뮬레이션 지도, 모델 분석의 시스템 아키텍처를 차례로 봄",
+          "caption": "팀 Streamlit 대시보드 시연(Streamlit Cloud 배포본, 2026.11.05 녹화, 22초 · 1.3배) · 개요 → 성남 지도 → D등급 개선 제안 → 시설점수 → 광명 시뮬레이션 → 모델 분석"
         }
       ],
       "contentStatus": "from_github_2026_11",
       "sourceNote": "GitHub 저장소 README·커밋 기록 (2026.11 확인)",
       "cover": {
-        "type": "metric",
-        "label": "구역당 평균 사고",
-        "value": "7.6배",
-        "note": "안전 D등급 12.2건 vs A등급 1.6건",
-        "groups": [
-          {
-            "label": "A등급 1.6건",
-            "count": 2,
-            "tone": "muted"
-          },
-          {
-            "label": "D등급 12.2건",
-            "count": 12,
-            "tone": "accent"
-          }
-        ],
-        "unit": "블록 1개 = 사고 1건 (반올림)"
+        "type": "video",
+        "src": "assets/projects/school-demo.mp4",
+        "webm": "assets/projects/school-demo.webm",
+        "poster": "assets/projects/school-demo-poster.jpg",
+        "url": "schoolzone-dashboard · Streamlit"
       }
     },
     {

@@ -85,6 +85,10 @@ html.on-dark .site-header {
   --h-bg: rgba(1, 5, 20, .9);
   background: linear-gradient(to bottom, var(--h-bg) 72%, rgba(1, 5, 20, 0));
 }
+/* 남색 자기소개의 아래 끝이 머리말 뒤를 지나는 동안: 경계(--hdr-split) 위는 남색, 아래는 크림 */
+html.hdr-split .site-header {
+  background: linear-gradient(to bottom, rgba(1, 5, 20, .96) 0, rgba(1, 5, 20, .96) var(--hdr-split), rgba(246, 242, 235, .94) var(--hdr-split), rgba(246, 242, 235, .94) 72%, rgba(246, 242, 235, 0));
+}
 
 .brand {
   display: inline-flex;
@@ -490,23 +494,27 @@ html.on-dark .site-header {
   color: var(--night-muted);
 }
 
-.about-copy { max-width: 520px; padding-top: 4px; }
+.about-copy { max-width: 560px; }
+/* 직무 ~ 마지막 문단: 사진 높이에 맞춰 위·아래 끝을 맞춤 (portfolio.js 의 fitAboutCopy 가 높이·글자 크기를 정함) */
+.about-copy-body { display: flex; flex-direction: column; justify-content: space-between; gap: 14px; }
+.about-copy-body.is-measuring { justify-content: flex-start; }
 .about-role {
-  margin: 0 0 32px;
+  margin: 0 0 6px;
   font-size: 14px;
+  line-height: 1.4;
   letter-spacing: .06em;
   color: #E9A066;
 }
 .about-text {
-  margin: 0 0 22px;
-  font-size: clamp(17px, 1.4vw, 20px);
+  margin: 0;
+  font-size: var(--about-fs, clamp(17px, 1.4vw, 20px));
   font-weight: 300;
-  line-height: 1.95;
+  line-height: 1.85;
   letter-spacing: -.005em;
   color: rgba(243, 237, 228, .92);
 }
 .about-copy .pill-link {
-  margin-top: 16px;
+  margin-top: 16px;   /* 사진 아래 멈춤 버튼 줄과 같은 높이 */
   border-color: #E9A066;
   color: var(--night-text);
 }

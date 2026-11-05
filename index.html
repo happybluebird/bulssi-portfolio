@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="icon" href="assets/vector/ember-mark.svg" type="image/svg+xml">
 <link rel="stylesheet" href="css/tokens.css">
-<link rel="stylesheet" href="css/site.css?v=202611050239">
+<link rel="stylesheet" href="css/site.css?v=202611051255">
 <link rel="preload" as="fetch" href="assets/models/ember_to_great_flame.glb" crossorigin>
 <script type="importmap">
 {
@@ -96,9 +96,9 @@
 
 <footer class="site-footer">불씨 디자인 키트 v0.1 기반 · 표지 시안</footer>
 
-<script src="content/site-content.js?v=202611050239"></script>
-<script src="content/projects.js?v=202611050239"></script>
-<script src="js/portfolio.js?v=202611050239"></script>
+<script src="content/site-content.js?v=202611051255"></script>
+<script src="content/projects.js?v=202611051255"></script>
+<script src="js/portfolio.js?v=202611051255"></script>
 
 <!-- 스크롤 진행 → CSS 변수. WebGL이 실패해도 문구·빛 전환은 동작 -->
 <script>
@@ -130,7 +130,7 @@
     st.setProperty('--solid', S.solid.toFixed(4));
     st.setProperty('--t1', (1 - smooth(0.16, 0.26, p)).toFixed(4));
     st.setProperty('--t3', smooth(0.88, 0.98, p).toFixed(4));
-    root.classList.toggle('is-light', r.bottom < 80);   // 끝 장면도 남색이라 표지를 지난 뒤에만 밝은 머리말
+    root.classList.toggle('is-light', r.bottom < 46);   // 끝 장면도 남색이라 표지를 지난 뒤에만 밝은 머리말 (기준선 = 머리말 가운데, 자기소개 남색 판단과 같음)
   }
   function queue() { if (!queued) { queued = true; requestAnimationFrame(update); } }
 

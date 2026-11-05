@@ -104,12 +104,45 @@
     var cta = text(about.ctaHref) || '#projects';
     copy.replaceChildren();
     append(copy, [
-      text(SITE.role) && el('p', { class: 'about-role' }, SITE.role),
-      paras(about.paragraphs).map(function (t) { return el('p', { class: 'about-text' }, t); }),
+      el('div', { class: 'about-copy-body' }, [
+        text(SITE.role) && el('p', { class: 'about-role' }, SITE.role),
+        paras(about.paragraphs).map(function (t) { return el('p', { class: 'about-text' }, t); })
+      ]),
       el('a', { class: 'pill-link', href: cta.charAt(0) === '#' ? cta : (safeUrl(cta) || '#projects') },
         [el('span', null, text(about.ctaLabel) || '프로젝트 살펴보기'), icon('down-right')])
     ]);
     renderAboutImages(media, list(about.images).map(toImage).filter(Boolean), +about.interval);
+    fitAboutCopy(root);
+    if (!root._fitWatch) {
+      root._fitWatch = true;
+      var queued = false;
+      window.addEventListener('resize', function () {
+        if (queued) return;
+        queued = true;
+        requestAnimationFrame(function () { queued = false; fitAboutCopy(root); });
+      });
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { fitAboutCopy(root); });
+    }
+  }
+
+  // 글(직무 ~ 마지막 문단)을 사진 높이에 맞춤: 사진 높이 안에 들어가는 가장 큰 글자 크기를 고르고,
+  // 남는 높이는 문단 사이에 고르게 나눠 글의 위·아래 끝을 사진의 위·아래 끝과 맞춤 (사진 위·글 아래로 쌓이는 좁은 화면에서는 그대로)
+  function fitAboutCopy(root) {
+    var frame = root.querySelector('.about-frame'), body = root.querySelector('.about-copy-body');
+    var grid = root.querySelector('.about') || root;
+    if (!frame || !body) return;
+    body.style.height = '';
+    body.style.removeProperty('--about-fs');
+    if (getComputedStyle(grid).gridTemplateColumns.split(' ').length < 2) return;
+    var h = frame.getBoundingClientRect().height;
+    if (!h) return;
+    body.classList.add('is-measuring');
+    for (var fs = 22; fs > 14; fs -= .5) {
+      body.style.setProperty('--about-fs', fs + 'px');
+      if (body.scrollHeight <= h) break;
+    }
+    body.classList.remove('is-measuring');
+    body.style.height = h + 'px';
   }
 
   function renderAboutImages(media, images, interval) {
@@ -176,10 +209,16 @@
   function watchDarkBand(band) {
     if (!band || !band.classList.contains('about-band')) return;
     var root = document.documentElement, queued = false;
+    var header = document.querySelector('.site-header');
     var check = function () {
       queued = false;
-      var r = band.getBoundingClientRect(), line = 46;   // 머리말 가운데 높이
+      var r = band.getBoundingClientRect(), line = 46;   // 머리말 가운데 높이 (표지가 끝나는 기준과 같음)
       root.classList.toggle('on-dark', r.top <= line && r.bottom >= line);
+      // 남색 끝이 머리말 높이 안을 지나는 동안: 머리말 바탕을 그 경계에서 나눠(위 남색·아래 크림) 띠가 보이지 않게
+      var hh = header ? header.offsetHeight : 0;
+      var split = r.bottom > 0 && r.bottom < hh;
+      root.classList.toggle('hdr-split', split);
+      if (split) root.style.setProperty('--hdr-split', r.bottom.toFixed(1) + 'px');
     };
     var queue = function () { if (!queued) { queued = true; requestAnimationFrame(check); } };
     window.addEventListener('scroll', queue, { passive: true });

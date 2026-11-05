@@ -1160,12 +1160,26 @@ window.BULSSI_PROJECTS = {
       "link": "https://github.com/happybluebird/Microsoft-Ai-School-2nd-project-isa-isangmu",
       "linkLabel": "GitHub 저장소",
       "image": null,
-      "detailImages": [],
+      "detailImages": [
+        {
+          "src": "assets/projects/moving-demo-poster.jpg",
+          "video": "assets/projects/moving-demo.mp4",
+          "webm": "assets/projects/moving-demo.webm",
+          "width": 512,
+          "height": 740,
+          "alt": "이사이상무 시연 영상: 시작하기 → 체크리스트 조건(자취·월세·반려동물, 이사일 2027년 1월 15일)을 고르고 생성 → 법령 근거가 달린 D-day 타임라인을 내려 보고 전입신고 항목 상세(마감·과태료·주민등록법 제16조)를 연 뒤, 홈의 D-71 화면, 계약 전 체크(위험 샘플 입력), 꽉꽉봇 화면을 둘러봄",
+          "caption": "실제 앱 시연(웹 빌드 + 팀 서버, 2026.11.05 녹화, 23초 · 1.3배, 서버 대기는 줄임) · 팀 Azure 자원이 내려가 체크리스트는 AI 대신 규칙 기반 기본 결과로 나오고(화면 위 안내), 등기부등본 분석·꽉꽉봇 답변은 실행하지 않고 화면만 보여 줌"
+        }
+      ],
       "contentStatus": "from_github_2026_11",
       "sourceNote": "GitHub 저장소 README (2026.11 확인)",
       "cover": {
-        "type": "symbol",
-        "symbol": "box"
+        "type": "video",
+        "frame": "phone",
+        "src": "assets/projects/moving-demo.mp4",
+        "webm": "assets/projects/moving-demo.webm",
+        "poster": "assets/projects/moving-demo-poster.jpg",
+        "url": "이사이상무 앱"
       }
     },
     {

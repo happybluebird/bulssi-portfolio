@@ -1241,27 +1241,13 @@ window.BULSSI_PROJECTS = {
       "image": null,
       "detailImages": [
         {
-          "src": "assets/projects/palace-demo-poster.jpg",
-          "video": "assets/projects/palace-demo.mp4",
-          "webm": "assets/projects/palace-demo.webm",
+          "src": "assets/projects/palace-live-poster.jpg",
+          "video": "assets/projects/palace-live.mp4",
+          "webm": "assets/projects/palace-live.webm",
           "width": 1280,
           "height": 740,
-          "alt": "기억의 궁전 시연 영상: 궁궐 그림 위로 스크롤하며 여정 지점이 켜지고, 열 개의 랜드마크 페이지로 된 기억의 책을 끌어 넘긴 뒤, 여섯 전각 카드를 둘러봄",
-          "caption": "실제 화면 시연(HTML 프로토타입, 2026.11.05 녹화, 18초) · 궁궐 스크롤 → 기억의 책 넘기기 → 여섯 개의 전각"
-        },
-        {
-          "src": "assets/projects/palace-home.jpg",
-          "width": 1440,
-          "height": 900,
-          "alt": "기억의 궁전 홈 히어로: 궁궐 속 서재 그림 위에 ‘궁궐을 걸으며, 지식을 떠올린다’와 ‘내 PDF로 시작하기’ · ‘3D 궁전 둘러보기’ 버튼",
-          "caption": "홈 히어로 · 결과물(3D 궁전)을 먼저 보여 줌"
-        },
-        {
-          "src": "assets/projects/palace-home-ending.jpg",
-          "width": 1440,
-          "height": 900,
-          "alt": "홈 엔딩: 빛나는 궁전 문 안으로 들어가는 입장 영상과 ‘시작하기’ 버튼",
-          "caption": "홈 엔딩 · 첫 번째 방으로 들어가는 입장 영상"
+          "alt": "기억의 궁전 시연 영상: 홈에서 궁궐 그림 히어로, ‘읽기만 한 기억은 오래 머물지 않습니다’ 문제 제기, 여섯 걸음 카드 넘기기, 3D 둘러보기 영상, 자주 묻는 질문, ‘환영합니다’ 입장 영상을 지나, 데모 데이터로 도시를 고르고 한국사 6개 챕터를 명소·방에 배치하는 구성 화면과 방 디자인 고르기를 봄",
+          "caption": "팀 GitHub Pages 포트폴리오 데모(정적 배포, 2026.11.06 녹화, 22초 · 1.3배) · 홈 → 데모 데이터로 도시 선택 → 학습 구성 → 방 디자인 · Azure 백엔드가 종료돼 챗봇·PDF 분석·3D 지도·방 걷기는 이 배포본에서 동작하지 않아 아래 두 장(라이브 데모 당시 캡처)으로 대신함"
         },
         {
           "src": "assets/projects/palace-quiz.jpg",
@@ -1279,13 +1265,13 @@ window.BULSSI_PROJECTS = {
         }
       ],
       "contentStatus": "from_github_2026_11",
-      "sourceNote": "GitHub 저장소 README·CONTRIBUTORS·커밋 기록 (2026.11 확인). 시연 영상은 HTML 프로토타입, 화면 4장은 저장소 docs/ui(라이브 데모 캡처)",
+      "sourceNote": "GitHub 저장소 README·CONTRIBUTORS·커밋 기록 (2026.11 확인). 시연 영상은 팀 GitHub Pages 포트폴리오 데모, 화면 2장은 저장소 docs/ui(라이브 데모 캡처)",
       "cover": {
         "type": "video",
-        "src": "assets/projects/palace-demo.mp4",
-        "webm": "assets/projects/palace-demo.webm",
-        "poster": "assets/projects/palace-demo-poster.jpg",
-        "url": "기억의 궁전 · HTML 프로토타입"
+        "src": "assets/projects/palace-live.mp4",
+        "webm": "assets/projects/palace-live.webm",
+        "poster": "assets/projects/palace-live-poster.jpg",
+        "url": "phreno0.github.io · 기억의 궁전"
       }
     }
   ]

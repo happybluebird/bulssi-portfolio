@@ -982,12 +982,25 @@ window.BULSSI_PROJECTS = {
       "period": "2026 시즌3",
       "link": null,
       "image": null,
-      "detailImages": [],
+      "detailImages": [
+        {
+          "src": "assets/projects/cardnews-demo-poster.jpg",
+          "video": "assets/projects/cardnews-demo.mp4",
+          "webm": "assets/projects/cardnews-demo.webm",
+          "width": 1280,
+          "height": 740,
+          "alt": "카드뉴스 자동화 시연 영상: 터미널에서 factory.py로 Vol.02 경기 일정 세트를 빌드해 카드 7장이 만들어지고, 빌드가 만든 미리보기에서 카드 7장을 훑은 뒤, 팀 로고 맞대결로 배치된 카드 2를 크게 보고, 자동 생성한 인스타 넘김 미리보기(Vol.06)를 봄",
+          "caption": "실제 자동화 시연(작업 폴더 복사본에서 2026.11.06 실행·녹화, 19초 · 1.25배) · 빌드 명령 → 카드 7장 미리보기 → 카드 2 → 게시 전 인스타 넘김 미리보기(Vol.06) · 터미널 화면은 같은 날 실행한 명령과 출력을 그대로 옮겨 다시 보여 준 것"
+        }
+      ],
       "contentStatus": "from_portfolio_2026_10",
       "sourceNote": "김시언_포트폴리오_카카오뱅크.pdf (2026.10)",
       "cover": {
-        "type": "symbol",
-        "symbol": "cards"
+        "type": "video",
+        "src": "assets/projects/cardnews-demo.mp4",
+        "webm": "assets/projects/cardnews-demo.webm",
+        "poster": "assets/projects/cardnews-demo-poster.jpg",
+        "url": "OCM_Ver · factory.py"
       }
     },
     {

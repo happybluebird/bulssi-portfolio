@@ -1,6 +1,6 @@
 /* 프로젝트 목차·상세 데이터. = 뒤의 { } 는 JSON 그대로입니다. 목록 순서 = 목차 순서.
    - 아웃백·우주도서관·OCM·기쁜오목눈이·OZ TRIP·경매 드래프트·카드뉴스 자동화: 김시언_포트폴리오_카카오뱅크.pdf(2026.10)에서 옮김
-   - 스쿨존윅·이사이상무·기억의 궁전: bulssi-claude-handoff 초안(2026-10-24), 검증 전 (SEED는 제작 중단으로 2026-11-05 목록에서 뺌)
+   - 스쿨존윅·이사이상무·기억의 궁전: 각 GitHub 저장소 README·CONTRIBUTORS·커밋 기록에서 옮김(2026-11). 팀 결과는 metricsNote에 '팀 결과'로 표시 (SEED는 제작 중단으로 2026-11-05 목록에서 뺌)
    problem·judgmentEvidence·approach·outcome·learned 는 문장 배열. {"label","text"} 는 이름표가 붙은 줄로 표시.
    cover: 목차 카드·상세 위쪽 소표지 (metric = 확인된 지표 → 블록 구성, symbol = 상징 → 빛 → 이름,
           board = 보드게임 판 위를 팀 말이 달림, book = 카드뉴스가 책처럼 넘어감, flight = 낮게 날던 오목눈이가 하늘 높이, video = 실제 사이트 시연 영상).
@@ -993,27 +993,112 @@ window.BULSSI_PROJECTS = {
     {
       "id": "school",
       "name": "스쿨존윅",
-      "desc": "데이터에서 출발한 스쿨존 안전 문제 탐색",
-      "tags": "안전 데이터 S-DoT Responsible AI",
-      "problem": "스쿨존 안전 문제를 데이터와 이용자의 관점에서 살펴볼 필요가 있습니다.",
-      "approach": "S-DoT 데이터와 분석 기준을 바탕으로 문제를 탐색하고, 전달을 위한 포스터·장면 구성·매뉴얼을 정리했습니다.",
-      "evidence": "분석 결과, 담당 역할, 데이터의 한계와 산출물 원본을 확인해 추가할 예정입니다.",
       "categories": [
         "서비스 기획"
       ],
-      "role": null,
-      "period": null,
-      "outcome": null,
-      "link": null,
+      "desc": "성남시 스쿨존 142곳의 어린이 사고 위험도 예측",
+      "displayProblem": "안전시설과 도로 구조로 스쿨존 어린이 사고 위험도를 예측",
+      "tags": "스쿨존 데이터 전처리 EDA 머신러닝 Azure Custom Vision Streamlit",
+      "problem": [
+        "스쿨존마다 안전시설과 도로 구조가 달라, 어느 곳부터 시설을 보강해야 할지 판단할 근거가 필요했습니다.",
+        "안전시설물 데이터와 로드뷰 이미지로 스쿨존별 어린이 교통사고 위험도를 예측하는 모델을 6인 팀으로 만들었습니다(MS AI School 9기 1차 프로젝트)."
+      ],
+      "judgmentEvidence": [
+        {
+          "label": "분석 범위",
+          "text": "경기도 어린이보호구역 2,932곳 중 성남시(분당·수정·중원구) 142곳으로 좁혔습니다."
+        },
+        {
+          "label": "사고 반경",
+          "text": "경기도 사고다발지 2,611건을 스쿨존 반경 200m로 묶으니 173건이었고, 300m로 넓혀 195건으로 정했습니다."
+        },
+        {
+          "label": "깨진 값",
+          "text": "사고 유형이 ‘보행어?’로 깨진 8건을 ‘보행어린이사고다발지’로 바로잡았습니다(54건 → 62건)."
+        },
+        {
+          "label": "위험 점수",
+          "text": "사망 5 · 중상 3 · 경상 1 · 부상 0.5점으로 더해 10점 이상 Red, 5점 이상 Yellow, 그 아래 Green으로 나누는 기준을 정의했습니다."
+        }
+      ],
+      "approach": [
+        {
+          "label": "내 역할 · 전처리",
+          "text": "성남시 스쿨존·사고 데이터를 정제하고, 학교마다 반경 300m 안의 시설물 10종(CCTV·무인카메라·신호등·횡단보도·옐로카펫 등)을 세어 지표로 만들었습니다."
+        },
+        {
+          "label": "내 역할 · EDA",
+          "text": "사고 TOP 10 학교의 연도별 사고, 학교별 세부 위험 점수(사고 30 · 어린이 인구 13 · 어린이 비율 7), 시설물 K-means 3등급(취약 · 보통 · 우수) 분포를 그렸습니다."
+        },
+        {
+          "label": "팀 파이프라인",
+          "text": "로드뷰 약 4,000장 → Azure Custom Vision으로 도로 구조 위험도(1단계) → 시설 데이터와 합쳐 로지스틱 회귀(L1 · SMOTE · OOF, 2단계) → SHAP 해석 → Streamlit 대시보드"
+        }
+      ],
+      "outcome": [
+        "최종 모델은 AUC 0.807 · Recall 0.750이고, 변수 17개 중 5개(어린이 인구, CCTV × 어린이 인구, 사고 이력, 과속방지턱, 횡단보도)를 남겼습니다.",
+        "안전 D등급 구역의 평균 사고는 12.2건으로 A등급(1.6건)의 7.6배였고, 광명시 51곳으로 외부 검증했습니다.",
+        "대시보드에서 지도 · 등급 · D등급 시설 보강 시뮬레이션을 보여 줍니다(CCTV 1대 추가 시 위험 확률 −2.3%p)."
+      ],
+      "metrics": [
+        {
+          "value": "0.807",
+          "label": "최종 모델 AUC",
+          "note": "Recall 0.750"
+        },
+        {
+          "value": "7.6배",
+          "label": "D등급 vs A등급 평균 사고",
+          "note": "12.2건 vs 1.6건"
+        },
+        {
+          "value": "142곳",
+          "label": "분석한 성남시 스쿨존",
+          "note": "외부 검증 광명시 51곳"
+        }
+      ],
+      "metricsNote": "팀 결과 · GitHub README 기준",
+      "role": "데이터 전처리 · EDA (6인 팀)",
+      "period": "2026.02.23 ~ 03.10",
+      "link": "https://github.com/happybluebird/Microsoft-Ai-School-1st-Project_School-Zone-Safety-Risk-Prediction-Model",
+      "linkLabel": "GitHub 저장소",
       "image": null,
-      "contentStatus": "draft_from_prior_discussion",
-      "displayProblem": "데이터에서 출발한 스쿨존 안전 문제 탐색",
-      "judgmentEvidence": null,
-      "detailImages": [],
-      "sourceNote": "이전 포트폴리오 허브의 소개 초안. 실제 구현·기여·성과 검증 전.",
+      "detailImages": [
+        {
+          "src": "assets/projects/school-dashboard-overview.jpg",
+          "width": 1440,
+          "height": 900,
+          "alt": "스쿨존 안전 분석 대시보드 첫 화면: 성남시 스쿨존 142개, 평균 안전점수 47.3, 안전(A+B) 비율 50%, 사고건수 합계 835건과 안전점수 상위·하위 5곳",
+          "caption": "팀 Streamlit 대시보드 · 142곳 안전 등급을 한눈에"
+        },
+        {
+          "src": "assets/projects/school-dashboard-map.jpg",
+          "width": 1440,
+          "height": 900,
+          "alt": "대시보드 지도: 성남시 스쿨존을 안전 등급 색으로 표시하고, 주의가 필요한 D등급 36곳과 시설 보강 우선순위를 보여 줌",
+          "caption": "지도 · D등급 36곳 시설 보강 우선순위"
+        }
+      ],
+      "contentStatus": "from_github_2026_11",
+      "sourceNote": "GitHub 저장소 README·커밋 기록 (2026.11 확인)",
       "cover": {
-        "type": "symbol",
-        "symbol": "backpack"
+        "type": "metric",
+        "label": "구역당 평균 사고",
+        "value": "7.6배",
+        "note": "안전 D등급 12.2건 vs A등급 1.6건",
+        "groups": [
+          {
+            "label": "A등급 1.6건",
+            "count": 2,
+            "tone": "muted"
+          },
+          {
+            "label": "D등급 12.2건",
+            "count": 12,
+            "tone": "accent"
+          }
+        ],
+        "unit": "블록 1개 = 사고 1건 (반올림)"
       }
     },
     {
@@ -1023,21 +1108,61 @@ window.BULSSI_PROJECTS = {
         "서비스 기획",
         "UI/UX"
       ],
-      "desc": "이사 준비를 체크리스트로 정리하는 앱",
-      "tags": "이사 체크리스트 모바일 Expo React Native 인쇄",
-      "problem": "이사 과정에서 챙겨야 할 일을 한눈에 확인하고 관리할 수 있도록 돕는 서비스입니다.",
-      "approach": "이사 체크리스트 앱과 A4 인쇄 활용을 기획했습니다. 모바일에서 준비 항목을 확인하는 흐름을 포트폴리오에 정리합니다.",
-      "evidence": "실제 앱 화면, 항목 구성, 담당 역할과 사용성 확인 자료를 보완할 예정입니다.",
-      "role": null,
-      "period": "2026.04",
-      "outcome": null,
-      "link": null,
+      "desc": "이사 여정 전체를 법령 근거로 안내하는 AI 이사 도우미",
+      "displayProblem": "사람마다 다른 이사 행정을 맞춤 체크리스트로",
+      "tags": "이사 행정 체크리스트 RAG Azure OpenAI React Native UI 디자인",
+      "problem": [
+        "이사는 전입신고 · 확정일자 · 공과금 · 우편물 전송 같은 행정의 연쇄이고, 상당수는 기한을 놓치면 과태료가 붙습니다.",
+        "자취·가족, 월세·전세, 반려동물·자녀 여부에 따라 할 일이 다른데, 기존 서비스는 신고를 처리해 줄 뿐 무엇이 필요한지는 알려 주지 않습니다."
+      ],
+      "judgmentEvidence": [
+        {
+          "label": "하이브리드",
+          "text": "모든 조건을 LLM에 넘기니 같은 입력에도 결과가 달라졌습니다. 정해진 조건(토글)은 정적 매핑으로, 자유 텍스트만 LLM으로 나눴습니다."
+        },
+        {
+          "label": "판정은 규칙으로",
+          "text": "등기부등본은 추출(Document Intelligence) · 판정(공개한 규칙) · 해석(GPT-4o)을 나눠 LLM이 위험을 판정하지 않게 했고, 종합 점수는 일부러 만들지 않았습니다."
+        }
+      ],
+      "approach": [
+        {
+          "label": "내 역할",
+          "text": "UI 제작·디자인, 도메인 리서치, AI 윤리 6대 원칙 정리, 데이터 수집·전처리, 등기부등본 학습 데이터 라벨링, 앱 테스트, 발표 슬라이드 구성"
+        },
+        {
+          "label": "발표",
+          "text": "문제 정의와 서비스 소개 파트"
+        },
+        {
+          "label": "이사 체크리스트",
+          "text": "조건을 넣으면 법적 기한 기준 D-day 타임라인을 만들고, 기한이 공휴일이면 다음 평일로 옮깁니다."
+        },
+        {
+          "label": "등기부등본 해석기",
+          "text": "PDF를 올리면 위험 · 주의 · 안전으로 나눠 풀어 설명합니다."
+        },
+        {
+          "label": "꽉꽉봇",
+          "text": "법령 · 해설 · 기관 정보 인덱스 3개를 함께 찾아 출처와 함께 답하는 RAG 챗봇(음성 입력)"
+        },
+        {
+          "label": "책임 있는 AI",
+          "text": "개인정보 최소 수집(비로그인 · 업로드 즉시 삭제), 종합 점수 미제공, 위험 분류 규칙 공개, 출처 공개, 도메인 한정"
+        }
+      ],
+      "outcome": [
+        "React Native(Expo) 앱으로 체크리스트 · 등기부등본 해석기 · 꽉꽉봇을 만들었습니다.",
+        "법령 1,635 · 해설 340 · 기관 매핑 122건으로 검색 인덱스 3개를 구축했습니다."
+      ],
+      "role": "UI 디자인 · 리서치 · 발표 (6인 팀)",
+      "period": "2026.04.13 ~ 04.26",
+      "link": "https://github.com/happybluebird/Microsoft-Ai-School-2nd-project-isa-isangmu",
+      "linkLabel": "GitHub 저장소",
       "image": null,
-      "contentStatus": "draft_from_prior_discussion",
-      "displayProblem": "이사 준비를 체크리스트로 정리하는 앱",
-      "judgmentEvidence": null,
       "detailImages": [],
-      "sourceNote": "이전 포트폴리오 허브의 소개 초안. 실제 구현·기여·성과 검증 전.",
+      "contentStatus": "from_github_2026_11",
+      "sourceNote": "GitHub 저장소 README (2026.11 확인)",
       "cover": {
         "type": "symbol",
         "symbol": "box"
@@ -1050,19 +1175,73 @@ window.BULSSI_PROJECTS = {
         "서비스 기획",
         "UI/UX"
       ],
-      "desc": "지식과 공간의 경험을 이어주는 기억의 궁전",
-      "tags": "기억 인출학습 공간 랜드마크 PDF 책 UI UX",
-      "problem": "학습한 지식을 공간 경로와 연결해 사용자가 스스로 기억을 꺼내는 경험을 돕고자 합니다.",
-      "approach": "랜드마크와 기억의 책을 중심으로 공간 탐색과 학습 내용을 연결하는 흐름을 설계했습니다. 책을 크게 보여주고 기억 흐름을 선으로 연결하며 PDF 업로드 영역을 단순하게 구성하는 방향을 논의했습니다.",
-      "evidence": "완성 화면, 실제 구현 범위, 담당 역할과 학습 효과 검증 자료를 보완할 예정입니다.",
-      "role": null,
-      "period": "2026.06",
-      "outcome": null,
-      "link": null,
+      "desc": "학습 PDF를 걸어 다니며 외우는 3D 기억의 궁전으로",
+      "displayProblem": "학습 자료를 걸어서 외우는 3D 공간으로 바꾸는 서비스",
+      "tags": "기억의 궁전 3D GraphRAG Azure 랜딩 UI 공간음향",
+      "problem": [
+        "여러 번 읽어도 잊는 건 기억이 사라져서가 아니라 다시 꺼낼 단서가 없어서입니다. 목록처럼 평평한 자료에는 위치 단서가 없습니다.",
+        "기억의 궁전(장소법)은 효과가 알려져 있지만 분류 · 단서화 · 배치를 직접 설계해야 해서 쓰기 어렵습니다. 이 설계를 AI가 맡는 서비스를 7인 팀으로 만들었습니다."
+      ],
+      "judgmentEvidence": [
+        {
+          "label": "근거",
+          "text": "일반인도 하루 30분 · 6주 훈련으로 무작위 단어 회상이 26개에서 62개로 늘었다는 연구(Dresler et al., Neuron 2017)에서 출발했습니다."
+        },
+        {
+          "label": "멘토 피드백",
+          "text": "범용 도메인 대신 한국사 · AI 교안으로 좁혀 검증하고, 직접 조립한 파이프라인 대신 GraphRAG를 본체로 삼았습니다."
+        }
+      ],
+      "approach": [
+        {
+          "label": "서비스 흐름",
+          "text": "PDF 업로드 → GraphRAG로 개념·관계 추출 → VWorld 3D 지도에서 명소 선택 → 가구마다 개념이 놓인 방을 1인칭으로 걷기 → 간격 복습 · 챗봇 · 퀴즈"
+        },
+        {
+          "label": "내 역할 · 초기 설계",
+          "text": "전체 파이프라인 초안을 설계하고, gpt-4.1-mini로 목차 추출을 실험해 비용(교안 5~6원 · 국사 13~15원)을 산정했습니다."
+        },
+        {
+          "label": "내 역할 · 홈",
+          "text": "히어로 · 문제 제기 · 체험 순서 · FAQ 카피와 화면, 엔딩 입장 영상을 만들었습니다."
+        },
+        {
+          "label": "내 역할 · 챗봇·퀴즈",
+          "text": "방 안에서 바로 푸는 퀴즈 설정 화면과 위젯, 챗봇 음성 안내(TTS) · 음성 입력(STT), RAG 답변의 출처 복원을 맡았습니다."
+        },
+        {
+          "label": "내 역할 · 공간음향",
+          "text": "입장 지점을 기준으로 소리에 방향이 생기는 HRTF 3D 오디오를 넣고, 개념 카드의 ‘설명 듣기’와 연결했습니다."
+        }
+      ],
+      "outcome": [
+        "한국사 · AI 교안 · 경제 · 회계 감사 4과목으로 검증했고, RAG 답변은 약 7~8초 걸립니다.",
+        "근거가 없는 질문에는 일반 지식으로 둘러대지 않고 솔직히 거절하게 했습니다."
+      ],
+      "limitations": [
+        {
+          "label": "한계",
+          "text": "다른 개념과 연결되지 않은 개념(예: 측우기)은 답이 약하고, 한 번에 처리하는 자료는 10MB · 50쪽 이내입니다."
+        }
+      ],
+      "metrics": [
+        {
+          "value": "4과목",
+          "label": "검증한 과목",
+          "note": "한국사 · AI 교안 · 경제 · 회계 감사"
+        },
+        {
+          "value": "7~8초",
+          "label": "RAG 답변 시간",
+          "note": "GraphRAG global 검색 기준"
+        }
+      ],
+      "metricsNote": "팀 결과 · GitHub README 기준",
+      "role": "UI · 데이터 전처리 (7인 팀 ‘고민중독’)",
+      "period": "2026.05.20 ~ 06.25",
+      "link": "https://github.com/happybluebird/Mindpalace_Microsoft9ai_Thirdprj-",
+      "linkLabel": "GitHub 저장소",
       "image": null,
-      "contentStatus": "draft_from_prior_discussion",
-      "displayProblem": "지식과 공간의 경험을 이어주는 기억의 궁전",
-      "judgmentEvidence": null,
       "detailImages": [
         {
           "src": "assets/projects/palace-demo-poster.jpg",
@@ -1072,9 +1251,38 @@ window.BULSSI_PROJECTS = {
           "height": 740,
           "alt": "기억의 궁전 시연 영상: 궁궐 그림 위로 스크롤하며 여정 지점이 켜지고, 열 개의 랜드마크 페이지로 된 기억의 책을 끌어 넘긴 뒤, 여섯 전각 카드를 둘러봄",
           "caption": "실제 화면 시연(HTML 프로토타입, 2026.11.05 녹화, 18초) · 궁궐 스크롤 → 기억의 책 넘기기 → 여섯 개의 전각"
+        },
+        {
+          "src": "assets/projects/palace-home.jpg",
+          "width": 1440,
+          "height": 900,
+          "alt": "기억의 궁전 홈 히어로: 궁궐 속 서재 그림 위에 ‘궁궐을 걸으며, 지식을 떠올린다’와 ‘내 PDF로 시작하기’ · ‘3D 궁전 둘러보기’ 버튼",
+          "caption": "홈 히어로 · 결과물(3D 궁전)을 먼저 보여 줌"
+        },
+        {
+          "src": "assets/projects/palace-home-ending.jpg",
+          "width": 1440,
+          "height": 900,
+          "alt": "홈 엔딩: 빛나는 궁전 문 안으로 들어가는 입장 영상과 ‘시작하기’ 버튼",
+          "caption": "홈 엔딩 · 첫 번째 방으로 들어가는 입장 영상"
+        },
+        {
+          "src": "assets/projects/palace-quiz.jpg",
+          "width": 1440,
+          "height": 900,
+          "alt": "3D 지도 위 퀴즈 창: 주제 입력, 문제 수 3 · 5 · 8 · 10, 객관식 · OX · 단답형 선택과 ‘퀴즈 만들기’ 버튼",
+          "caption": "퀴즈 설정 · 걷던 자리에서 바로 출제"
+        },
+        {
+          "src": "assets/projects/palace-assistant.jpg",
+          "width": 1440,
+          "height": 900,
+          "alt": "3D 지도 옆 기억의 궁전 도우미 챗봇이 ‘훈구와 사림의 차이’ 질문에 답하고, 테마 · 화면 이동 · 음성 안내 버튼이 있는 화면",
+          "caption": "도우미 챗봇 · 음성 안내와 RAG 답변"
         }
       ],
-      "sourceNote": "이전 포트폴리오 허브의 소개 초안. 실제 구현·기여·성과 검증 전.",
+      "contentStatus": "from_github_2026_11",
+      "sourceNote": "GitHub 저장소 README·CONTRIBUTORS·커밋 기록 (2026.11 확인). 시연 영상은 HTML 프로토타입, 화면 4장은 저장소 docs/ui(라이브 데모 캡처)",
       "cover": {
         "type": "video",
         "src": "assets/projects/palace-demo.mp4",

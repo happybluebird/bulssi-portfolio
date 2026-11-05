@@ -513,11 +513,17 @@ html.hdr-split .site-header {
   letter-spacing: -.005em;
   color: rgba(243, 237, 228, .92);
 }
-.about-copy .pill-link {
+.about-ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
   margin-top: 16px;   /* 사진 아래 멈춤 버튼 줄과 같은 높이 */
+}
+.about-copy .pill-link {
   border-color: #E9A066;
   color: var(--night-text);
 }
+.about-copy .pill-link.is-quiet { border-color: rgba(243, 237, 228, .28); }
 .about-copy .pill-link:hover { background: rgba(233, 160, 102, .14); border-color: #F0B27F; color: var(--night-text); }
 
 /* 자기소개 → 목차: 온기가 점을 밝혀 크림 바탕으로 (js/portfolio.js 의 mountDawn 이 그림) */
@@ -1596,4 +1602,108 @@ html.hdr-split .site-header {
   .sc-dots--warm, .sc-ember, .subcover-copy > *, .step-mark, .subcover-cover { animation: none; }
   .cv, .cv * { transition: none !important; animation: none !important; }   /* 소표지는 움직임 없이 바로 바뀜 (말·영상은 portfolio.js 에서 멈춤) */
   .dawn { display: none; }   /* 스크롤에 따라 바뀌는 전환은 빼고 바로 크림 바탕 */
+}
+
+/* ---------- 자기소개 페이지 (about.html) ----------
+   남색 판: 왼쪽 이름 · 직무 · 한 문장 · 키워드 '불씨', 오른쪽 사진 순환. 아래는 상세와 같은 구간(소개 · 이력 · 사용 툴 · 연락처) */
+.me-hero {
+  --ex: 76%;
+  --ey: 44%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  column-gap: clamp(32px, 5vw, 80px);
+  min-height: 0;
+  padding: clamp(28px, 4vw, 56px);
+}
+.me-hero-copy { max-width: 640px; padding-bottom: 6px; }
+.me-hero .subcover-title { font-size: clamp(44px, 5.6vw, 76px); }
+.me-role { margin: 16px 0 0; font-size: 14px; letter-spacing: .06em; color: #E9A066; }
+.me-hero .subcover-lede { margin-top: 8px; }
+.me-hero-copy > :nth-child(4) { animation-delay: 980ms; }
+.me-hero-copy > :nth-child(5) { animation-delay: 1080ms; }
+.me-keyword {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: end;
+  gap: 8px 28px;
+  margin-top: clamp(32px, 5vh, 56px);
+  padding-top: 24px;
+  border-top: 1px solid rgba(243, 237, 228, .16);
+}
+.me-keyword-k { grid-column: 1 / -1; font-size: 11px; letter-spacing: .2em; color: var(--night-muted); }
+.me-keyword-v { font-size: clamp(56px, 6.4vw, 92px); font-weight: 600; line-height: 1; letter-spacing: -.03em; color: #F0B27F; }
+.me-keyword-d { margin: 0; padding-bottom: 6px; max-width: 22em; font-size: 16px; line-height: 1.7; color: rgba(243, 237, 228, .82); word-break: keep-all; }
+.me-hero-media { animation: sc-fade 700ms ease 200ms both; }
+.me-hero .about-frame { width: min(30vw, calc((100vh - 280px) * .75), 400px); width: min(30vw, calc((100svh - 280px) * .75), 400px); }
+
+/* 이력: 날짜 | 무엇을 · 한 일 · 관련 프로젝트 */
+.me-timeline { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--line); }
+.me-item {
+  display: grid;
+  grid-template-columns: minmax(0, 11em) minmax(0, 1fr);
+  gap: 4px 24px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line);
+}
+.me-date { display: flex; flex-direction: column; margin: 0; font-size: 15px; line-height: 1.7; font-variant-numeric: tabular-nums; color: var(--muted); }
+.me-length { font-size: 13px; }
+.me-title { margin: 0; font-size: 18px; font-weight: 600; line-height: 1.6; word-break: keep-all; }
+.me-points { margin: 6px 0 0; padding-left: 1.1em; font-size: 16px; line-height: 1.75; }
+.me-highlight {
+  margin: 12px 0 0;
+  padding: 10px 14px;
+  border-left: 2px solid var(--accent);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: rgba(185, 109, 67, .07);
+  font-size: 15px;
+  line-height: 1.7;
+  word-break: keep-all;
+}
+.me-projects { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 0; }
+.me-project {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  font-size: 14px;
+  text-decoration: none;
+  color: var(--text);
+  transition: border-color var(--hover) ease, color var(--hover) ease;
+}
+.me-project:hover { border-color: var(--accent); color: var(--accent-ink); }
+.me-project .icon { width: 14px; height: 14px; }
+
+/* 사용 툴: 묶음 | 칩 */
+.me-tools { margin: 0; border-top: 1px solid var(--line); }
+.me-tools > div {
+  display: grid;
+  grid-template-columns: minmax(0, 11em) minmax(0, 1fr);
+  align-items: baseline;
+  gap: 8px 24px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+.me-tools dt { font-size: 15px; color: var(--muted); }
+.me-tools dd { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; }
+.me-chip { padding: 4px 12px; border-radius: 999px; background: var(--paper-2); font-size: 14px; line-height: 1.6; }
+
+.me-next { display: flex; justify-content: center; padding: 40px 0 112px; border-top: 1px solid var(--line); }
+
+@media (max-width: 900px) {
+  .me-hero { grid-template-columns: minmax(0, 1fr); row-gap: 32px; }
+  .me-hero-media { grid-row: 1; }
+  .me-hero .about-frame { width: min(100%, 360px); }
+}
+@media (max-width: 720px) {
+  .me-hero { --ex: 60%; --ey: 26%; padding: 20px 20px 28px; }
+  .me-keyword { grid-template-columns: minmax(0, 1fr); }
+  .me-item, .me-tools > div { grid-template-columns: minmax(0, 1fr); }
+  .me-date { flex-direction: row; gap: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .me-hero-media { animation: none; }
 }

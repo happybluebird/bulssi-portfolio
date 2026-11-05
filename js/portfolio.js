@@ -108,8 +108,11 @@
         text(SITE.role) && el('p', { class: 'about-role' }, SITE.role),
         paras(about.paragraphs).map(function (t) { return el('p', { class: 'about-text' }, t); })
       ]),
-      el('a', { class: 'pill-link', href: cta.charAt(0) === '#' ? cta : (safeUrl(cta) || '#projects') },
-        [el('span', null, text(about.ctaLabel) || '프로젝트 살펴보기'), icon('down-right')])
+      el('div', { class: 'about-ctas' }, [
+        el('a', { class: 'pill-link', href: cta.charAt(0) === '#' ? cta : (safeUrl(cta) || '#projects') },
+          [el('span', null, text(about.ctaLabel) || '프로젝트 살펴보기'), icon('down-right')]),
+        SITE.profile && el('a', { class: 'pill-link is-quiet', href: 'about.html' }, [el('span', null, '자기소개 · 이력'), icon('right')])
+      ])
     ]);
     renderAboutImages(media, list(about.images).map(toImage).filter(Boolean), +about.interval);
     fitAboutCopy(root);
@@ -1108,7 +1111,98 @@
     ]));
   }
 
+  /* ---------- 자기소개 페이지 (about.html) ----------
+     남색 판(이름 · 키워드 · 한 문장 · 사진 순환) → 소개 → 이력(학력 · 경력·교육 · 수상 · 활동) → 사용 툴 → 연락처
+     이력은 site-content.js 의 profile 에 적힌 것만, 관련 프로젝트는 상세 페이지로 이어짐 */
+  function renderMe(root) {
+    var prof = SITE.profile || {};
+    var about = SITE.about || {};
+    var c = SITE.contact || {};
+    var email = text(c.email);
+    var links = list(c.links).map(function (l) { return { label: text(l.label) || text(l.url), url: safeUrl(l.url) }; }).filter(function (l) { return l.url; });
+    var byId = {};
+    PROJECTS.forEach(function (p) { byId[p.id] = p; });
+
+    var media = el('div', { class: 'me-hero-media', 'data-about-media': '' });
+    var hero = el('section', { class: 'subcover me-hero', 'aria-labelledby': 'me-title' }, [
+      el('div', { class: 'subcover-art', 'aria-hidden': 'true' }, [
+        el('span', { class: 'sc-dots' }), el('span', { class: 'sc-dots sc-dots--warm' }), el('span', { class: 'sc-ember' })
+      ]),
+      el('div', { class: 'subcover-copy me-hero-copy' }, [
+        el('p', { class: 'subcover-eyebrow' }, 'ABOUT ME · 자기소개'),
+        el('h1', { id: 'me-title', class: 'subcover-title' }, text(SITE.name) || '김시언'),
+        text(SITE.role) && el('p', { class: 'me-role' }, SITE.role),
+        text(prof.tagline) && el('p', { class: 'subcover-lede' }, prof.tagline),
+        text(SITE.keyword) && el('div', { class: 'me-keyword' }, [
+          el('span', { class: 'me-keyword-k' }, 'KEYWORD'),
+          el('strong', { class: 'me-keyword-v' }, SITE.keyword),
+          text(SITE.definition) && el('p', { class: 'me-keyword-d' }, SITE.definition)
+        ])
+      ]),
+      media
+    ]);
+
+    var no = 0;
+    function section(id, title, body) {
+      no += 1;
+      return el('section', { class: 'story-section', id: id, 'aria-labelledby': id + '-title' }, [
+        el('div', { class: 'story-head' }, [el('span', { class: 'story-no' }, pad(no)), el('h2', { id: id + '-title' }, title)]),
+        el('div', { class: 'story-body' }, body)
+      ]);
+    }
+    function projectLinks(ids) {
+      var ps = list(ids).map(function (id) { return byId[id]; }).filter(Boolean);
+      return ps.length > 0 && el('p', { class: 'me-projects' }, ps.map(function (p) {
+        return el('a', { class: 'me-project', href: detailHref(p.id) }, [p.name, icon('right')]);
+      }));
+    }
+
+    var parts = [];
+    var intro = paras(about.paragraphs);
+    if (intro.length) parts.push(section('intro', '소개', intro.map(function (t) { return el('p', null, t); })));
+
+    list(prof.history).forEach(function (g, gi) {
+      var items = list(g.items).filter(function (it) { return it && text(it.title); });
+      if (!text(g.title) || !items.length) return;
+      parts.push(section('history-' + (gi + 1), g.title, el('ol', { class: 'me-timeline' }, items.map(function (it) {
+        var points = paras(it.points);
+        return el('li', { class: 'me-item' }, [
+          el('p', { class: 'me-date' }, [text(it.date), text(it.length) && el('span', { class: 'me-length' }, it.length)]),
+          el('div', { class: 'me-what' }, [
+            el('h3', { class: 'me-title' }, it.title),
+            points.length > 0 && el('ul', { class: 'me-points' }, points.map(function (t) { return el('li', null, t); })),
+            text(it.highlight) && el('p', { class: 'me-highlight' }, it.highlight),
+            projectLinks(it.projects)
+          ])
+        ]);
+      }))));
+    });
+
+    var tools = list(prof.tools).filter(function (t) { return t && text(t.group) && paras(t.items).length; });
+    if (tools.length) parts.push(section('tools', '사용 툴', el('dl', { class: 'me-tools' }, tools.map(function (t) {
+      return el('div', null, [el('dt', null, t.group), el('dd', null, paras(t.items).map(function (x) { return el('span', { class: 'me-chip' }, x); }))]);
+    }))));
+
+    if (email || links.length) parts.push(section('contact', '연락처', el('ul', { class: 'contact-list' }, [
+      email && el('li', null, el('a', { href: 'mailto:' + email }, email)),
+      links.map(function (l) { return el('li', null, el('a', { href: l.url, target: '_blank', rel: 'noopener' }, [l.label, icon('up-right')])); })
+    ])));
+
+    root.replaceChildren();
+    append(root, [
+      el('a', { class: 'back-link', href: './' }, [icon('left'), '처음으로']),
+      hero,
+      el('div', { class: 'project-body me-body', id: 'me-body', tabindex: '-1' }, [
+        el('div', { class: 'story' }, parts),
+        el('nav', { class: 'me-next', 'aria-label': '다음으로' }, el('a', { class: 'pill-link', href: './#projects' }, [el('span', null, '프로젝트 살펴보기'), icon('right')]))
+      ])
+    ]);
+    renderAboutImages(media, list(about.images).map(toImage).filter(Boolean), +about.interval);
+  }
+
   /* ---------- 시작 ---------- */
+  var meRoot = document.querySelector('[data-me-root]');
+  if (meRoot) renderMe(meRoot);
   var aboutRoot = document.querySelector('[data-about]');
   var projectsRoot = document.querySelector('[data-projects-section]');
   var contactRoot = document.querySelector('[data-contact]');

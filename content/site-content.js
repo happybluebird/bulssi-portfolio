@@ -45,6 +45,63 @@ window.BULSSI_SITE = {
     ],
     "interval": 3000
   },
+  "profile": {
+    "tagline": "세상을 둥글게 바라보는 긍정적인 마케터",
+    "sourceNote": "학력·경력·수상·사용 툴: 이력서(2026.06.29 판). 활동 기간·역할: 각 프로젝트 데이터. 생년월일·주소·전화번호는 공개 사이트라 싣지 않음",
+    "history": [
+      {
+        "title": "학력",
+        "items": [
+          { "date": "2027.02", "title": "신구대학교 미디어콘텐츠학과 학사 졸업 (예정)" },
+          { "date": "2026.02", "title": "신구대학교 미디어콘텐츠과 (3년제) 졸업" }
+        ]
+      },
+      {
+        "title": "경력 · 교육",
+        "items": [
+          {
+            "date": "2025.12 – 2026.06",
+            "length": "7개월",
+            "title": "Microsoft AI School 9기 수료",
+            "points": ["Azure AI 기반 팀 프로젝트 세 번: 1차 데이터 분석·모델, 2차 RAG 앱, 3차 3D 학습 서비스"],
+            "projects": ["school", "moving", "mindpalace"]
+          },
+          {
+            "date": "2022.04 – 2025.12",
+            "length": "3년 4개월",
+            "title": "OUTBACK STEAK HOUSE 홀 매니저",
+            "points": ["매출 증진 프로모션 기획", "신규 직원 서비스 교육 및 콘텐츠 기획 제작", "매장 최우수 서비스 사원"],
+            "highlight": "인센티브 프로그램 기획·운영 → 객단가 16% 상승 · 전국 매출 1위 · 3개월 연속 우수사원",
+            "projects": ["outback"]
+          }
+        ]
+      },
+      {
+        "title": "수상",
+        "items": [
+          {
+            "date": "2025",
+            "title": "제12회 대학생 출판콘텐츠 공모전 잡지 부문 우수상",
+            "points": ["[TMDE] 신구대학교 잡지 기획 팀 프로젝트 (6인) · 졸업작품"]
+          }
+        ]
+      },
+      {
+        "title": "활동 · 개인 프로젝트",
+        "items": [
+          { "date": "2026.02 –", "title": "우주도서관", "points": ["개인 SaaS · 기획·개발·마케팅 단독 (운영 중)"], "projects": ["space"] },
+          { "date": "2026.02 –", "title": "블로그 ‘기쁜오목눈이’", "points": ["기획 · 글 작성과 검수 · 데이터 분석 · 운영 (1인)"], "projects": ["blog"] },
+          { "date": "2026 시즌3", "title": "OCM 시즌3 운영진 (오버워치 크리에이터 대회)", "points": ["SNS 홍보·마케팅 · 데이터 (운영진 5인 중) · 카드뉴스 자동화"], "projects": ["ocm", "cardnews"] }
+        ]
+      }
+    ],
+    "tools": [
+      { "group": "AI", "items": ["ChatGPT · Codex", "Claude · Claude Code", "Gemini · Stitch"] },
+      { "group": "디자인 · 영상", "items": ["Adobe Illustrator", "Adobe Photoshop", "Adobe Premiere Pro"] },
+      { "group": "개발 · 데이터", "items": ["Python", "Microsoft Azure"] },
+      { "group": "마케팅", "items": ["Google Ads"] }
+    ]
+  },
   "filters": [
     "전체",
     "서비스 기획",

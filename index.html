@@ -9,7 +9,8 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="icon" href="assets/vector/ember-mark.svg" type="image/svg+xml">
 <link rel="stylesheet" href="css/tokens.css">
-<link rel="stylesheet" href="css/site.css?v=202611060338">
+<script src="js/motion.js?v=202611061551"></script>
+<link rel="stylesheet" href="css/site.css?v=202611061551">
 <link rel="preload" as="fetch" href="assets/models/ember_to_great_flame.glb" crossorigin>
 <script type="importmap">
 {
@@ -96,16 +97,16 @@
 
 <footer class="site-footer">김시언 · 불씨 포트폴리오</footer>
 
-<script src="content/site-content.js?v=202611060338"></script>
-<script src="content/projects.js?v=202611060338"></script>
-<script src="js/portfolio.js?v=202611060338"></script>
+<script src="content/site-content.js?v=202611061551"></script>
+<script src="content/projects.js?v=202611061551"></script>
+<script src="js/portfolio.js?v=202611061551"></script>
 
 <!-- 스크롤 진행 → CSS 변수. WebGL이 실패해도 문구·빛 전환은 동작 -->
 <script>
 (function () {
   var root = document.documentElement;
   var track = document.getElementById('cover');
-  var mq = matchMedia('(prefers-reduced-motion: reduce)');
+  var mq = window.bulssiReduceMQ || matchMedia('(prefers-reduced-motion: reduce)');   // js/motion.js: 방문자가 움직임을 켜면 정지 화면 대신 움직임
   var S = window.emberScroll = { p: 0, stage: 0, fill: 0, solid: 0, reduced: mq.matches };
   var queued = false;
 
@@ -938,7 +939,7 @@ async function init() {
   function stop() { cancelAnimationFrame(raf); raf = 0; }
   const renderStill = () => { update(0); draw(); };
 
-  const reduceMQ = matchMedia('(prefers-reduced-motion: reduce)');
+  const reduceMQ = window.bulssiReduceMQ || matchMedia('(prefers-reduced-motion: reduce)');
   const applyMotionPref = () => {
     S.reduced = reduceMQ.matches;
     if (S.reduced) { stop(); st.puff = 0; renderStill(); }

@@ -1554,11 +1554,11 @@ html.hdr-split .site-header {
 
 /* ---------- 모션 축소: 장면 진행 없이 한 화면, 모든 문구 표시 ---------- */
 @media (prefers-reduced-motion: reduce) {
-  .intro { height: auto; }
-  .intro-sticky { position: relative; }
-  .eyebrow { opacity: 1; }
-  .intro-fill, .intro-sticky::after, .intro-end, .intro-hint { display: none; }
-  .intro-ui { opacity: 1; }
+  html:not(.motion-on) .intro { height: auto; }
+  html:not(.motion-on) .intro-sticky { position: relative; }
+  html:not(.motion-on) .eyebrow { opacity: 1; }
+  html:not(.motion-on) .intro-fill, html:not(.motion-on) .intro-sticky::after, html:not(.motion-on) .intro-end, html:not(.motion-on) .intro-hint { display: none; }
+  html:not(.motion-on) .intro-ui { opacity: 1; }
 }
 
 /* ---------- 자기소개 · 목차 · 상세: 좁은 창 ---------- */
@@ -1597,11 +1597,11 @@ html.hdr-split .site-header {
 
 /* ---------- 자기소개 · 목차 · 상세: 모션 축소 (순환·등장 효과 없이 바로 표시) ---------- */
 @media (prefers-reduced-motion: reduce) {
-  .about-frame img, .card-media img { transition: none; }
-  .card:hover .card-media img { transform: none; }
-  .sc-dots--warm, .sc-ember, .subcover-copy > *, .step-mark, .subcover-cover { animation: none; }
-  .cv, .cv * { transition: none !important; animation: none !important; }   /* 소표지는 움직임 없이 바로 바뀜 (말·영상은 portfolio.js 에서 멈춤) */
-  .dawn { display: none; }   /* 스크롤에 따라 바뀌는 전환은 빼고 바로 크림 바탕 */
+  html:not(.motion-on) .about-frame img, html:not(.motion-on) .card-media img { transition: none; }
+  html:not(.motion-on) .card:hover .card-media img { transform: none; }
+  html:not(.motion-on) .sc-dots--warm, html:not(.motion-on) .sc-ember, html:not(.motion-on) .subcover-copy > *, html:not(.motion-on) .step-mark, html:not(.motion-on) .subcover-cover { animation: none; }
+  html:not(.motion-on) .cv, html:not(.motion-on) .cv * { transition: none !important; animation: none !important; }   /* 소표지는 움직임 없이 바로 바뀜 (말·영상은 portfolio.js 에서 멈춤) */
+  html:not(.motion-on) .dawn { display: none; }   /* 스크롤에 따라 바뀌는 전환은 빼고 바로 크림 바탕 */
 }
 
 /* ---------- 자기소개 페이지 (about.html) ----------
@@ -1705,5 +1705,52 @@ html.hdr-split .site-header {
   .me-date { flex-direction: row; gap: 10px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .me-hero-media { animation: none; }
+  html:not(.motion-on) .me-hero-media { animation: none; }
+}
+
+/* ---------- 움직임·3D 안내 (js/portfolio.js mountMotionNote) ----------
+   컴퓨터의 '움직임 줄이기'로 정지 화면일 때 화면 아래 가운데에 이유와 켜기 버튼 */
+.motion-note {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  z-index: 80;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px 14px;
+  width: max-content;
+  max-width: calc(100% - 32px);
+  padding: 8px 8px 8px 20px;
+  border: 1px solid rgba(243, 237, 228, .14);
+  border-radius: 28px;
+  background: rgba(10, 13, 22, .9);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .28);
+  color: var(--night-text);
+  font-size: 14px;
+  line-height: 1.5;
+  transform: translateX(-50%);
+}
+.motion-note p { margin: 0; }
+.motion-note button {
+  min-height: 40px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 999px;
+  background: #F0B27F;
+  font: inherit;
+  font-weight: 600;
+  color: #1A1208;
+  cursor: pointer;
+}
+.motion-note button:hover { background: #F4C39A; }
+.motion-note .motion-note-gl { flex-basis: 100%; padding: 4px 12px 4px 0; color: rgba(243, 237, 228, .85); }
+/* 켠 뒤에는 작게 (끄는 버튼만 남김) */
+.motion-note.is-on { padding: 4px 4px 4px 14px; font-size: 12.5px; opacity: .85; }
+.motion-note.is-on button { min-height: 32px; padding: 0 12px; background: transparent; border: 1px solid rgba(243, 237, 228, .3); color: var(--night-text); }
+@media (max-width: 720px) {
+  .motion-note { bottom: 12px; padding-left: 16px; font-size: 13px; }
 }

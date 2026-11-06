@@ -10,7 +10,7 @@
   var ALL = '전체';
   var FILTERS = list(SITE.filters).length ? list(SITE.filters) : [ALL, '서비스 기획', 'UI/UX', '마케팅'];
   if (FILTERS.indexOf(ALL) < 0) FILTERS.unshift(ALL);
-  var reduceMQ = matchMedia('(prefers-reduced-motion: reduce)');
+  var reduceMQ = window.bulssiReduceMQ || matchMedia('(prefers-reduced-motion: reduce)');   // js/motion.js (방문자가 켠 움직임 반영)
   var SCRIPT_SRC = (document.currentScript && document.currentScript.src) || location.href;
 
   /* ---------- 도우미 ---------- */
@@ -1200,7 +1200,29 @@
     renderAboutImages(media, list(about.images).map(toImage).filter(Boolean), +about.interval);
   }
 
+  /* ---------- 움직임·3D 안내 ----------
+     컴퓨터에 '움직임 줄이기'(윈도우: 애니메이션 효과 끄기)가 켜져 있으면 사이트가 정지 화면으로 보이므로,
+     화면 아래에 이유와 '움직이는 화면 보기' 버튼을 둠. 3D(WebGL)를 못 쓰는 브라우저는 표지에서 이유를 알림 */
+  function mountMotionNote() {
+    var mq = window.bulssiReduceMQ;
+    var noWebGL = !!document.getElementById('ember-canvas') && !(function () {
+      try { var c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); } catch (e) { return false; }
+    })();
+    var system = !!(mq && mq.system);
+    if (!system && !noWebGL) return;
+    var on = system && !mq.matches;
+    var note = el('div', { class: 'motion-note' + (on ? ' is-on' : ''), role: 'status' }, [
+      system && el('p', null, on ? '움직이는 화면으로 보는 중' : '이 컴퓨터는 ‘움직임 줄이기’가 켜져 있어 정지 화면으로 보여요'),
+      system && el('button', { type: 'button' }, on ? '정지 화면으로' : '움직이는 화면 보기'),
+      noWebGL && el('p', { class: 'motion-note-gl' }, '이 브라우저에서는 3D 그래픽(WebGL)을 쓸 수 없어 표지의 불씨가 보이지 않아요. 브라우저 설정에서 ‘하드웨어 가속’을 켜 주세요.')
+    ]);
+    var btn = note.querySelector('button');
+    if (btn) btn.addEventListener('click', function () { mq.set(!on); });
+    document.body.append(note);
+  }
+
   /* ---------- 시작 ---------- */
+  mountMotionNote();
   var meRoot = document.querySelector('[data-me-root]');
   if (meRoot) renderMe(meRoot);
   var aboutRoot = document.querySelector('[data-about]');

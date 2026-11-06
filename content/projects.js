@@ -14,8 +14,8 @@ window.BULSSI_PROJECTS = {
       "categories": [
         "마케팅"
       ],
-      "desc": "하스필 야시장 객단가 +16%, 월별 팀 프로모션, 두 시즌 수상",
-      "displayProblem": "하스필 야시장 객단가 +16%, 월별 팀 프로모션, 두 시즌 수상",
+      "desc": "팀 인센티브 ‘하스필 야시장’으로 객단가 37,000원 → 43,000원(+16%), 2024년 전국 매출 1위",
+      "displayProblem": "팀 인센티브 ‘하스필 야시장’으로 객단가 37,000원 → 43,000원(+16%), 2024년 전국 매출 1위",
       "problem": [
         "2022–2024 시즌 하남스타필드점 홀 매니저. 도입 전 객단가는 37,000원이었습니다.",
         "팀 단위로 객단가를 올릴 인센티브 프로그램 ‘하스필 야시장’을 설계하는 것이 과제였습니다."
@@ -66,7 +66,7 @@ window.BULSSI_PROJECTS = {
           "note": "2025년 8·9·10월 합계"
         }
       ],
-      "role": "홀 매니저",
+      "role": "고객응대 · 서비스 교육 · 홀 매니저",
       "period": "2022–2025",
       "link": null,
       "image": {
@@ -380,7 +380,7 @@ window.BULSSI_PROJECTS = {
     {
       "id": "space",
       "name": "우주도서관",
-      "desc": "NASA·ESA 관측 정보를 한국어로 쉽게 탐색하는 서비스",
+      "desc": "생일 날짜로 NASA·ESA 관측 자료를 찾아보는 한국어 서비스",
       "tags": "우주 정보 콘텐츠 접근성 NASA ESA",
       "problem": [
         "NASA 자료는 영어라 일반인이 찾아보기 어렵습니다.",
@@ -409,7 +409,7 @@ window.BULSSI_PROJECTS = {
         "서비스 기획",
         "마케팅"
       ],
-      "role": "1인 기획·개발·마케팅",
+      "role": "기획 · 개발 · 마케팅",
       "period": null,
       "outcome": [
         "국내 활성 사용자 109명 · 참여율 73.2% · 평균 참여 시간 1분 48초(전체 기준 246명 · 46.4% · 49초, 세션 351).",
@@ -424,7 +424,7 @@ window.BULSSI_PROJECTS = {
         "showInDetail": false
       },
       "contentStatus": "from_portfolio_2026_10",
-      "displayProblem": "NASA·ESA 관측 정보를 한국어로 쉽게 탐색하는 서비스",
+      "displayProblem": "생일 날짜로 NASA·ESA 관측 자료를 찾아보는 한국어 서비스",
       "judgmentEvidence": [
         "반응은 GA4로 측정하되, 해외 유입을 걸러 국내 실사용자 기준으로 봤습니다."
       ],
@@ -470,11 +470,11 @@ window.BULSSI_PROJECTS = {
     {
       "id": "ocm",
       "name": "OCM",
-      "desc": "시청자 데이터로 KPI 재설계, 카드뉴스·릴스 운영",
+      "desc": "치지직 시청자 수를 5일간 모아 KPI를 점유율로 재설계, 인스타그램 17일간 게시물 13개",
       "tags": "오버워치 크리에이터 매거진 인스타그램 카드뉴스 릴스 KPI",
       "problem": [
         "OCM 시즌3(오버워치 크리에이터 대회). 2020년 시즌1·2 생방송 평균 시청자는 216명 → 176명이었고, 시즌3 목표는 300명이었습니다.",
-        "운영진 5인 중 SNS 홍보·마케팅과 데이터를 맡아, 대회 전 공식 인스타그램을 개설·운영하는 것이 과제였습니다."
+        "SNS 홍보·마케팅과 데이터를 맡아, 대회 전 공식 인스타그램을 개설·운영하는 것이 과제였습니다."
       ],
       "approach": [
         {
@@ -494,7 +494,7 @@ window.BULSSI_PROJECTS = {
       "categories": [
         "마케팅"
       ],
-      "role": "SNS 홍보·마케팅 · 데이터 (운영진 5인 중)",
+      "role": "SNS 홍보·마케팅 · 데이터",
       "period": "2026 시즌3",
       "outcome": [
         "개설 17일 만에 게시물 13개 · 릴스 평균 조회수 326회 · 팔로워 45명(2026.10.11 개설 → 10.28 기준).",
@@ -511,7 +511,7 @@ window.BULSSI_PROJECTS = {
         "showInDetail": false
       },
       "contentStatus": "from_portfolio_2026_10",
-      "displayProblem": "시청자 데이터로 KPI 재설계, 카드뉴스·릴스 운영",
+      "displayProblem": "치지직 시청자 수를 5일간 모아 KPI를 점유율로 재설계, 인스타그램 17일간 게시물 13개",
       "judgmentEvidence": [
         "치지직 오버워치 카테고리 시청자 수를 2026.9.9~9.13 22시에 직접 수집했습니다: 9/9(수) 6,000 · 9/10(목) 9,800 · 9/11(금) 8,000 · 9/12(토) 4,000 · 9/13(일, 대회일) 10,000명.",
         "같은 금요일에도 14시 600명, 22시 8,000명으로 시간대 차이가 컸습니다.",
@@ -688,8 +688,8 @@ window.BULSSI_PROJECTS = {
       "categories": [
         "마케팅"
       ],
-      "desc": "감성 에세이 블로그를 공연 정보 블로그로 키운 기록",
-      "displayProblem": "감성 에세이 블로그를 공연 정보 블로그로 키운 기록",
+      "desc": "노래 에세이 블로그에 공연 예매 정보 글을 더해 하루 조회 5회 → 159회",
+      "displayProblem": "노래 에세이 블로그에 공연 예매 정보 글을 더해 하루 조회 5회 → 159회",
       "problem": [
         "2026.02.19부터 노래 한 곡에 감상을 붙이는 감성 에세이를 매달 20~22편 발행했습니다. 6개월 129편, 하루 평균 조회 약 5회. 8월 애드포스트 신청은 방문자·페이지뷰 부족으로 보류되었습니다.",
         "음악 주제와 톤은 지키면서 9월 하루 평균 100회를 넘기는 것이 과제였습니다. 10/1 애드포스트 재검수에 9월 실적이 쓰이기 때문입니다. 확인된 사실만 쓴다는 원칙은 유지했습니다."
@@ -774,7 +774,7 @@ window.BULSSI_PROJECTS = {
         }
       ],
       "metricsNote": "출처: 네이버 크리에이터 어드바이저(조회수·예상수익, ~2026.10.27), 블로그 공개 글 목록(2026.10.28)",
-      "role": "기획 · 글 작성과 검수 · 데이터 분석 · 운영 (1인, AI 에이전트와 분업)",
+      "role": "기획 · 글 작성과 검수 · 데이터 분석 · 운영",
       "period": "2026.02~ 운영 중",
       "link": "https://blog.naver.com/ksu4718",
       "linkLabel": "blog.naver.com/ksu4718",
@@ -872,7 +872,7 @@ window.BULSSI_PROJECTS = {
       "categories": [
         "서비스 기획"
       ],
-      "role": "기획 · 데이터 전처리 · 마케팅 · 프론트엔드 (2인 팀, 문서 작성은 팀원)",
+      "role": "기획 · 데이터 전처리 · 마케팅 · 프론트엔드",
       "period": "2026.08 – 09 (접수 마감 9.30)",
       "outcome": [
         "2026 한국관광 데이터랩 활용 경진대회(문화체육관광부 · 한국관광공사)에 서식4 기획서로 제출했지만 수상하지 못했습니다. 구조는 증명했지만 실사용 실적이 부족했습니다.",
@@ -887,7 +887,7 @@ window.BULSSI_PROJECTS = {
         "showInDetail": false
       },
       "contentStatus": "from_docs_2026_11",
-      "displayProblem": "시니어 여행을 ‘선택 경로’ 문제로 다시 정의한 근교 여행 추천",
+      "displayProblem": "수도권 관광지 1,667곳에서 추린 160곳으로 60대의 근교 여행지 1·2·3순위를 고르는 서비스",
       "judgmentEvidence": [
         {
           "label": "1차 · 여행 예보 (8.31)",
@@ -961,8 +961,8 @@ window.BULSSI_PROJECTS = {
       "categories": [
         "서비스 기획"
       ],
-      "desc": "6팀 팀장이 직접 접속해 입찰하는 방송용 선수 경매 드래프트",
-      "displayProblem": "6팀 팀장이 직접 접속해 입찰하는 방송용 선수 경매 드래프트",
+      "desc": "팀장 6명이 접속해 선수 24명을 10초 블라인드 입찰로 나누는 방송용 경매 드래프트",
+      "displayProblem": "팀장 6명이 접속해 선수 24명을 10초 블라인드 입찰로 나누는 방송용 경매 드래프트",
       "problem": [
         "OCM 시즌3(오버워치 크리에이터 대회)는 6팀 30명(팀장 6 + 경매 대상 선수 24)으로 팀을 꾸리고, 시즌2에 이어 드래프트 경매로 선수를 나눕니다.",
         "목표는 팀장들이 각자 접속해 직접 경매하고, 팀·경매·시간 정보를 1920×1080 방송 화면 한 장에 스크롤 없이 담는 것이었습니다."
@@ -1023,7 +1023,7 @@ window.BULSSI_PROJECTS = {
         "자동 테스트로 동시 입찰, 공개 전 입찰액 보호, 동률, 권한 없는 요청을 검사했고, 진행자 시작 요청을 동시에 보내도 한 건만 처리되는 것을 확인했습니다.",
         "직접 화면을 쓰며 찾은 음성 연결 오류 · 입찰 영역 잘림 · 방송 화면의 작은 글씨를 고쳤습니다."
       ],
-      "role": "기획 · 규칙 설계 · 화면 설계 · 검수 (개발은 AI와 함께)",
+      "role": "기획 · 규칙 설계 · 화면 설계 · 검수",
       "period": "2026.09 – 11 (Studio 10.4 ~ 11.4)",
       "link": "https://ocm-draft-studio.happychovy.chatgpt.site/",
       "image": null,
@@ -1062,8 +1062,8 @@ window.BULSSI_PROJECTS = {
       "categories": [
         "서비스 기획"
       ],
-      "desc": "카드뉴스 7단계 중 4단계를 자동으로",
-      "displayProblem": "카드뉴스 7단계 중 4단계를 자동으로",
+      "desc": "OCM 카드뉴스 제작 7단계 중 4단계를 자동화",
+      "displayProblem": "OCM 카드뉴스 제작 7단계 중 4단계를 자동화",
       "problem": [
         "OCM 인스타그램 카드뉴스를 반복해서 만드는 일을 줄여야 했습니다."
       ],
@@ -1136,11 +1136,11 @@ window.BULSSI_PROJECTS = {
         "서비스 기획"
       ],
       "desc": "성남시 스쿨존 142곳의 어린이 사고 위험도 예측",
-      "displayProblem": "안전시설과 도로 구조로 스쿨존 어린이 사고 위험도를 예측",
+      "displayProblem": "성남시 스쿨존 142곳의 안전시설·도로 구조로 어린이 사고 위험도 예측(AUC 0.807)",
       "tags": "스쿨존 데이터 전처리 EDA 머신러닝 Azure Custom Vision Streamlit",
       "problem": [
         "스쿨존마다 안전시설과 도로 구조가 달라, 어느 곳부터 시설을 보강해야 할지 판단할 근거가 필요했습니다.",
-        "안전시설물 데이터와 로드뷰 이미지로 스쿨존별 어린이 교통사고 위험도를 예측하는 모델을 6인 팀으로 만들었습니다(MS AI School 9기 1차 프로젝트)."
+        "안전시설물 데이터와 로드뷰 이미지로 스쿨존별 어린이 교통사고 위험도를 예측하는 모델을 만들었습니다(MS AI School 9기 1차 팀 프로젝트)."
       ],
       "judgmentEvidence": [
         {
@@ -1197,7 +1197,7 @@ window.BULSSI_PROJECTS = {
         }
       ],
       "metricsNote": "팀 결과 · GitHub README 기준",
-      "role": "데이터 전처리 · EDA (6인 팀)",
+      "role": "데이터 전처리 · EDA",
       "period": "2026.02.23 ~ 03.10",
       "link": "https://github.com/happybluebird/Microsoft-Ai-School-1st-Project_School-Zone-Safety-Risk-Prediction-Model",
       "linkLabel": "GitHub 저장소",
@@ -1231,7 +1231,7 @@ window.BULSSI_PROJECTS = {
         "UI/UX"
       ],
       "desc": "이사 여정 전체를 법령 근거로 안내하는 AI 이사 도우미",
-      "displayProblem": "사람마다 다른 이사 행정을 맞춤 체크리스트로",
+      "displayProblem": "자취·가족, 월세·전세 조건을 넣으면 이사 행정을 법적 기한 D-day 순으로 정리하는 앱",
       "tags": "이사 행정 체크리스트 RAG Azure OpenAI React Native UI 디자인",
       "problem": [
         "이사는 전입신고 · 확정일자 · 공과금 · 우편물 전송 같은 행정의 연쇄이고, 상당수는 기한을 놓치면 과태료가 붙습니다.",
@@ -1277,7 +1277,7 @@ window.BULSSI_PROJECTS = {
         "React Native(Expo) 앱으로 체크리스트 · 등기부등본 해석기 · 꽉꽉봇을 만들었습니다.",
         "법령 1,635 · 해설 340 · 기관 매핑 122건으로 검색 인덱스 3개를 구축했습니다."
       ],
-      "role": "UI 디자인 · 리서치 · 발표 (6인 팀)",
+      "role": "UI 디자인 · 리서치 · 발표",
       "period": "2026.04.13 ~ 04.26",
       "link": "https://github.com/happybluebird/Microsoft-Ai-School-2nd-project-isa-isangmu",
       "linkLabel": "GitHub 저장소",
@@ -1312,11 +1312,11 @@ window.BULSSI_PROJECTS = {
         "UI/UX"
       ],
       "desc": "학습 PDF를 걸어 다니며 외우는 3D 기억의 궁전으로",
-      "displayProblem": "학습 자료를 걸어서 외우는 3D 공간으로 바꾸는 서비스",
+      "displayProblem": "학습 PDF의 개념을 3D 방 가구에 배치해 걸으며 외우는 서비스",
       "tags": "기억의 궁전 3D GraphRAG Azure 랜딩 UI 공간음향",
       "problem": [
         "여러 번 읽어도 잊는 건 기억이 사라져서가 아니라 다시 꺼낼 단서가 없어서입니다. 목록처럼 평평한 자료에는 위치 단서가 없습니다.",
-        "기억의 궁전(장소법)은 효과가 알려져 있지만 분류 · 단서화 · 배치를 직접 설계해야 해서 쓰기 어렵습니다. 이 설계를 AI가 맡는 서비스를 7인 팀으로 만들었습니다."
+        "기억의 궁전(장소법)은 효과가 알려져 있지만 분류 · 단서화 · 배치를 직접 설계해야 해서 쓰기 어렵습니다. 이 설계를 AI가 맡는 서비스를 팀 프로젝트로 만들었습니다."
       ],
       "judgmentEvidence": [
         {
@@ -1373,7 +1373,7 @@ window.BULSSI_PROJECTS = {
         }
       ],
       "metricsNote": "팀 결과 · GitHub README 기준",
-      "role": "UI · 데이터 전처리 (7인 팀 ‘고민중독’)",
+      "role": "UI · 데이터 전처리",
       "period": "2026.05.20 ~ 06.25",
       "link": "https://github.com/happybluebird/Mindpalace_Microsoft9ai_Thirdprj-",
       "linkLabel": "GitHub 저장소",

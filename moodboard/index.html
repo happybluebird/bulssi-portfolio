@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>불씨 · 무드보드</title>
+<meta name="description" content="김시언 포트폴리오 ‘불씨’ 무드보드 9장. 지금 사이트에서 고른 장면·색·글꼴·조형·흐름.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='none'%3E%3Cpath d='M49 83C17 81 18 54 37 37C46 29 51 18 49 10C78 37 85 64 65 78C60 82 54 84 49 83Z' stroke='%23B96D43' stroke-width='2'/%3E%3Cpath d='M48 69C39 62 46 50 54 45C60 57 60 67 48 69Z' fill='%23B96D43'/%3E%3C/svg%3E">
+<!-- Pretendard (SIL OFL 1.1) · 포트폴리오 사이트와 같은 주소 -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<!-- 발표용 무드보드: claude.ai 슬라이드 덱(2026-11-06)을 옮긴 정적 페이지. 사이트 메뉴에는 넣지 않고 주소로만 엶.
+     슬라이드는 1920×1080 판을 화면에 맞춰 줄임. ←/→·스페이스·PageUp/Down·클릭으로 넘김, F 전체 화면, N 발표 메모 -->
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #010514; }
+  body { font-family: 'Pretendard Variable', Pretendard, sans-serif; color: #F3EDE4; -webkit-font-smoothing: antialiased; }
+
+  .deck { position: fixed; inset: 0; cursor: default; }
+  .stage { position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px;
+           transform: translate(-50%, -50%) scale(var(--s, .5)); }
+  .stage > section { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: hidden;
+                     opacity: 0; visibility: hidden; transition: opacity .35s ease, visibility 0s linear .35s;
+                     word-break: keep-all; overflow-wrap: break-word; }
+  .stage > section.is-on { opacity: 1; visibility: visible; transition: opacity .35s ease; }
+  /* 슬라이드 형식: 나중 요소가 위에 그려짐 (흐름 안의 요소도 고정 위치 요소와 같은 순서로 겹침) */
+  .stage > section > * { position: relative; }
+  section h1, section h2, section h3, section p, section ul, section ol { margin: 0; }
+  section ul { padding-left: 1.1em; }
+  section img { display: block; }
+  section a { color: inherit; }
+  section table { width: 100%; border-collapse: collapse; }
+  section th { text-align: left; font-weight: 600; border-bottom: 2px solid #D4C7B7; }
+  section td { vertical-align: top; border-bottom: 1px solid #E2D8CB; }
+  section aside { display: none; }
+
+  /* 아래 조작 막대: 마우스를 움직일 때만 보임 */
+  .bar { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); display: flex; align-items: center; gap: 4px;
+         padding: 6px; border-radius: 999px; background: rgba(12, 16, 32, .82); border: 1px solid rgba(243, 237, 228, .14);
+         backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); font-size: 14px; transition: opacity .3s ease; }
+  body.idle .bar { opacity: 0; pointer-events: none; }
+  .bar button, .bar a { font: inherit; color: #F3EDE4; background: none; border: 0; border-radius: 999px; padding: 8px 14px;
+                        cursor: pointer; text-decoration: none; white-space: nowrap; }
+  .bar button:hover, .bar a:hover { background: rgba(243, 237, 228, .1); }
+  .bar button:disabled { opacity: .3; cursor: default; background: none; }
+  .bar button:focus-visible, .bar a:focus-visible { outline: 2px solid #E9A066; outline-offset: 1px; }
+  .bar .count { min-width: 64px; text-align: center; font-variant-numeric: tabular-nums; color: #C9C3BB; }
+  .bar .site { color: #010514; background: #E9A066; font-weight: 600; }
+  .bar .site:hover { background: #F09658; }
+  .bar .sep { width: 1px; height: 20px; background: rgba(243, 237, 228, .16); margin: 0 4px; }
+
+  .notes { position: fixed; left: 50%; bottom: 72px; transform: translateX(-50%); width: min(880px, calc(100% - 32px));
+           max-height: 32vh; overflow: auto; padding: 18px 22px; border-radius: 14px; background: rgba(12, 16, 32, .92);
+           border: 1px solid rgba(243, 237, 228, .14); font-size: 16px; line-height: 1.7; color: #E6DFD5; display: none; }
+  body.show-notes .notes { display: block; }
+
+  @media (max-width: 640px) {
+    .bar { bottom: 10px; font-size: 13px; }
+    .bar .opt { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .stage > section, .stage > section.is-on, .bar { transition: none; }
+  }
+</style>
+</head>
+<body>
+<main class="deck" aria-label="불씨 무드보드">
+  <div class="stage">
+<section id="cover" data-transition="fade" style="background:#010514;color:#F3EDE4;font-family:'Pretendard Variable', Pretendard, Arial, sans-serif;padding:128px;display:flex;flex-direction:column;justify-content:center;gap:28px">
+<img src="img/cover-hero.jpg" alt="사이트 표지: 남색 점 배경 위에서 번지는 3D 불씨와 불티" style="position:absolute;left:0;top:0;width:1920px;height:1080px;object-fit:cover">
+<div style="position:absolute;left:0;top:0;width:1100px;height:1080px;background:linear-gradient(90deg, rgba(1,5,20,0.94) 0%, rgba(1,5,20,0.7) 55%, rgba(1,5,20,0) 100%)"></div>
+<p style="font-size:24px;letter-spacing:6px;color:#E9A066;font-weight:500">MOODBOARD · 2026.11 중간 발표</p>
+<h1 style="font-size:200px;font-weight:600;line-height:1;letter-spacing:-6px;color:#F3EDE4">불씨</h1>
+<p style="font-size:40px;font-weight:300;line-height:1.45;color:#F3EDE4;width:760px">지금 사이트에서 고른<br>장면 · 색 · 글꼴 · 조형</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1100px;font-size:24px;color:#A8A29B">김시언 포트폴리오 · <a href="https://happybluebird.github.io/bulssi-portfolio/?motion=on">happybluebird.github.io/bulssi-portfolio/?motion=on</a></p>
+<aside>제 포트폴리오의 키워드는 불씨입니다. 지난 10월 17일에 보여 드린 비주얼 컨셉 보드는 사이트를 만들기 전 방향이었고, 그 뒤 실제로 만들면서 많이 바뀌었습니다. 그래서 무드보드를 지금 공개된 사이트에서 직접 고른 장면, 색, 글꼴, 조형 요소로 다시 정리했습니다. 배경에 보이는 화면도 사이트 표지를 그대로 캡처한 것입니다.</aside>
+</section>
+<section id="board" data-transition="fade" style="background:#010514;color:#F3EDE4;font-family:'Pretendard Variable', Pretendard, Arial, sans-serif;padding:64px;display:flex;flex-direction:column">
+<img src="img/ember.jpg" alt="형체만 남은 빛 덩어리로 타오르는 3D 불씨와 둘레의 불티" style="position:absolute;left:64px;top:64px;width:520px;height:640px;object-fit:cover;border-radius:12px">
+<div style="position:absolute;left:64px;top:720px;width:520px;height:296px;background:#0B1022;border-radius:12px;padding:32px 36px;display:flex;flex-direction:column;gap:8px">
+<p style="font-size:24px;letter-spacing:4px;color:#E9A066;font-weight:500">KEYWORD</p>
+<p style="font-size:80px;font-weight:600;line-height:1.1;letter-spacing:-2px;color:#F3EDE4">불씨</p>
+<p style="font-size:26px;font-weight:300;line-height:1.45;color:#C9C3BB">형체만 남은 빛 · 숨 쉬는 점 · 번지는 온기</p>
+</div>
+<img src="img/dawn.jpg" alt="남색 위의 점이 주황으로 데워지고 커지며 크림 바탕으로 맞닿는 새벽 띠" style="position:absolute;left:600px;top:64px;width:640px;height:300px;object-fit:cover;border-radius:12px">
+<img src="img/card-outback.jpg" alt="아웃백 소표지: 국내 여행 보드게임 판" style="position:absolute;left:600px;top:380px;width:312px;height:196px;object-fit:cover;border-radius:12px">
+<img src="img/card-ocm.jpg" alt="OCM 소표지: 카드뉴스를 엮은 책이 넘어가는 장면" style="position:absolute;left:928px;top:380px;width:312px;height:196px;object-fit:cover;border-radius:12px">
+<img src="img/about.jpg" alt="남색 자기소개 띠: 주황빛 저녁 하늘 사진과 얇은 글씨의 소개 글" style="position:absolute;left:600px;top:592px;width:640px;height:424px;object-fit:cover;border-radius:12px">
+<div style="position:absolute;left:1256px;top:64px;width:600px;height:120px;display:flex;flex-direction:row;border:1px solid #2A3048;border-radius:12px;overflow:hidden">
+<div style="flex:1;background:#010514"></div>
+<div style="flex:1;background:#272E42"></div>
+<div style="flex:1;background:#9E1A05"></div>
+<div style="flex:1;background:#FF6B1A"></div>
+<div style="flex:1;background:#FFDEA8"></div>
+<div style="flex:1;background:#F09658"></div>
+<div style="flex:1;background:#B96D43"></div>
+<div style="flex:1;background:#F6F2EB"></div>
+</div>
+<img src="img/lift.jpg" alt="호기심 불티가 날아가며 가까운 점이 솟아오르는 표지 장면" style="position:absolute;left:1256px;top:200px;width:600px;height:220px;object-fit:cover;border-radius:12px">
+<div style="position:absolute;left:1256px;top:436px;width:600px;height:188px;background:#F6F2EB;border-radius:12px;padding:32px 36px;display:flex;flex-direction:column;gap:12px">
+<p style="font-size:56px;font-weight:600;line-height:1.1;letter-spacing:-1px;color:#38332E">Pretendard</p>
+<p style="font-size:28px;font-weight:300;line-height:1.4;color:#675D53">프로덕트 마케터 · 서비스 기획자</p>
+</div>
+<img src="img/card-blog.jpg" alt="기쁜오목눈이 소표지: 하루 평균 조회 159회의 새가 높이 날아드는 장면" style="position:absolute;left:1256px;top:640px;width:600px;height:376px;object-fit:cover;border-radius:12px">
+<aside>무드보드를 한 장으로 모은 화면입니다. 모든 이미지는 지금 사이트에서 직접 캡처했습니다. 왼쪽은 표지의 주인공인 3D 불씨로, 윤곽 없이 형체만 남은 빛 덩어리입니다. 가운데 위는 자기소개에서 목차로 넘어가는 새벽 띠로, 남색 위의 점이 주황으로 데워지며 크림 바탕으로 이어집니다. 그 아래는 움직이는 소표지인 아웃백 보드게임 판과 OCM 카드뉴스 책, 남색 자기소개 화면입니다. 오른쪽은 사이트에서 쓰는 색, 호기심 불티가 닿아 점이 솟는 장면, 서체 Pretendard, 그리고 기쁜오목눈이 소표지입니다. 키워드로 줄이면 형체만 남은 빛, 숨 쉬는 점, 번지는 온기입니다.</aside>
+</section>
+<section id="direction" data-transition="fade" style="background:#010514;color:#F3EDE4;font-family:'Pretendard Variable', Pretendard, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;letter-spacing:4px;color:#E9A066;font-weight:500">01 · DIRECTION</p>
+<h2 style="font-size:64px;font-weight:600;line-height:1.2;letter-spacing:-1px">불씨가 점에 온기를 옮겨, 크림빛 기록이 된다</h2>
+</div>
+<div style="display:flex;flex-direction:row;gap:32px">
+<div style="flex:1;display:flex;flex-direction:column;gap:16px">
+<img src="img/ember-rise.jpg" alt="윤곽 없이 위로 일렁이는 3D 불씨" style="width:392px;height:360px;object-fit:cover;border-radius:12px">
+<h3 style="font-size:36px;font-weight:600;line-height:1.25">형체만 남은 불씨</h3>
+<p style="font-size:26px;font-weight:300;line-height:1.5;color:#C9C3BB">윤곽 없는 빛 덩어리. 끌어 돌리고 누를 수 있는 3D가 표지의 주인공</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:16px">
+<img src="img/curious.jpg" alt="꼬리를 끌며 점 배경 위를 날아가는 호기심 불티" style="width:392px;height:360px;object-fit:cover;border-radius:12px">
+<h3 style="font-size:36px;font-weight:600;line-height:1.25">글 대신 장면</h3>
+<p style="font-size:26px;font-weight:300;line-height:1.5;color:#C9C3BB">표지 문구는 화면에 쓰지 않고, 호기심 불티가 날아가 닿는 물결로 전함</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:16px">
+<img src="img/dawn.jpg" alt="점이 주황으로 데워지며 크림 바탕으로 이어지는 새벽 띠" style="width:392px;height:360px;object-fit:cover;border-radius:12px">
+<h3 style="font-size:36px;font-weight:600;line-height:1.25">뒤집히지 않는 밝기</h3>
+<p style="font-size:26px;font-weight:300;line-height:1.5;color:#C9C3BB">자기소개까지 남색을 잇고, 점이 데워지며 크림 목차로 넘어감</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:16px">
+<img src="img/detail-blog.jpg" alt="크림 바탕의 기쁜오목눈이 상세 위쪽: 큰 소표지와 짧은 글" style="width:392px;height:360px;object-fit:cover;border-radius:12px">
+<h3 style="font-size:36px;font-weight:600;line-height:1.25">읽는 곳은 차분하게</h3>
+<p style="font-size:26px;font-weight:300;line-height:1.5;color:#C9C3BB">목차와 상세는 크림 바탕과 고딕. 상세는 장면 8 : 글 2</p>
+</div>
+</div>
+<aside>전체 방향은 ‘불씨가 점에 온기를 옮겨, 크림빛 기록이 된다’입니다. 네 가지 원칙으로 정리했습니다. 첫째, 불씨는 형태를 정하지 않고 윤곽 없는 빛으로만 남겼고, 이 3D 불씨를 끌어 돌리거나 누를 수 있는 것이 표지의 중심입니다. 둘째, 표지 문구를 큰 글씨로 쓰는 대신 호기심 불티가 화면을 살피다 닿으면 물결이 퍼지는 장면으로 ‘작은 호기심이 사람에게 닿는다’는 뜻을 전합니다. 셋째, 밝은 화면과 어두운 화면이 갑자기 뒤집히지 않도록 자기소개까지 남색을 잇고, 점이 데워지면서 크림색 목차로 넘어갑니다. 넷째, 읽는 영역은 크림 바탕과 고딕으로 차분하게 두고, 프로젝트 상세는 움직이는 장면이 8, 글이 2의 비중을 갖습니다.</aside>
+</section>
+<section id="color" data-transition="fade" style="background:#F6F2EB;color:#38332E;font-family:'Pretendard Variable', Pretendard, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;letter-spacing:4px;color:#8F4E2C;font-weight:500">02 · COLOR</p>
+<h2 style="font-size:64px;font-weight:600;line-height:1.2;letter-spacing:-1px">남색 밤에서 크림빛 기록으로</h2>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;color:#675D53">스크롤 순서와 길이 · 1920×1080 화면에서 잰 첫 페이지 높이</p>
+<div style="display:flex;flex-direction:row;height:120px;border:1px solid #D4C7B7;border-radius:12px;overflow:hidden">
+<div style="flex:54;background:#010514"></div>
+<div style="flex:8;background:linear-gradient(90deg, #010514 0%, #F09658 55%, #F6F2EB 100%)"></div>
+<div style="flex:38;background:#F6F2EB"></div>
+</div>
+<div style="display:flex;flex-direction:row">
+<div style="flex:54"><p style="font-size:24px;font-weight:500">표지 · 자기소개 54%</p></div>
+<div style="flex:8"><p style="font-size:24px;font-weight:500">새벽 8%</p></div>
+<div style="flex:38"><p style="font-size:24px;font-weight:500">목차 · 연락처 38%</p></div>
+</div>
+</div>
+<div style="display:flex;flex-direction:row;gap:64px">
+<div style="flex:1;display:flex;flex-direction:column;gap:16px">
+<h3 style="font-size:28px;font-weight:600;line-height:1.3">어두운 장면 · 표지와 자기소개</h3>
+<div style="display:flex;flex-direction:row;gap:16px">
+<div style="flex:1;display:flex;flex-direction:column;gap:6px">
+<div style="height:150px;background:#010514;border-radius:8px"></div>
+<p style="font-size:24px;font-weight:500">밤</p>
+<p style="font-size:24px;color:#675D53">#010514</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px">
+<div style="height:150px;background:#272E42;border-radius:8px"></div>
+<p style="font-size:24px;font-weight:500">식은 점</p>
+<p style="font-size:24px;color:#675D53">#272E42</p>
+</div>
+<div style="flex:2;display:flex;flex-direction:column;gap:6px">
+<div style="height:150px;background:linear-gradient(90deg, #9E1A05 0%, #FF6B1A 40%, #FFAD52 70%, #FFDEA8 100%);border-radius:8px"></div>
+<p style="font-size:24px;font-weight:500">불씨 빛</p>
+<p style="font-size:24px;color:#675D53">#9E1A05→#FFDEA8</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px">
+<div style="height:150px;background:#F09658;border-radius:8px"></div>
+<p style="font-size:24px;font-weight:500">온기</p>
+<p style="font-size:24px;color:#675D53">#F09658</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px">
+<div style="height:150px;background:#E9A066;border-radius:8px"></div>
+<p style="font-size:24px;font-weight:500">강조</p>
+<p style="font-size:24px;color:#675D53">#E9A066</p>
+</div>
+</div>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:16px">
+<h3 style="font-size:28px;font-weight:600;line-height:1.3">밝은 장면 · 목차와 상세</h3>
+<div style="display:flex;flex-direction:row;gap:16px">
+<div style="flex:1;display:flex;flex-direction:column;gap:6px">
+<div style="height:150px;background:#F6F2EB;border:1px solid #C9BBA9;border-radius:8px"></div>
+<p style="font-size:24px;font-weight:500">크림</p>
+<p style="font-size:24px;color:#675D53">#F6F2EB</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px">
+<div style="height:150px;background:#D4C7B7;border-radius:8px"></div>
+<p style="font-size:24px;font-weight:500">토프</p>
+<p style="font-size:24px;color:#675D53">#D4C7B7</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px">
+<div style="height:150px;background:#B96D43;border-radius:8px"></div>
+<p style="font-size:24px;font-weight:500">코퍼</p>
+<p style="font-size:24px;color:#675D53">#B96D43</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px">
+<div style="height:150px;background:#8F4E2C;border-radius:8px"></div>
+<p style="font-size:24px;font-weight:500">짙은 코퍼</p>
+<p style="font-size:24px;color:#675D53">#8F4E2C</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px">
+<div style="height:150px;background:#38332E;border-radius:8px"></div>
+<p style="font-size:24px;font-weight:500">글자</p>
+<p style="font-size:24px;color:#675D53">#38332E</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px">
+<div style="height:150px;background:#675D53;border-radius:8px"></div>
+<p style="font-size:24px;font-weight:500">보조 글자</p>
+<p style="font-size:24px;color:#675D53">#675D53</p>
+</div>
+</div>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#675D53">색 값은 사이트 코드(공통 색 · 표지 셰이더 · 새벽 띠)에서 그대로 옮김 · 순수 검정·흰색은 쓰지 않음</p>
+<aside>컬러는 스크롤 순서가 곧 색의 순서입니다. 1920×1080 화면에서 첫 페이지 높이를 재 보면 표지와 자기소개가 이어지는 남색이 약 54%, 점이 데워지는 새벽 띠가 8%, 크림색 목차와 연락처가 38%입니다. 어두운 장면은 밤의 남색 #010514 위에 식은 점, 그리고 불씨 빛을 씁니다. 불씨는 가장자리의 붉은색에서 주황, 속의 흰빛까지 밝기에 따라 색이 바뀝니다. 새벽 띠에서 점이 데워지는 주황이 온기 색이고, 자기소개의 직무와 버튼에는 강조 주황을 씁니다. 밝은 장면은 크림 바탕에 토프와 코퍼를 더하고, 글자는 순수 검정 대신 따뜻한 회갈색을 씁니다. 작은 강조 글자는 대비를 위해 짙은 코퍼를 씁니다.</aside>
+</section>
+<section id="type" data-transition="fade" style="background:#F6F2EB;color:#38332E;font-family:'Pretendard Variable', Pretendard, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;letter-spacing:4px;color:#8F4E2C;font-weight:500">03 · TYPE</p>
+<h2 style="font-size:64px;font-weight:600;line-height:1.2;letter-spacing:-1px">Pretendard 하나, 굵기로 나누는 위계</h2>
+</div>
+<div style="display:grid;grid-template-columns:1064px 520px;gap:80px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;flex-direction:row;align-items:center;gap:32px;border-bottom:1px solid #D4C7B7;padding:0px 0px 16px 0px">
+<div style="width:240px;display:flex;flex-direction:column;gap:2px">
+<p style="font-size:24px;font-weight:600">상세 제목</p>
+<p style="font-size:24px;color:#675D53">600 · 최대 88px</p>
+</div>
+<p style="font-size:96px;font-weight:600;line-height:1.15;letter-spacing:-2px">기쁜오목눈이</p>
+</div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:32px;border-bottom:1px solid #D4C7B7;padding:0px 0px 16px 0px">
+<div style="width:240px;display:flex;flex-direction:column;gap:2px">
+<p style="font-size:24px;font-weight:600">섹션 제목</p>
+<p style="font-size:24px;color:#675D53">500 · 32px</p>
+</div>
+<p style="font-size:56px;font-weight:500;line-height:1.2;letter-spacing:-1px">프로젝트</p>
+</div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:32px;border-bottom:1px solid #D4C7B7;padding:0px 0px 16px 0px">
+<div style="width:240px;display:flex;flex-direction:column;gap:2px">
+<p style="font-size:24px;font-weight:600">소개 글</p>
+<p style="font-size:24px;color:#675D53">300 · 17–22px</p>
+</div>
+<p style="font-size:36px;font-weight:300;line-height:1.5">결과는 숫자로 확인합니다.</p>
+</div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:32px;border-bottom:1px solid #D4C7B7;padding:0px 0px 16px 0px">
+<div style="width:240px;display:flex;flex-direction:column;gap:2px">
+<p style="font-size:24px;font-weight:600">수치</p>
+<p style="font-size:24px;color:#675D53">700 · 최대 32px</p>
+</div>
+<p style="font-size:56px;font-weight:700;line-height:1.2;letter-spacing:-1px;font-variant-numeric:tabular-nums">5 → 159회 · +16%</p>
+</div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:32px">
+<div style="width:240px;display:flex;flex-direction:column;gap:2px">
+<p style="font-size:24px;font-weight:600">라벨</p>
+<p style="font-size:24px;color:#675D53">12px · 자간 0.22em</p>
+</div>
+<p style="font-size:24px;font-weight:500;letter-spacing:5px;color:#8F4E2C">PLANNING / MARKETING / CONTENT</p>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:20px;background:#ECE5DA;border-radius:12px;padding:40px">
+<h3 style="font-size:32px;font-weight:600;line-height:1.25">원칙</h3>
+<ul style="font-size:26px;line-height:1.6;color:#4A433C">
+<li>고딕만 쓰고, 명조·세리프는 쓰지 않음</li>
+<li>소개 글은 가는 300으로 길게 읽히게</li>
+<li>제목은 500~600, 자간을 조금 좁게</li>
+<li>라벨은 작게, 자간은 넓게</li>
+<li>줄 바꿈은 단어 단위</li>
+</ul>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#675D53">사이트 서체 Pretendard (SIL OFL 1.1) · 이 보드도 같은 서체로 표시 · 왼쪽 숫자는 사이트의 실제 크기</p>
+<aside>글꼴은 Pretendard 하나만 씁니다. 명조나 세리프 없이 고딕 하나로, 크기를 늘리기보다 굵기로 위계를 나눕니다. 프로젝트 상세의 큰 제목은 600 굵기에 자간을 조금 좁히고, 섹션 제목은 500, 자기소개 글은 300의 가는 글씨로 길게 읽히게 했습니다. 성과 수치는 700 굵기에 숫자 폭을 맞춰 한눈에 비교되게 하고, 표지 위의 ‘PLANNING / MARKETING / CONTENT’ 같은 라벨은 12px로 작게 두되 자간을 넓혀 구분합니다. 한국어 줄 바꿈은 단어 단위로 맞췄습니다. 이번 발표 자료도 사이트와 같은 Pretendard로 표시했습니다.</aside>
+</section>
+<section id="elements" data-transition="fade" style="background:#010514;color:#F3EDE4;font-family:'Pretendard Variable', Pretendard, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;letter-spacing:4px;color:#E9A066;font-weight:500">04 · ELEMENTS</p>
+<h2 style="font-size:64px;font-weight:600;line-height:1.2;letter-spacing:-1px">점과 빛으로만 만든 표지</h2>
+</div>
+<div style="display:flex;flex-direction:row;gap:32px">
+<div style="width:520px;display:flex;flex-direction:column;gap:14px">
+<img src="img/ember.jpg" alt="윤곽 없이 빛 덩어리로 타오르는 3D 불씨" style="width:520px;height:515px;object-fit:cover;border-radius:12px">
+<h3 style="font-size:30px;font-weight:600;line-height:1.25">3D 불씨</h3>
+<p style="font-size:24px;line-height:1.4;color:#C9C3BB">형체만 남은 빛 · 끌어 돌리고 누름</p>
+</div>
+<div style="display:grid;grid-template-columns:540px 540px;gap:32px">
+<div style="display:flex;flex-direction:column;gap:14px">
+<img src="img/dots.jpg" alt="포인터 근처에서 밝게 솟아오른 3D 점 배경" style="width:540px;height:190px;object-fit:cover;border-radius:12px">
+<h3 style="font-size:30px;font-weight:600;line-height:1.25">점 배경</h3>
+<p style="font-size:24px;line-height:1.4;color:#C9C3BB">숨 쉬는 3D 점 · 포인터 근처가 솟음</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px">
+<img src="img/sparks.jpg" alt="불꽃 가장자리에서 위로 날리는 주황 불티" style="width:540px;height:190px;object-fit:cover;border-radius:12px">
+<h3 style="font-size:30px;font-weight:600;line-height:1.25">불티</h3>
+<p style="font-size:24px;line-height:1.4;color:#C9C3BB">장면이 커질수록 많이, 높이 · 누르면 튐</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px">
+<img src="img/curious.jpg" alt="꼬리를 끌며 점 배경 위를 날아가는 호기심 불티" style="width:540px;height:190px;object-fit:cover;border-radius:12px">
+<h3 style="font-size:30px;font-weight:600;line-height:1.25">호기심 불티</h3>
+<p style="font-size:24px;line-height:1.4;color:#C9C3BB">누른 곳으로 날아가 닿으면 물결이 퍼짐</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px">
+<img src="img/warm.jpg" alt="불씨의 온기가 둥글게 번지며 점을 주황으로 물들이는 장면" style="width:540px;height:190px;object-fit:cover;border-radius:12px">
+<h3 style="font-size:30px;font-weight:600;line-height:1.25">온기</h3>
+<p style="font-size:24px;line-height:1.4;color:#C9C3BB">불씨의 온기가 점에서 점으로 번짐</p>
+</div>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#A8A29B">3D 불씨는 GLB 모델을 흐려 빛만 남김 · 점과 불티는 GL_POINTS · 느린 기기는 품질을 자동으로 낮춤</p>
+<aside>표지는 사진 없이 점과 빛으로만 만들었습니다. 주인공인 3D 불씨는 모델을 일부러 흐려서 윤곽 없이 형체만 남긴 빛 덩어리이고, 끌어서 돌리거나 누를 수 있습니다. 바닥에는 숨 쉬듯 천천히 일렁이는 3D 점 배경이 깔려 있고, 포인터가 다가가면 가까운 점이 솟아오릅니다. 불티는 장면이 커질수록 많아지고 높이 날며, 불씨를 누르면 튀어 오릅니다. 호기심 불티는 화면을 살피며 날아다니다가, 누른 곳으로 날아가 닿으면 물결이 퍼집니다. 표지 끝에서는 불씨의 온기가 점에서 점으로 번져 갑니다. 점과 불티는 GPU 부담이 적은 방식으로 그렸고, 느린 기기에서는 품질을 자동으로 낮춥니다.</aside>
+</section>
+<section id="covers" data-transition="fade" style="background:#F6F2EB;color:#38332E;font-family:'Pretendard Variable', Pretendard, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:32px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;letter-spacing:4px;color:#8F4E2C;font-weight:500">05 · COVERS</p>
+<h2 style="font-size:64px;font-weight:600;line-height:1.2;letter-spacing:-1px">프로젝트마다 움직이는 소표지</h2>
+</div>
+<div style="display:flex;flex-direction:row;gap:24px">
+<div style="flex:1;display:flex;flex-direction:column;gap:10px">
+<img src="img/card-outback.jpg" alt="아웃백 소표지: 국내 여행 보드게임 판" style="width:313px;height:170px;object-fit:cover;border-radius:10px">
+<p style="font-size:24px;font-weight:500;color:#8F4E2C">판</p>
+<h3 style="font-size:28px;font-weight:600;line-height:1.25">아웃백 홀 매니저</h3>
+<p style="font-size:24px;line-height:1.4;color:#4A433C">보드게임 판 위를 팀 말 4개가 돎</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:10px">
+<img src="img/card-space.jpg" alt="우주도서관 소표지: 실제 사이트 시연 영상" style="width:313px;height:170px;object-fit:cover;border-radius:10px">
+<p style="font-size:24px;font-weight:500;color:#8F4E2C">시연 영상</p>
+<h3 style="font-size:28px;font-weight:600;line-height:1.25">우주도서관</h3>
+<p style="font-size:24px;line-height:1.4;color:#4A433C">실제 사이트를 녹화해 바로 재생</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:10px">
+<img src="img/card-ocm.jpg" alt="OCM 소표지: 카드뉴스를 엮은 책" style="width:313px;height:170px;object-fit:cover;border-radius:10px">
+<p style="font-size:24px;font-weight:500;color:#8F4E2C">책</p>
+<h3 style="font-size:28px;font-weight:600;line-height:1.25">OCM</h3>
+<p style="font-size:24px;line-height:1.4;color:#4A433C">게시한 카드뉴스를 엮은 책이 넘어감</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:10px">
+<img src="img/card-blog.jpg" alt="기쁜오목눈이 소표지: 낮게 나는 새와 높이 날아드는 새" style="width:313px;height:170px;object-fit:cover;border-radius:10px">
+<p style="font-size:24px;font-weight:500;color:#8F4E2C">비행</p>
+<h3 style="font-size:28px;font-weight:600;line-height:1.25">기쁜오목눈이</h3>
+<p style="font-size:24px;line-height:1.4;color:#4A433C">5회의 새 위로 159회의 새가 날아듦</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:10px">
+<img src="img/card-oztrip.jpg" alt="OZ TRIP 소표지: 휴대폰 틀 안의 시연 화면" style="width:313px;height:170px;object-fit:cover;border-radius:10px">
+<p style="font-size:24px;font-weight:500;color:#8F4E2C">휴대폰 틀</p>
+<h3 style="font-size:28px;font-weight:600;line-height:1.25">OZ TRIP</h3>
+<p style="font-size:24px;line-height:1.4;color:#4A433C">휴대폰 화면 안에서 도는 시연</p>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:500;color:#8F4E2C">시연 영상 · 서비스 기획과 UI/UX</p>
+<div style="display:flex;flex-direction:row;gap:24px">
+<div style="flex:1;display:flex;flex-direction:column;gap:10px">
+<img src="img/card-draft.jpg" alt="경매 드래프트 시스템 시연 화면" style="width:313px;height:170px;object-fit:cover;border-radius:10px">
+<p style="font-size:24px;font-weight:500">경매 드래프트 시스템</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:10px">
+<img src="img/card-cardnews.jpg" alt="카드뉴스 자동화 시연: 빌드가 만든 카드 미리보기" style="width:313px;height:170px;object-fit:cover;border-radius:10px">
+<p style="font-size:24px;font-weight:500">카드뉴스 자동화</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:10px">
+<img src="img/card-school.jpg" alt="스쿨존윅 대시보드 시연 화면" style="width:313px;height:170px;object-fit:cover;border-radius:10px">
+<p style="font-size:24px;font-weight:500">스쿨존윅</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:10px">
+<img src="img/card-moving.jpg" alt="이사이상무 앱 시연: 휴대폰 틀 안의 시작 화면" style="width:313px;height:170px;object-fit:cover;border-radius:10px">
+<p style="font-size:24px;font-weight:500">이사이상무</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:10px">
+<img src="img/card-mindpalace.jpg" alt="기억의 궁전 시연 화면" style="width:313px;height:170px;object-fit:cover;border-radius:10px">
+<p style="font-size:24px;font-weight:500">기억의 궁전</p>
+</div>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#675D53">카드에 마우스를 올리거나 키보드로 고르면 움직임 · 터치 기기는 화면에 들어올 때 한 번</p>
+<aside>이미지 요소의 두 번째는 소표지입니다. 목차 카드의 썸네일을 정지 이미지 대신, 프로젝트마다 그 내용을 보여 주는 움직이는 장면으로 만들었습니다. 아웃백은 실제로 운영한 여행 보드게임 판 위를 팀 말 네 개가 돌고, 우주도서관은 실제 사이트를 녹화한 영상, OCM은 게시한 카드뉴스를 엮은 책이 넘어가고, 기쁜오목눈이는 하루 조회 5회의 새 위로 159회의 새가 날아듭니다. OZ TRIP과 이사이상무는 휴대폰 틀 안에서 시연이 돌아가고, 나머지 서비스 기획과 UI/UX 프로젝트도 모두 실제 화면을 녹화한 시연 영상입니다. 카드에 마우스를 올리거나 키보드로 고르면 움직이고, 휴대폰에서는 화면에 들어올 때 한 번 움직입니다.</aside>
+</section>
+<section id="flow" data-transition="fade" style="background:#010514;color:#F3EDE4;font-family:'Pretendard Variable', Pretendard, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;letter-spacing:4px;color:#E9A066;font-weight:500">06 · FLOW</p>
+<h2 style="font-size:64px;font-weight:600;line-height:1.2;letter-spacing:-1px">표지에서 목차까지 한 번에 이어지는 장면</h2>
+</div>
+<div style="display:grid;grid-template-columns:398px 398px 398px 398px;gap:32px 24px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<img src="img/flow-1-small.jpg" alt="표지 시작: 남색 점 위의 작은 불씨" style="width:398px;height:224px;object-fit:cover;border-radius:10px">
+<p style="font-size:28px;font-weight:600;line-height:1.3"><span style="color:#E9A066">01</span>  작은 불씨</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px">
+<img src="img/flow-2-grow.jpg" alt="스크롤하며 커지는 불과 늘어나는 불티" style="width:398px;height:224px;object-fit:cover;border-radius:10px">
+<p style="font-size:28px;font-weight:600;line-height:1.3"><span style="color:#E9A066">02</span>  커지는 불</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px">
+<img src="img/flow-3-spread.jpg" alt="번지는 불과 불빛에 물든 점 배경" style="width:398px;height:224px;object-fit:cover;border-radius:10px">
+<p style="font-size:28px;font-weight:600;line-height:1.3"><span style="color:#E9A066">03</span>  번지는 불</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px">
+<img src="img/flow-4-warm.jpg" alt="불씨의 온기가 점에서 점으로 둥글게 번지는 장면" style="width:398px;height:224px;object-fit:cover;border-radius:10px">
+<p style="font-size:28px;font-weight:600;line-height:1.3"><span style="color:#E9A066">04</span>  온기가 점으로</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px">
+<img src="img/flow-5-sink.jpg" alt="남색으로 가라앉은 표지 끝에 이름만 남은 화면" style="width:398px;height:224px;object-fit:cover;border-radius:10px">
+<p style="font-size:28px;font-weight:600;line-height:1.3"><span style="color:#E9A066">05</span>  남색으로 가라앉음</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px">
+<img src="img/flow-6-about.jpg" alt="같은 남색 위의 자기소개: 사진과 소개 글" style="width:398px;height:224px;object-fit:cover;border-radius:10px">
+<p style="font-size:28px;font-weight:600;line-height:1.3"><span style="color:#E9A066">06</span>  자기소개</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px">
+<img src="img/flow-7-dawn.jpg" alt="점이 주황으로 데워지며 크림 바탕으로 이어지는 새벽 띠" style="width:398px;height:224px;object-fit:cover;border-radius:10px">
+<p style="font-size:28px;font-weight:600;line-height:1.3"><span style="color:#E9A066">07</span>  점이 데워져 크림으로</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px">
+<img src="img/flow-8-toc.jpg" alt="크림 바탕의 프로젝트 목차와 소표지 카드" style="width:398px;height:224px;object-fit:cover;border-radius:10px">
+<p style="font-size:28px;font-weight:600;line-height:1.3"><span style="color:#E9A066">08</span>  프로젝트 목차</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#A8A29B">끌어 돌리기 · 누르면 불티가 튐 · 배경을 누르면 호기심 불티가 날아가 물결 · ‘포트폴리오 바로 보기’로 건너뛰기</p>
+<aside>사이트를 처음 열면 이 순서로 장면이 이어집니다. 남색 점 위에 작은 불씨가 있고, 스크롤할수록 불이 커지고 불티가 늘어나며, 불빛이 점 배경까지 번집니다. 표지 끝에서는 불씨의 온기가 점에서 점으로 둥글게 번진 뒤 화면이 남색으로 가라앉고, 같은 남색 위에서 자기소개가 이어집니다. 자기소개를 지나면 점이 아래에서부터 주황으로 데워지고 커지면서 크림 바탕과 맞닿고, 그 위에 프로젝트 목차가 나타납니다. 표지에 있는 동안 3D 불씨는 끌어서 돌리거나 누를 수 있고, 배경을 누르면 호기심 불티가 그곳으로 날아가 물결을 만듭니다. 효과를 다 보지 않아도 ‘포트폴리오 바로 보기’로 바로 넘어갈 수 있습니다.</aside>
+</section>
+<section id="changes" data-transition="fade" style="background:#F6F2EB;color:#38332E;font-family:'Pretendard Variable', Pretendard, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;letter-spacing:4px;color:#8F4E2C;font-weight:500">07 · CHANGES</p>
+<h2 style="font-size:64px;font-weight:600;line-height:1.2;letter-spacing:-1px">10.17 보드에서 지금 사이트로</h2>
+</div>
+<table style="font-family:'Pretendard Variable', Pretendard, Arial, sans-serif;font-size:28px;color:#4A433C">
+<tr>
+<th style="width:15%;padding:18px 16px;color:#38332E">항목</th>
+<th style="width:25%;padding:18px 16px;color:#38332E">10.17 보드</th>
+<th style="width:33%;padding:18px 16px;color:#38332E">지금 사이트</th>
+<th style="width:27%;padding:18px 16px;color:#38332E">바꾼 이유</th>
+</tr>
+<tr>
+<td style="padding:18px 16px">표지 배경</td>
+<td style="padding:18px 16px">실제 불 사진</td>
+<td style="padding:18px 16px;color:#8F4E2C">직접 만든 3D 점 배경</td>
+<td style="padding:18px 16px">3D 인터랙티브를 메인으로</td>
+</tr>
+<tr>
+<td style="padding:18px 16px">3D 불씨</td>
+<td style="padding:18px 16px">부분별로 피어나는 불꽃</td>
+<td style="padding:18px 16px;color:#8F4E2C">윤곽 없이 형체만 남은 빛</td>
+<td style="padding:18px 16px">형태가 잡히지 않은 자연스러운 불</td>
+</tr>
+<tr>
+<td style="padding:18px 16px">표지 문구</td>
+<td style="padding:18px 16px">화면에 큰 문구</td>
+<td style="padding:18px 16px;color:#8F4E2C">호기심의 물결로 전하고, 문구는 화면 낭독용</td>
+<td style="padding:18px 16px">글보다 장면이 더 와닿게</td>
+</tr>
+<tr>
+<td style="padding:18px 16px">밝아지는 전환</td>
+<td style="padding:18px 16px">종이가 타들어 가며 열림</td>
+<td style="padding:18px 16px;color:#8F4E2C">온기가 점을 밝힘 (자기소개 → 목차)</td>
+<td style="padding:18px 16px">타는 이미지는 부정적 연상</td>
+</tr>
+<tr>
+<td style="padding:18px 16px">표지 다음</td>
+<td style="padding:18px 16px">바로 아이보리</td>
+<td style="padding:18px 16px;color:#8F4E2C">자기소개까지 남색</td>
+<td style="padding:18px 16px">밝기가 갑자기 뒤집히지 않게</td>
+</tr>
+<tr>
+<td style="padding:18px 16px">소표지</td>
+<td style="padding:18px 16px">마른 가지 상징</td>
+<td style="padding:18px 16px;color:#8F4E2C">움직이는 장면 10개</td>
+<td style="padding:18px 16px">프로젝트를 직접 보여 주기</td>
+</tr>
+</table>
+<a href="../?motion=on" style="position:absolute;right:128px;bottom:52px;font-size:26px;font-weight:600;color:#F6F2EB;background:#8F4E2C;border-radius:999px;padding:14px 30px;text-decoration:none">포트폴리오 사이트 보기 →</a>
+<p style="position:absolute;left:128px;bottom:64px;width:1100px;font-size:24px;color:#675D53">10.17 비주얼 컨셉 보드는 그대로 두고, 무드보드만 지금 사이트 기준으로 새로 정리</p>
+<aside>10월 17일 비주얼 컨셉 보드와 비교하면 여섯 가지가 바뀌었습니다. 표지 배경은 실제 불 사진에서 직접 만든 3D 점 배경으로 바꿔 인터랙티브한 3D를 메인으로 삼았습니다. 3D 불씨는 부분별로 피어나는 불꽃 모양에서, 형태가 잡히지 않도록 윤곽 없이 형체만 남은 빛으로 바꿨습니다. 표지 문구는 큰 글씨가 잘 와닿지 않아서, 호기심 불티가 닿아 퍼지는 물결 장면으로 전하고 문구는 화면 낭독용으로만 남겼습니다. 표지에서 밝은 화면으로 넘어가는 전환은 종이가 타들어 가는 모습이 부정적으로 느껴져서, 온기가 점을 밝히는 방식으로 바꾸고 자기소개와 목차 사이로 옮겼습니다. 표지 다음에 바로 밝아지던 화면은 자기소개까지 남색으로 이어 밝기가 갑자기 뒤집히지 않게 했고, 소표지는 마른 가지 상징 대신 프로젝트마다 움직이는 장면으로 만들었습니다.</aside>
+</section>
+  </div>
+</main>
+<div class="notes" role="note" aria-live="polite"></div>
+<nav class="bar" aria-label="슬라이드 조작">
+  <button type="button" class="prev" aria-label="이전 슬라이드">←</button>
+  <span class="count" aria-live="polite"></span>
+  <button type="button" class="next" aria-label="다음 슬라이드">→</button>
+  <span class="sep opt" aria-hidden="true"></span>
+  <button type="button" class="memo opt" aria-pressed="false">메모 N</button>
+  <button type="button" class="full opt">전체 화면 F</button>
+  <a class="site" href="../?motion=on">포트폴리오 사이트 →</a>
+</nav>
+<script>
+(function () {
+  var stage = document.querySelector('.stage');
+  var slides = Array.prototype.slice.call(stage.children);
+  var n = slides.length, cur = -1;
+  var count = document.querySelector('.count'), prev = document.querySelector('.prev'), next = document.querySelector('.next');
+  var notes = document.querySelector('.notes'), memo = document.querySelector('.memo'), full = document.querySelector('.full');
+
+  slides.forEach(function (s, k) {
+    s.setAttribute('role', 'group');
+    s.setAttribute('aria-roledescription', '슬라이드');
+    s.setAttribute('aria-label', (k + 1) + ' / ' + n);
+  });
+
+  function fit() { stage.style.setProperty('--s', Math.min(innerWidth / 1920, innerHeight / 1080)); }
+
+  function go(k) {
+    k = Math.max(0, Math.min(n - 1, k));
+    if (k === cur) return;
+    if (cur >= 0) { slides[cur].classList.remove('is-on'); slides[cur].setAttribute('aria-hidden', 'true'); }
+    cur = k;
+    slides[cur].classList.add('is-on');
+    slides[cur].removeAttribute('aria-hidden');
+    count.textContent = (cur + 1) + ' / ' + n;
+    prev.disabled = cur === 0;
+    next.disabled = cur === n - 1;
+    var aside = slides[cur].querySelector('aside');
+    notes.textContent = aside ? aside.textContent.trim() : '이 슬라이드에는 메모가 없습니다.';
+    if (location.hash !== '#' + (cur + 1)) history.replaceState(null, '', '#' + (cur + 1));
+  }
+  function fromHash() { var k = parseInt(location.hash.slice(1), 10); return isNaN(k) ? 0 : k - 1; }
+
+  function toggleNotes() {
+    var on = document.body.classList.toggle('show-notes');
+    memo.setAttribute('aria-pressed', on ? 'true' : 'false');
+  }
+  function toggleFull() {
+    var d = document;
+    if (d.fullscreenElement || d.webkitFullscreenElement) (d.exitFullscreen || d.webkitExitFullscreen).call(d);
+    else { var el = d.documentElement; var req = el.requestFullscreen || el.webkitRequestFullscreen; if (req) req.call(el); }
+  }
+
+  prev.addEventListener('click', function () { go(cur - 1); });
+  next.addEventListener('click', function () { go(cur + 1); });
+  memo.addEventListener('click', toggleNotes);
+  full.addEventListener('click', toggleFull);
+
+  // 슬라이드를 누르면 다음 장 (링크를 누를 땐 그대로 이동)
+  document.querySelector('.deck').addEventListener('click', function (e) {
+    if (e.target.closest('a')) return;
+    go(cur + 1);
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    var onCtl = e.target.closest && e.target.closest('button, a');
+    var key = e.key;
+    if (onCtl && (key === ' ' || key === 'Enter')) return;
+    if (key === 'ArrowRight' || key === 'ArrowDown' || key === 'PageDown' || key === ' ' || key === 'Enter') { go(cur + 1); e.preventDefault(); }
+    else if (key === 'ArrowLeft' || key === 'ArrowUp' || key === 'PageUp' || key === 'Backspace') { go(cur - 1); e.preventDefault(); }
+    else if (key === 'Home') { go(0); e.preventDefault(); }
+    else if (key === 'End') { go(n - 1); e.preventDefault(); }
+    else if (key === 'f' || key === 'F') toggleFull();
+    else if (key === 'n' || key === 'N') toggleNotes();
+  });
+
+  // 밀어서 넘기기 (휴대폰·태블릿)
+  var sx = null, sy = null;
+  addEventListener('touchstart', function (e) { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
+  addEventListener('touchend', function (e) {
+    if (sx === null) return;
+    var dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) go(cur + (dx < 0 ? 1 : -1));
+    sx = sy = null;
+  }, { passive: true });
+
+  // 조작 막대: 마우스를 움직이면 2.5초 동안 보임
+  var idleTimer;
+  function wake() {
+    document.body.classList.remove('idle');
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(function () { if (!document.querySelector('.bar:hover')) document.body.classList.add('idle'); }, 2500);
+  }
+  addEventListener('mousemove', wake);
+  addEventListener('touchstart', wake, { passive: true });
+
+  addEventListener('hashchange', function () { go(fromHash()); });
+  addEventListener('resize', fit);
+  fit();
+  go(fromHash());
+  wake();
+})();
+</script>
+</body>
+</html>

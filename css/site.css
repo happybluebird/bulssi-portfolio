@@ -108,8 +108,9 @@ html.hdr-split .site-header {
   display: inline-flex;
   align-items: center;
   min-height: 44px;
-  font-size: 14px;
-  letter-spacing: .04em;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: .1em;   /* 영문 대문자 메뉴 (ABOUT · PROJECT · CONTACT) */
   text-decoration: none;
   color: var(--h-muted);
   transition: color var(--hover) ease;

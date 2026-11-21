@@ -1161,6 +1161,28 @@
     var intro = paras(about.paragraphs);
     if (intro.length) parts.push(section('intro', '소개', intro.map(function (t) { return el('p', null, t); })));
 
+    // 한 이력 안의 근무 기간별 묶음: periods[{ date, length, blocks[{ label, points[문자열 | { text, sub[] }] }] }]
+    function pointItem(pt) {
+      if (typeof pt === 'string') return el('li', null, pt);
+      var sub = paras(pt && pt.sub);
+      return el('li', null, [text(pt && pt.text), sub.length > 0 && el('ul', { class: 'me-sub' }, sub.map(function (t) { return el('li', null, t); }))]);
+    }
+    function periodBlocks(periods) {
+      var ps = list(periods).filter(function (p) { return p && (text(p.date) || list(p.blocks).length); });
+      if (!ps.length) return null;
+      return el('div', { class: 'me-periods' }, ps.map(function (p) {
+        return el('section', { class: 'me-period' }, [
+          text(p.date) && el('p', { class: 'me-period-date' }, [p.date, text(p.length) && el('span', { class: 'me-length' }, p.length)]),
+          list(p.blocks).filter(function (b) { return b && list(b.points).length; }).map(function (b) {
+            return el('div', { class: 'me-block' }, [
+              text(b.label) && el('p', { class: 'me-block-k' }, b.label),
+              el('ul', { class: 'me-points' }, list(b.points).map(pointItem))
+            ]);
+          })
+        ]);
+      }));
+    }
+
     list(prof.history).forEach(function (g, gi) {
       var items = list(g.items).filter(function (it) { return it && text(it.title); });
       if (!text(g.title) || !items.length) return;
@@ -1171,6 +1193,7 @@
           el('div', { class: 'me-what' }, [
             el('h3', { class: 'me-title' }, it.title),
             points.length > 0 && el('ul', { class: 'me-points' }, points.map(function (t) { return el('li', null, t); })),
+            periodBlocks(it.periods),
             text(it.highlight) && el('p', { class: 'me-highlight' }, it.highlight),
             projectLinks(it.projects)
           ])

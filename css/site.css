@@ -1660,6 +1660,16 @@ html.hdr-split .site-header {
   line-height: 1.7;
   word-break: keep-all;
 }
+/* 한 이력 안의 근무 기간별 묶음 (아웃백: 2022.04–2024.12 · 2025.03–2025.12) */
+.me-periods { display: grid; gap: 14px; margin: 10px 0 0; }
+.me-period { padding: 12px 0 0; border-top: 1px dashed var(--line); }
+.me-period:first-child { border-top: 0; padding-top: 2px; }
+.me-period-date { display: flex; align-items: baseline; gap: 10px; margin: 0 0 6px; font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--accent-ink); }
+.me-period-date .me-length { font-weight: 400; color: var(--muted); }
+.me-block + .me-block { margin-top: 8px; }
+.me-block-k { margin: 0; font-size: 13px; font-weight: 600; letter-spacing: .02em; color: var(--muted); }
+.me-block .me-points { margin-top: 2px; word-break: keep-all; }
+.me-sub { margin: 2px 0 4px; padding-left: 1.1em; list-style: "–  "; font-size: 15px; line-height: 1.7; color: var(--muted); }
 .me-projects { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 0; }
 .me-project {
   display: inline-flex;

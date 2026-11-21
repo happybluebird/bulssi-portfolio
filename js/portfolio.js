@@ -319,7 +319,11 @@
       proof.length > 0 && el('ul', { class: 'ending-proof' }, proof.map(function (p) {
         return el('li', null, [el('strong', null, p.value), el('span', null, [text(p.label), text(p.note) && el('small', null, p.note)])]);
       })),
-      text(e.text) && el('p', { class: 'ending-text' }, e.text)
+      text(e.text) && el('p', { class: 'ending-text' }, e.text),
+      list(e.blocks).length > 0 && el('div', { class: 'ending-blocks' }, list(e.blocks).filter(function (b) { return b && text(b.text); }).map(function (b) {
+        return el('div', { class: 'ending-block' }, [text(b.label) && el('p', { class: 'ending-block-k' }, b.label), el('p', null, b.text)]);
+      })),
+      text(e.closing) && el('p', { class: 'ending-closing' }, e.closing)
     );
     root.hidden = false;
   }

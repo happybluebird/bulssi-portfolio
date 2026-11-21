@@ -1116,11 +1116,18 @@ html.hdr-split .site-header {
 .ending-proof span { display: block; margin-top: 6px; font-size: 14px; line-height: 1.55; color: var(--text); }
 .ending-proof small { display: block; font-size: 13px; color: var(--muted); }
 .ending-text { max-width: 40em; margin: 40px 0 0; font-size: 17px; line-height: 1.8; word-break: keep-all; }
+.ending-blocks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px; margin: 64px 0 0; }
+.ending-block p { margin: 0; font-size: 16px; line-height: 1.8; word-break: keep-all; }
+.ending-block .ending-block-k { margin: 0 0 10px; font-size: 13px; font-weight: 600; letter-spacing: .06em; color: var(--accent-ink); }
+.ending-closing { margin: 64px 0 0; font-size: 26px; font-weight: 600; letter-spacing: -.02em; }
+@media (max-width: 900px) { .ending-blocks { grid-template-columns: minmax(0, 1fr); gap: 28px; } }
 @media (max-width: 720px) {
   .ending { padding-bottom: 64px; }
   .ending-proof { grid-template-columns: minmax(0, 1fr); gap: 18px; margin-top: 36px; }
   .ending-proof strong { font-size: 26px; }
   .ending-text { font-size: 16px; }
+  .ending-blocks { margin-top: 44px; }
+  .ending-closing { margin-top: 44px; font-size: 22px; }
 }
 
 .contact-list {

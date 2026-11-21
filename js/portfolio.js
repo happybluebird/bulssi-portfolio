@@ -308,6 +308,22 @@
     ]));
   }
 
+  /* ---------- 엔딩: 연락처 앞 '봐주셔서 감사합니다' + 다짐 한 문장 + 근거 숫자 ---------- */
+  function renderEnding(root) {
+    var e = SITE.ending || {};
+    if (!text(e.line) && !text(e.lineEm)) return;   // 문장이 없으면 구간을 숨긴 채로 둠
+    var proof = list(e.proof).filter(function (p) { return p && text(p.value); });
+    root.append(
+      text(e.kicker) && el('p', { class: 'ending-kicker' }, e.kicker),
+      el('p', { class: 'ending-line' }, [text(e.line), text(e.line) && el('br'), text(e.lineEm) && el('em', null, e.lineEm), text(e.lineEnd) && (text(e.lineEm) ? ' ' : '') + text(e.lineEnd)]),
+      proof.length > 0 && el('ul', { class: 'ending-proof' }, proof.map(function (p) {
+        return el('li', null, [el('strong', null, p.value), el('span', null, [text(p.label), text(p.note) && el('small', null, p.note)])]);
+      })),
+      text(e.text) && el('p', { class: 'ending-text' }, e.text)
+    );
+    root.hidden = false;
+  }
+
   /* ---------- 소표지: 목차 카드와 상세 위쪽이 함께 쓰는 움직이는 표지 ----------
      symbol: 프로젝트 상징 → (올리거나 키보드로 고르면) 빛이 켜지고 이름이 드러남 (OpenTabs 원리)
      metric: 확인된 지표 카드 → 블록이 흩어져 그 지표를 이루는 구성으로 다시 모임 (Domu 원리)
@@ -1255,6 +1271,8 @@
   if (aboutRoot) { renderAbout(aboutRoot); watchDarkBand(document.getElementById('intro-me')); }
   mountDawn(document.querySelector('[data-dawn]'));
   if (projectsRoot) renderProjects(projectsRoot);
+  var endingRoot = document.querySelector('[data-ending]');
+  if (endingRoot) renderEnding(endingRoot);
   if (contactRoot) renderContact(contactRoot);
   if (detailRoot) renderDetail(detailRoot);
 
